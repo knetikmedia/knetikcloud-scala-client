@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -12,13 +12,13 @@
 
 package com.knetikcloud.client.model
 
-import com.knetikcloud.client.model.AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings
 import com.knetikcloud.client.model.ActivityOccurrenceCreationFailure
+import com.knetikcloud.client.model.ActivityOccurrenceResource
 import com.knetikcloud.client.model.ActivityOccurrenceResults
-import com.knetikcloud.client.model.ModelObject
+import com.knetikcloud.client.model.ActivityOccurrenceResultsResource
+import com.knetikcloud.client.model.ActivityResource
 import com.knetikcloud.client.model.PageResourceBareActivityResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
-import com.knetikcloud.client.model.RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
 import io.swagger.client.ApiInvoker
@@ -45,9 +45,9 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Create an activity
    * 
    * @param activityResource The activity resource object (optional)
-   * @return RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc
+   * @return ActivityResource
    */
-  def createActivity(activityResource: Option[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc] = None): Option[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc] = {
+  def createActivity(activityResource: Option[ActivityResource] = None): Option[ActivityResource] = {
     // create path and map variables
     val path = "/activities".replaceAll("\\{format\\}", "json")
 
@@ -71,7 +71,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
     try {
       apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
         case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc]).asInstanceOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc])
+           Some(apiInvoker.deserialize(s, "", classOf[ActivityResource]).asInstanceOf[ActivityResource])
         case _ => None
       }
     } catch {
@@ -85,9 +85,9 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Has to enforce extra rules if not used as an admin
    * @param test if true, indicates that the occurrence should NOT be created. This can be used to test for eligibility and valid settings (optional, default to false)
    * @param activityOccurrenceResource The activity occurrence object (optional)
-   * @return AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings
+   * @return ActivityOccurrenceResource
    */
-  def createActivityOccurrence(test: Option[Boolean] /* = false*/, activityOccurrenceResource: Option[AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings] = None): Option[AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings] = {
+  def createActivityOccurrence(test: Option[Boolean] /* = false*/, activityOccurrenceResource: Option[ActivityOccurrenceResource] = None): Option[ActivityOccurrenceResource] = {
     // create path and map variables
     val path = "/activity-occurrences".replaceAll("\\{format\\}", "json")
 
@@ -112,7 +112,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
     try {
       apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
         case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings]).asInstanceOf[AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings])
+           Some(apiInvoker.deserialize(s, "", classOf[ActivityOccurrenceResource]).asInstanceOf[ActivityOccurrenceResource])
         case _ => None
       }
     } catch {
@@ -251,7 +251,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
    * @return PageResourceBareActivityResource
    */
-  def getActivities(filterTemplate: Option[Boolean] = None, filterName: Option[String] = None, filterId: Option[ModelObject] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceBareActivityResource] = {
+  def getActivities(filterTemplate: Option[Boolean] = None, filterName: Option[String] = None, filterId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceBareActivityResource] = {
     // create path and map variables
     val path = "/activities".replaceAll("\\{format\\}", "json")
 
@@ -294,9 +294,9 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Get a single activity
    * 
    * @param id The id of the activity 
-   * @return RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc
+   * @return ActivityResource
    */
-  def getActivity(id: Long): Option[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc] = {
+  def getActivity(id: Long): Option[ActivityResource] = {
     // create path and map variables
     val path = "/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
 
@@ -320,7 +320,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
     try {
       apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
         case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc]).asInstanceOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc])
+           Some(apiInvoker.deserialize(s, "", classOf[ActivityResource]).asInstanceOf[ActivityResource])
         case _ => None
       }
     } catch {
@@ -421,7 +421,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param activityOccurrenceResults The activity occurrence object (optional)
    * @return ActivityOccurrenceResults
    */
-  def setActivityOccurrenceResults(activityOccurrenceId: Long, activityOccurrenceResults: Option[ActivityOccurrenceResults] = None): Option[ActivityOccurrenceResults] = {
+  def setActivityOccurrenceResults(activityOccurrenceId: Long, activityOccurrenceResults: Option[ActivityOccurrenceResultsResource] = None): Option[ActivityOccurrenceResults] = {
     // create path and map variables
     val path = "/activity-occurrences/{activity_occurrence_id}/results".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "activity_occurrence_id" + "\\}",apiInvoker.escape(activityOccurrenceId))
 
@@ -459,9 +459,9 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * 
    * @param id The id of the activity 
    * @param activityResource The activity resource object (optional)
-   * @return RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc
+   * @return ActivityResource
    */
-  def updateActivity(id: Long, activityResource: Option[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc] = None): Option[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc] = {
+  def updateActivity(id: Long, activityResource: Option[ActivityResource] = None): Option[ActivityResource] = {
     // create path and map variables
     val path = "/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
 
@@ -485,7 +485,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
     try {
       apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
         case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc]).asInstanceOf[RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc])
+           Some(apiInvoker.deserialize(s, "", classOf[ActivityResource]).asInstanceOf[ActivityResource])
         case _ => None
       }
     } catch {

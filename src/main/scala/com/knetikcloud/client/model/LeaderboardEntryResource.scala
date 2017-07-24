@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -18,6 +18,8 @@ case class LeaderboardEntryResource (
   rank: Option[Long],
   /* The raw score in this leaderboard. Null means non-compete or disqualification */
   score: Option[Long],
+  /* The date this score was recorded or updated. Unix timestamp in seconds */
+  updatedDate: Option[Long],
   /* The player for this entry */
   user: SimpleUserResource
 )

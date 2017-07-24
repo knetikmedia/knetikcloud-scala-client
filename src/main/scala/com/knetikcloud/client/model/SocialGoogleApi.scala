@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -35,12 +35,12 @@ class SocialGoogleApi(val defBasePath: String = "https://sandbox.knetikcloud.com
   def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
 
   /**
-   * Link facebook account
-   * Links the current user account to a facebook account, using the acccess token from facebook. Can also be used to update the access token after it has expired.
-   * @param facebookToken The token from facebook (optional)
+   * Link google account
+   * Links the current user account to a google account, using the acccess token from google. Can also be used to update the access token after it has expired.
+   * @param googleToken The token from google (optional)
    * @return void
    */
-  def linkAccounts1(facebookToken: Option[GoogleToken] = None) = {
+  def linkAccounts1(googleToken: Option[GoogleToken] = None) = {
     // create path and map variables
     val path = "/social/google/users".replaceAll("\\{format\\}", "json")
 
@@ -53,7 +53,7 @@ class SocialGoogleApi(val defBasePath: String = "https://sandbox.knetikcloud.com
 
     
 
-    var postBody: AnyRef = facebookToken.map(paramVal => paramVal)
+    var postBody: AnyRef = googleToken.map(paramVal => paramVal)
 
     if (contentType.startsWith("multipart/form-data")) {
       val mp = new FormDataMultiPart

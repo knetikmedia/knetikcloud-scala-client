@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -16,6 +16,8 @@ package com.knetikcloud.client.model
 case class BreTriggerParameterDefinition (
   /* The name of the parameter. This is used as the unique identifier of this parameter */
   name: String,
+  /* Whether this parameter can be left off when firing the event. Default false */
+  optional: Option[Boolean],
   /* The variable type of this parameter. See Bre Variables endpoint for list */
   _type: String
 )

@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -12,10 +12,10 @@
 
 package com.knetikcloud.client.model
 
-import com.knetikcloud.client.model.ARequestToResetAUsersPasswordByUsingAKnownUserProperty
 import com.knetikcloud.client.model.NewPasswordRequest
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourceUserBaseResource
+import com.knetikcloud.client.model.PasswordResetRequest
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
 import com.knetikcloud.client.model.UserResource
@@ -592,7 +592,7 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param passwordReset An object containing one of three methods to look up a user (optional)
    * @return void
    */
-  def submitPasswordReset(passwordReset: Option[ARequestToResetAUsersPasswordByUsingAKnownUserProperty] = None) = {
+  def submitPasswordReset(passwordReset: Option[PasswordResetRequest] = None) = {
     // create path and map variables
     val path = "/users/password-reset".replaceAll("\\{format\\}", "json")
 

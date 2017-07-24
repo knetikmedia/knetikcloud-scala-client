@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -13,7 +13,7 @@
 package com.knetikcloud.client.model
 
 
-case class RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsScoresEtc (
+case class ActivityResource (
   /* A map of additional properties keyed on the property name. Used to further describe an activity. While settings will vary from one activity occurrence (a game) to another, additional properties are shared by all the occurrences of this activity. Ex: Activity Logo, Disclaimer, Greeting, etc. Validated against template if one exists for activities */
   additionalProperties: Option[Map[String, Property]],
   /* The date/time this resource was created in seconds since unix epoch */
@@ -31,7 +31,7 @@ case class RepresentsAnActivityThatCanBeParameterizedAndTrackedThroughMetricsSco
   /* The rewards to give at the end of each occurence of the activity. When creating/updating only id is used. Reward set must be pre-existing */
   rewardSet: Option[RewardSetResource],
   /* Define what parameters are required/available to start and run an activity. For example: Difficulty, Number of Questions, Character name, Avatar, Duration, etc. Not populated when getting listing */
-  settings: Option[List[TheDefinitionOfAnActivityParametersExDifficultyLevel]],
+  settings: Option[List[AvailableSettingResource]],
   /* The user friendly name of that resource. Defaults to blank string */
   shortDescription: Option[String],
   /* Whether this activity is a template for other activities. Default: false */

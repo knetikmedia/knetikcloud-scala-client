@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -16,7 +16,6 @@ import com.knetikcloud.client.model.CommentResource
 import com.knetikcloud.client.model.ContributionResource
 import com.knetikcloud.client.model.DispositionResource
 import com.knetikcloud.client.model.FlagResource
-import com.knetikcloud.client.model.ModelObject
 import com.knetikcloud.client.model.PageResourceCommentResource
 import com.knetikcloud.client.model.PageResourceDispositionResource
 import com.knetikcloud.client.model.PageResourceVideoRelationshipResource
@@ -746,7 +745,7 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to author:ASC)
    * @return PageResourceVideoResource
    */
-  def getVideos(excludeFlagged: Option[Boolean] /* = true*/, filterVideosByUploader: Option[ModelObject] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterVideosByName: Option[String] = None, filterVideosByContributor: Option[ModelObject] = None, filterVideosByAuthor: Option[ModelObject] = None, filterHasAuthor: Option[Boolean] = None, filterHasUploader: Option[Boolean] = None, filterRelatedTo: Option[String] = None, filterFriends: Option[Boolean] = None, filterDisposition: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = author:ASC*/): Option[PageResourceVideoResource] = {
+  def getVideos(excludeFlagged: Option[Boolean] /* = true*/, filterVideosByUploader: Option[Integer] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterVideosByName: Option[String] = None, filterVideosByContributor: Option[Integer] = None, filterVideosByAuthor: Option[Integer] = None, filterHasAuthor: Option[Boolean] = None, filterHasUploader: Option[Boolean] = None, filterRelatedTo: Option[String] = None, filterFriends: Option[Boolean] = None, filterDisposition: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = author:ASC*/): Option[PageResourceVideoResource] = {
     // create path and map variables
     val path = "/media/videos".replaceAll("\\{format\\}", "json")
 

@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -48,6 +48,8 @@ case class UserResource (
   id: Option[Integer],
   /* The ISO3 code for the user's currency (private) */
   languageCode: Option[String],
+  /* The date the user last interacted with the API (private) */
+  lastActivity: Option[Long],
   /* The user's last name (private) */
   lastName: Option[String],
   /* The date the user's info was last updated as a unix timestamp */

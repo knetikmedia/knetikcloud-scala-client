@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -21,7 +21,7 @@ case class GroupMemberResource (
   /* The id of the user */
   id: Integer,
   /* The member's access level. Default: member */
-  status: String,
+  status: Option[String],
   /* The username of the user */
   username: Option[String]
 )

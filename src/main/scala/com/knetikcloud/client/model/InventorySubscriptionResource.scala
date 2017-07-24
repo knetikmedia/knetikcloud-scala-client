@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -30,9 +30,13 @@ case class InventorySubscriptionResource (
   itemId: Option[Integer],
   /* The payment method object */
   paymentMethod: Option[PaymentMethodResource],
-  /* The recurring price */
+  /* The recurring price that has been set to override the base price. Null if not overriding */
+  priceOverride: Option[Double],
+  /* An explanation for the reason the price is being overridden */
+  priceOverrideReason: Option[String],
+  /* The default recurring price */
   recurringPrice: Option[Double],
-  /* The sku of the subscription */
+  /* The recurring sku of the subscription */
   sku: Option[String],
   /* The date the subscription will start */
   startDate: Option[Long],

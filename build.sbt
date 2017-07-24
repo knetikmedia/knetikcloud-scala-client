@@ -1,6 +1,6 @@
 lazy val root = (project in file(".")).
     settings(
-        version       := "3.0.6",
+        version       := "3.0.7",
         name          := "knetikcloud-scala-client",
         organization  := "com.knetikcloud",
         scalaVersion  := "2.11.8",

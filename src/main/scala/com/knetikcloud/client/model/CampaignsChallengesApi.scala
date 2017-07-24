@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -240,14 +240,14 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
 
   /**
    * Delete a challenge activity
-   * 
-   * @param activityId The activity id 
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @return void
    */
-  def deleteChallengeActivity(activityId: Long, challengeId: Long) = {
+  def deleteChallengeActivity(id: Long, challengeId: Long) = {
     // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{activity_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "activity_id" + "\\}",apiInvoker.escape(activityId)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
+    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
 
     val contentTypes = List("application/json")
     val contentType = contentTypes(0)
@@ -485,13 +485,14 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
 
   /**
    * Get a single challenge activity
-   * 
-   * @param activityId The activity id 
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
+   * @param challengeId The challenge id 
    * @return ChallengeActivityResource
    */
-  def getChallengeActivity(activityId: Long): Option[ChallengeActivityResource] = {
+  def getChallengeActivity(id: Long, challengeId: Long): Option[ChallengeActivityResource] = {
     // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{activity_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "activity_id" + "\\}",apiInvoker.escape(activityId))
+    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
 
     val contentTypes = List("application/json")
     val contentType = contentTypes(0)
@@ -877,15 +878,15 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
 
   /**
    * Update a challenge activity
-   * 
-   * @param activityId The activity id 
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
    * @return ChallengeActivityResource
    */
-  def updateChallengeActivity(activityId: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Option[ChallengeActivityResource] = {
+  def updateChallengeActivity(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Option[ChallengeActivityResource] = {
     // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{activity_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "activity_id" + "\\}",apiInvoker.escape(activityId)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
+    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
 
     val contentTypes = List("application/json")
     val contentType = contentTypes(0)

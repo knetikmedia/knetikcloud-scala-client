@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -13,7 +13,7 @@
 package com.knetikcloud.client.model
 
 
-case class AOccurrenceOfAnActivityTheActualGameForExampleUsedToTrackScoresParticipantsAndProvideSettings (
+case class ActivityOccurrenceResource (
   /* The id of the activity */
   activityId: Long,
   /* The id of the challenge activity (as part of the event, required if eventId set) */

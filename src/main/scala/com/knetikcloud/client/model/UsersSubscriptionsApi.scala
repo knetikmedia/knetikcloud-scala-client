@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -16,6 +16,7 @@ import com.knetikcloud.client.model.InventorySubscriptionResource
 import com.knetikcloud.client.model.InvoiceResource
 import com.knetikcloud.client.model.ReactivateSubscriptionRequest
 import com.knetikcloud.client.model.Result
+import com.knetikcloud.client.model.SubscriptionPriceOverrideRequest
 import io.swagger.client.ApiInvoker
 import io.swagger.client.ApiException
 
@@ -300,6 +301,46 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
     
 
     var postBody: AnyRef = planId.map(paramVal => paramVal)
+
+    if (contentType.startsWith("multipart/form-data")) {
+      val mp = new FormDataMultiPart
+      postBody = mp
+    } else {
+    }
+
+    try {
+      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
+        case s: String =>
+                  case _ => None
+      }
+    } catch {
+      case ex: ApiException if ex.code == 404 => None
+      case ex: ApiException => throw ex
+    }
+  }
+
+  /**
+   * Set a new subscription price for a user
+   * This new price will be what the user is charged at the begining of each new period. This override is specific to the current subscription and will not carry over if they end and later re-subscribe. It will persist if the plan is changed using the setUserSubscriptionPlan endpoint.
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param theOverrideDetails override (optional)
+   * @return void
+   */
+  def setUserSubscriptionPrice(userId: Integer, inventoryId: Integer, theOverrideDetails: Option[SubscriptionPriceOverrideRequest] = None) = {
+    // create path and map variables
+    val path = "/users/{user_id}/subscriptions/{inventory_id}/price-override".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
+
+    val contentTypes = List("application/json")
+    val contentType = contentTypes(0)
+
+    val queryParams = new HashMap[String, String]
+    val headerParams = new HashMap[String, String]
+    val formParams = new HashMap[String, String]
+
+    
+
+    var postBody: AnyRef = theOverrideDetails.map(paramVal => paramVal)
 
     if (contentType.startsWith("multipart/form-data")) {
       val mp = new FormDataMultiPart

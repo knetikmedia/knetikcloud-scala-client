@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -327,14 +327,16 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * List and search articles
    * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed.
    * @param filterCategory Filter for articles from a specific category by id (optional)
-   * @param filterTagset Filter for articles with specified tags (separated by comma) (optional)
+   * @param filterTagset Filter for articles with at least one of a specified set of tags (separated by comma) (optional)
+   * @param filterTagIntersection Filter for articles with all of a specified set of tags (separated by comma) (optional)
+   * @param filterTagExclusion Filter for articles with none of a specified set of tags (separated by comma) (optional)
    * @param filterTitle Filter for articles whose title contains a string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
    * @return PageResourceArticleResource
    */
-  def getArticles(filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceArticleResource] = {
+  def getArticles(filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceArticleResource] = {
     // create path and map variables
     val path = "/content/articles".replaceAll("\\{format\\}", "json")
 
@@ -347,6 +349,8 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
 
     filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
     filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
+    filterTagIntersection.map(paramVal => queryParams += "filter_tag_intersection" -> paramVal.toString)
+    filterTagExclusion.map(paramVal => queryParams += "filter_tag_exclusion" -> paramVal.toString)
     filterTitle.map(paramVal => queryParams += "filter_title" -> paramVal.toString)
     size.map(paramVal => queryParams += "size" -> paramVal.toString)
     page.map(paramVal => queryParams += "page" -> paramVal.toString)

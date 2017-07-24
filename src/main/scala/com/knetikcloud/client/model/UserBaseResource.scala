@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -24,6 +24,8 @@ case class UserBaseResource (
   fullname: Option[String],
   /* The id of the user */
   id: Option[Integer],
+  /* The date the user last interacted with the API (private) */
+  lastActivity: Option[Long],
   /* The date the user's info was last updated as a unix timestamp */
   lastUpdated: Option[Long],
   /* The user's date of registration as a unix timestamp */

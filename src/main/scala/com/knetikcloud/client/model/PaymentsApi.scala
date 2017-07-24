@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -158,12 +158,16 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Get all payment methods for a user
    * 
    * @param userId ID of the user for whom the payment methods are being retrieved 
+   * @param filterName Filter for payment methods whose name starts with a given string (optional)
+   * @param filterPaymentType Filter for payment methods with a specific payment type (optional)
+   * @param filterPaymentMethodTypeId Filter for payment methods with a specific payment method type by id (optional)
+   * @param filterPaymentMethodTypeName Filter for payment methods whose payment method type name starts with a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
    * @return List[PaymentMethodResource]
    */
-  def getPaymentMethods(userId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[List[PaymentMethodResource]] = {
+  def getPaymentMethods(userId: Integer, filterName: Option[String] = None, filterPaymentType: Option[String] = None, filterPaymentMethodTypeId: Option[Integer] = None, filterPaymentMethodTypeName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[List[PaymentMethodResource]] = {
     // create path and map variables
     val path = "/users/{user_id}/payment-methods".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
 
@@ -174,6 +178,10 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
     val headerParams = new HashMap[String, String]
     val formParams = new HashMap[String, String]
 
+    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
+    filterPaymentType.map(paramVal => queryParams += "filter_payment_type" -> paramVal.toString)
+    filterPaymentMethodTypeId.map(paramVal => queryParams += "filter_payment_method_type_id" -> paramVal.toString)
+    filterPaymentMethodTypeName.map(paramVal => queryParams += "filter_payment_method_type_name" -> paramVal.toString)
     size.map(paramVal => queryParams += "size" -> paramVal.toString)
     page.map(paramVal => queryParams += "page" -> paramVal.toString)
     order.map(paramVal => queryParams += "order" -> paramVal.toString)

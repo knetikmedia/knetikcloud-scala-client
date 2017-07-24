@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -16,7 +16,6 @@ import com.knetikcloud.client.model.AddressResource
 import com.knetikcloud.client.model.InvoiceCreateRequest
 import com.knetikcloud.client.model.InvoicePaymentStatusRequest
 import com.knetikcloud.client.model.InvoiceResource
-import com.knetikcloud.client.model.ModelObject
 import com.knetikcloud.client.model.PageResourceInvoiceLogEntry
 import com.knetikcloud.client.model.PageResourceInvoiceResource
 import com.knetikcloud.client.model.PayBySavedMethodRequest
@@ -222,7 +221,7 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
    * @return PageResourceInvoiceResource
    */
-  def getInvoices(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[ModelObject] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceInvoiceResource] = {
+  def getInvoices(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceInvoiceResource] = {
     // create path and map variables
     val path = "/invoices".replaceAll("\\{format\\}", "json")
 
@@ -340,6 +339,53 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
     try {
       apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
+        case s: String =>
+                  case _ => None
+      }
+    } catch {
+      case ex: ApiException if ex.code == 404 => None
+      case ex: ApiException => throw ex
+    }
+  }
+
+  /**
+   * Set the fulfillment status of a bundled invoice item
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * @param id The id of the invoice 
+   * @param bundleSku The sku of the bundle in the invoice that contains the given target 
+   * @param sku The sku of an item in the bundle in the invoice 
+   * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
+   * @return void
+   */
+  def setBundledInvoiceItemFulfillmentStatus(id: Integer, bundleSku: String, sku: String, status: String) = {
+    // create path and map variables
+    val path = "/invoices/{id}/items/{bundleSku}/bundled-skus/{sku}/fulfillment-status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "bundleSku" + "\\}",apiInvoker.escape(bundleSku)).replaceAll("\\{" + "sku" + "\\}",apiInvoker.escape(sku))
+
+    val contentTypes = List("application/json")
+    val contentType = contentTypes(0)
+
+    val queryParams = new HashMap[String, String]
+    val headerParams = new HashMap[String, String]
+    val formParams = new HashMap[String, String]
+
+    if (bundleSku == null) throw new Exception("Missing required parameter 'bundleSku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    if (sku == null) throw new Exception("Missing required parameter 'sku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    if (status == null) throw new Exception("Missing required parameter 'status' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    
+
+    var postBody: AnyRef = status
+
+    if (contentType.startsWith("multipart/form-data")) {
+      val mp = new FormDataMultiPart
+      postBody = mp
+    } else {
+    }
+
+    try {
+      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
         case s: String =>
                   case _ => None
       }

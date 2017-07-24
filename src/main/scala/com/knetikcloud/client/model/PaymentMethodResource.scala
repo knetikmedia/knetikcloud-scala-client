@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -25,20 +25,16 @@ case class PaymentMethodResource (
   expirationMonth: Option[Integer],
   /* The expiration year for the payment method. Typically used for credit card payment methods */
   expirationYear: Option[Integer],
-  /* The unique ID for that resource */
+  /* The unique ID of the resource */
   id: Option[Long],
   /* The last 4 digits of the account number for the payment method. Typically used for credit card payment methods */
   last4: Option[String],
-  /* The user friendly name of that resource. Defaults to blank string */
-  longDescription: Option[String],
-  /* The user friendly name of that resource */
+  /* The user friendly name of the resource */
   name: String,
   /* The type of payment method. Must be a pre-existing value */
   paymentMethodType: PaymentMethodTypeResource,
   /* The generic payment type. Default is card */
   paymentType: Option[String],
-  /* The user friendly name of that resource. Defaults to blank string */
-  shortDescription: Option[String],
   /* The sort value for the payment method */
   sort: Option[Integer],
   /* The unique token for the payment method */

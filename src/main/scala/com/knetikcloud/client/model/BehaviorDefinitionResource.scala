@@ -1,6 +1,6 @@
 /**
  * Knetik Platform API Documentation latest 
- * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com
+ * This is the spec for the Knetik API.  Use this in conjunction with the documentation found at https://knetikcloud.com.
  *
  * OpenAPI spec version: latest 
  * Contact: support@knetik.com
@@ -19,7 +19,7 @@ case class BehaviorDefinitionResource (
   /* Pre-requisite behaviors that an item must have in order to also have this behavior */
   prerequisiteBehaviors: Option[List[Behavior]],
   /* Configurable properties of the behavior */
-  properties: List[PropertyDefinitionResource],
+  properties: List[PropertyFieldResource],
   /* The behavior type */
   typeHint: String
 )
