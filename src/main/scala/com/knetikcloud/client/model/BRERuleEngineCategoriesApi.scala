@@ -12,13 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.BreCategoryResource
 import com.knetikcloud.client.model.PageResourceBreCategoryResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new BRERuleEngineCategoriesApiAsyncHelper(client, config)
 
   /**
    * Create a BRE category template
@@ -44,37 +74,23 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return TemplateResource
    */
   def createBRECategoryTemplate(template: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/bre/categories/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createBRECategoryTemplateAsync(template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a BRE category template asynchronously
+   * Templates define a type of BRE category and the properties they have
+   * @param template The category template to create (optional)
+   * @return Future(TemplateResource)
+  */
+  def createBRECategoryTemplateAsync(template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createBRECategoryTemplate(template)
+  }
+
 
   /**
    * Delete a BRE category template
@@ -84,39 +100,24 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return void
    */
   def deleteBRECategoryTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/bre/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling BRERuleEngineCategoriesApi->deleteBRECategoryTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteBRECategoryTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a BRE category template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteBRECategoryTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteBRECategoryTemplate(id, cascade)
+  }
+
 
   /**
    * List categories
@@ -126,39 +127,24 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return PageResourceBreCategoryResource
    */
   def getBRECategories(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceBreCategoryResource] = {
-    // create path and map variables
-    val path = "/bre/categories".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceBreCategoryResource]).asInstanceOf[PageResourceBreCategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBRECategoriesAsync(size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List categories asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceBreCategoryResource)
+  */
+  def getBRECategoriesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceBreCategoryResource] = {
+      helper.getBRECategories(size, page)
+  }
+
 
   /**
    * Get a single category
@@ -167,39 +153,23 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return BreCategoryResource
    */
   def getBRECategory(name: String): Option[BreCategoryResource] = {
-    // create path and map variables
-    val path = "/bre/categories/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling BRERuleEngineCategoriesApi->getBRECategory")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BreCategoryResource]).asInstanceOf[BreCategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBRECategoryAsync(name), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single category asynchronously
+   * 
+   * @param name The category name 
+   * @return Future(BreCategoryResource)
+  */
+  def getBRECategoryAsync(name: String): Future[BreCategoryResource] = {
+      helper.getBRECategory(name)
+  }
+
 
   /**
    * Get a single BRE category template
@@ -208,39 +178,23 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return TemplateResource
    */
   def getBRECategoryTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/bre/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling BRERuleEngineCategoriesApi->getBRECategoryTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBRECategoryTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single BRE category template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getBRECategoryTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getBRECategoryTemplate(id)
+  }
+
 
   /**
    * List and search BRE category templates
@@ -251,40 +205,25 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return PageResourceTemplateResource
    */
   def getBRECategoryTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/bre/categories/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBRECategoryTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search BRE category templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getBRECategoryTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getBRECategoryTemplates(size, page, order)
+  }
+
 
   /**
    * Update a category
@@ -294,39 +233,24 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return BreCategoryResource
    */
   def updateBRECategory(name: String, category: Option[BreCategoryResource] = None): Option[BreCategoryResource] = {
-    // create path and map variables
-    val path = "/bre/categories/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling BRERuleEngineCategoriesApi->updateBRECategory")
-
-    
-
-    var postBody: AnyRef = category.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BreCategoryResource]).asInstanceOf[BreCategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateBRECategoryAsync(name, category), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a category asynchronously
+   * 
+   * @param name The category name 
+   * @param category The updated BRE category information (optional)
+   * @return Future(BreCategoryResource)
+  */
+  def updateBRECategoryAsync(name: String, category: Option[BreCategoryResource] = None): Future[BreCategoryResource] = {
+      helper.updateBRECategory(name, category)
+  }
+
 
   /**
    * Update a BRE category template
@@ -336,38 +260,199 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knet
    * @return TemplateResource
    */
   def updateBRECategoryTemplate(id: String, template: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateBRECategoryTemplateAsync(id, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a BRE category template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param template The updated category template definition (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateBRECategoryTemplateAsync(id: String, template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateBRECategoryTemplate(id, template)
+  }
+
+
+}
+
+class BRERuleEngineCategoriesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createBRECategoryTemplate(template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
     // create path and map variables
-    val path = "/bre/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/bre/categories/templates"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteBRECategoryTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling BRERuleEngineCategoriesApi->deleteBRECategoryTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBRECategories(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceBreCategoryResource]): Future[PageResourceBreCategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBRECategory(name: String)(implicit reader: ClientResponseReader[BreCategoryResource]): Future[BreCategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling BRERuleEngineCategoriesApi->getBRECategory")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBRECategoryTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling BRERuleEngineCategoriesApi->getBRECategoryTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBRECategoryTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateBRECategory(name: String,
+    category: Option[BreCategoryResource] = None
+    )(implicit reader: ClientResponseReader[BreCategoryResource], writer: RequestWriter[BreCategoryResource]): Future[BreCategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling BRERuleEngineCategoriesApi->updateBRECategory")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(category))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateBRECategoryTemplate(id: String,
+    template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/bre/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling BRERuleEngineCategoriesApi->updateBRECategoryTemplate")
 
-    
 
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

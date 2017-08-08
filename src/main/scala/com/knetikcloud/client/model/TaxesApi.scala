@@ -12,13 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.CountryTaxResource
 import com.knetikcloud.client.model.PageResourceCountryTaxResource
 import com.knetikcloud.client.model.PageResourceStateTaxResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.StateTaxResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new TaxesApiAsyncHelper(client, config)
 
   /**
    * Create a country tax
@@ -44,37 +74,23 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CountryTaxResource
    */
   def createCountryTax(taxResource: Option[CountryTaxResource] = None): Option[CountryTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = taxResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CountryTaxResource]).asInstanceOf[CountryTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createCountryTaxAsync(taxResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a country tax asynchronously
+   * 
+   * @param taxResource The tax object (optional)
+   * @return Future(CountryTaxResource)
+  */
+  def createCountryTaxAsync(taxResource: Option[CountryTaxResource] = None): Future[CountryTaxResource] = {
+      helper.createCountryTax(taxResource)
+  }
+
 
   /**
    * Create a state tax
@@ -84,39 +100,24 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StateTaxResource
    */
   def createStateTax(countryCodeIso3: String, taxResource: Option[StateTaxResource] = None): Option[StateTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}/states".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->createStateTax")
-
-    
-
-    var postBody: AnyRef = taxResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StateTaxResource]).asInstanceOf[StateTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createStateTaxAsync(countryCodeIso3, taxResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a state tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param taxResource The tax object (optional)
+   * @return Future(StateTaxResource)
+  */
+  def createStateTaxAsync(countryCodeIso3: String, taxResource: Option[StateTaxResource] = None): Future[StateTaxResource] = {
+      helper.createStateTax(countryCodeIso3, taxResource)
+  }
+
 
   /**
    * Delete an existing tax
@@ -125,38 +126,23 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteCountryTax(countryCodeIso3: String) = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->deleteCountryTax")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteCountryTaxAsync(countryCodeIso3), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an existing tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @return Future(void)
+  */
+  def deleteCountryTaxAsync(countryCodeIso3: String) = {
+      helper.deleteCountryTax(countryCodeIso3)
+  }
+
 
   /**
    * Delete an existing state tax
@@ -166,40 +152,24 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteStateTax(countryCodeIso3: String, stateCode: String) = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}/states/{state_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3)).replaceAll("\\{" + "state_code" + "\\}",apiInvoker.escape(stateCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->deleteStateTax")
-
-    if (stateCode == null) throw new Exception("Missing required parameter 'stateCode' when calling TaxesApi->deleteStateTax")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteStateTaxAsync(countryCodeIso3, stateCode), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an existing state tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param stateCode The code of the state 
+   * @return Future(void)
+  */
+  def deleteStateTaxAsync(countryCodeIso3: String, stateCode: String) = {
+      helper.deleteStateTax(countryCodeIso3, stateCode)
+  }
+
 
   /**
    * Get a single tax
@@ -208,39 +178,23 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CountryTaxResource
    */
   def getCountryTax(countryCodeIso3: String): Option[CountryTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getCountryTax")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CountryTaxResource]).asInstanceOf[CountryTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCountryTaxAsync(countryCodeIso3), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @return Future(CountryTaxResource)
+  */
+  def getCountryTaxAsync(countryCodeIso3: String): Future[CountryTaxResource] = {
+      helper.getCountryTax(countryCodeIso3)
+  }
+
 
   /**
    * List and search taxes
@@ -251,40 +205,25 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceCountryTaxResource
    */
   def getCountryTaxes(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Option[PageResourceCountryTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceCountryTaxResource]).asInstanceOf[PageResourceCountryTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCountryTaxesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search taxes asynchronously
+   * Get a list of taxes
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
+   * @return Future(PageResourceCountryTaxResource)
+  */
+  def getCountryTaxesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Future[PageResourceCountryTaxResource] = {
+      helper.getCountryTaxes(size, page, order)
+  }
+
 
   /**
    * Get a single state tax
@@ -294,41 +233,24 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StateTaxResource
    */
   def getStateTax(countryCodeIso3: String, stateCode: String): Option[StateTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}/states/{state_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3)).replaceAll("\\{" + "state_code" + "\\}",apiInvoker.escape(stateCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getStateTax")
-
-    if (stateCode == null) throw new Exception("Missing required parameter 'stateCode' when calling TaxesApi->getStateTax")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StateTaxResource]).asInstanceOf[StateTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStateTaxAsync(countryCodeIso3, stateCode), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single state tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param stateCode The code of the state 
+   * @return Future(StateTaxResource)
+  */
+  def getStateTaxAsync(countryCodeIso3: String, stateCode: String): Future[StateTaxResource] = {
+      helper.getStateTax(countryCodeIso3, stateCode)
+  }
+
 
   /**
    * List and search taxes across all countries
@@ -339,40 +261,25 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceStateTaxResource
    */
   def getStateTaxesForCountries(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceStateTaxResource] = {
-    // create path and map variables
-    val path = "/tax/states".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceStateTaxResource]).asInstanceOf[PageResourceStateTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStateTaxesForCountriesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search taxes across all countries asynchronously
+   * Get a list of taxes
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
+   * @return Future(PageResourceStateTaxResource)
+  */
+  def getStateTaxesForCountriesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceStateTaxResource] = {
+      helper.getStateTaxesForCountries(size, page, order)
+  }
+
 
   /**
    * List and search taxes within a country
@@ -384,42 +291,26 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceStateTaxResource
    */
   def getStateTaxesForCountry(countryCodeIso3: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceStateTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}/states".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getStateTaxesForCountry")
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceStateTaxResource]).asInstanceOf[PageResourceStateTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStateTaxesForCountryAsync(countryCodeIso3, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search taxes within a country asynchronously
+   * Get a list of taxes
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
+   * @return Future(PageResourceStateTaxResource)
+  */
+  def getStateTaxesForCountryAsync(countryCodeIso3: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceStateTaxResource] = {
+      helper.getStateTaxesForCountry(countryCodeIso3, size, page, order)
+  }
+
 
   /**
    * Create or update a tax
@@ -429,39 +320,24 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CountryTaxResource
    */
   def updateCountryTax(countryCodeIso3: String, taxResource: Option[CountryTaxResource] = None): Option[CountryTaxResource] = {
-    // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->updateCountryTax")
-
-    
-
-    var postBody: AnyRef = taxResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CountryTaxResource]).asInstanceOf[CountryTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateCountryTaxAsync(countryCodeIso3, taxResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create or update a tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param taxResource The tax object (optional)
+   * @return Future(CountryTaxResource)
+  */
+  def updateCountryTaxAsync(countryCodeIso3: String, taxResource: Option[CountryTaxResource] = None): Future[CountryTaxResource] = {
+      helper.updateCountryTax(countryCodeIso3, taxResource)
+  }
+
 
   /**
    * Create or update a state tax
@@ -472,40 +348,283 @@ class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StateTaxResource
    */
   def updateStateTax(countryCodeIso3: String, stateCode: String, taxResource: Option[StateTaxResource] = None): Option[StateTaxResource] = {
+    val await = Try(Await.result(updateStateTaxAsync(countryCodeIso3, stateCode, taxResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Create or update a state tax asynchronously
+   * 
+   * @param countryCodeIso3 The iso3 code of the country 
+   * @param stateCode The code of the state 
+   * @param taxResource The tax object (optional)
+   * @return Future(StateTaxResource)
+  */
+  def updateStateTaxAsync(countryCodeIso3: String, stateCode: String, taxResource: Option[StateTaxResource] = None): Future[StateTaxResource] = {
+      helper.updateStateTax(countryCodeIso3, stateCode, taxResource)
+  }
+
+
+}
+
+class TaxesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createCountryTax(taxResource: Option[CountryTaxResource] = None
+    )(implicit reader: ClientResponseReader[CountryTaxResource], writer: RequestWriter[CountryTaxResource]): Future[CountryTaxResource] = {
     // create path and map variables
-    val path = "/tax/countries/{country_code_iso3}/states/{state_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "country_code_iso3" + "\\}",apiInvoker.escape(countryCodeIso3)).replaceAll("\\{" + "state_code" + "\\}",apiInvoker.escape(stateCode))
+    val path = (addFmt("/tax/countries"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(taxResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createStateTax(countryCodeIso3: String,
+    taxResource: Option[StateTaxResource] = None
+    )(implicit reader: ClientResponseReader[StateTaxResource], writer: RequestWriter[StateTaxResource]): Future[StateTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}/states")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->createStateTax")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(taxResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteCountryTax(countryCodeIso3: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->deleteCountryTax")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteStateTax(countryCodeIso3: String,
+    stateCode: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}/states/{state_code}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString)
+      replaceAll ("\\{" + "state_code" + "\\}",stateCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->deleteStateTax")
+
+    if (stateCode == null) throw new Exception("Missing required parameter 'stateCode' when calling TaxesApi->deleteStateTax")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCountryTax(countryCodeIso3: String)(implicit reader: ClientResponseReader[CountryTaxResource]): Future[CountryTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getCountryTax")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCountryTaxes(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(name:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceCountryTaxResource]): Future[PageResourceCountryTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStateTax(countryCodeIso3: String,
+    stateCode: String)(implicit reader: ClientResponseReader[StateTaxResource]): Future[StateTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}/states/{state_code}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString)
+      replaceAll ("\\{" + "state_code" + "\\}",stateCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getStateTax")
+
+    if (stateCode == null) throw new Exception("Missing required parameter 'stateCode' when calling TaxesApi->getStateTax")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStateTaxesForCountries(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = None
+    )(implicit reader: ClientResponseReader[PageResourceStateTaxResource]): Future[PageResourceStateTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/states"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStateTaxesForCountry(countryCodeIso3: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = None
+    )(implicit reader: ClientResponseReader[PageResourceStateTaxResource]): Future[PageResourceStateTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}/states")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->getStateTaxesForCountry")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateCountryTax(countryCodeIso3: String,
+    taxResource: Option[CountryTaxResource] = None
+    )(implicit reader: ClientResponseReader[CountryTaxResource], writer: RequestWriter[CountryTaxResource]): Future[CountryTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->updateCountryTax")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(taxResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateStateTax(countryCodeIso3: String,
+    stateCode: String,
+    taxResource: Option[StateTaxResource] = None
+    )(implicit reader: ClientResponseReader[StateTaxResource], writer: RequestWriter[StateTaxResource]): Future[StateTaxResource] = {
+    // create path and map variables
+    val path = (addFmt("/tax/countries/{country_code_iso3}/states/{state_code}")
+      replaceAll ("\\{" + "country_code_iso3" + "\\}",countryCodeIso3.toString)
+      replaceAll ("\\{" + "state_code" + "\\}",stateCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (countryCodeIso3 == null) throw new Exception("Missing required parameter 'countryCodeIso3' when calling TaxesApi->updateStateTax")
 
     if (stateCode == null) throw new Exception("Missing required parameter 'stateCode' when calling TaxesApi->updateStateTax")
 
-    
 
-    var postBody: AnyRef = taxResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StateTaxResource]).asInstanceOf[StateTaxResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(taxResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

@@ -12,12 +12,13 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceRevenueCountryReportResource
 import com.knetikcloud.client.model.PageResourceRevenueProductReportResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.RevenueReportResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -29,12 +30,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new ReportingRevenueApiAsyncHelper(client, config)
 
   /**
    * Get item revenue info
@@ -45,41 +75,25 @@ class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return RevenueReportResource
    */
   def getItemRevenue(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Option[RevenueReportResource] = {
-    // create path and map variables
-    val path = "/reporting/revenue/item-sales/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getItemRevenue")
-
-    startDate.map(paramVal => queryParams += "start_date" -> paramVal.toString)
-    endDate.map(paramVal => queryParams += "end_date" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RevenueReportResource]).asInstanceOf[RevenueReportResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getItemRevenueAsync(currencyCode, startDate, endDate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get item revenue info asynchronously
+   * Get basic info about revenue from sales of items and bundles (not subscriptions, shipping, etc), summed up within a time range
+   * @param currencyCode The code for a currency to get sales data for 
+   * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
+   * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
+   * @return Future(RevenueReportResource)
+  */
+  def getItemRevenueAsync(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Future[RevenueReportResource] = {
+      helper.getItemRevenue(currencyCode, startDate, endDate)
+  }
+
 
   /**
    * Get refund revenue info
@@ -90,41 +104,25 @@ class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return RevenueReportResource
    */
   def getRefundRevenue(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Option[RevenueReportResource] = {
-    // create path and map variables
-    val path = "/reporting/revenue/refunds/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRefundRevenue")
-
-    startDate.map(paramVal => queryParams += "start_date" -> paramVal.toString)
-    endDate.map(paramVal => queryParams += "end_date" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RevenueReportResource]).asInstanceOf[RevenueReportResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getRefundRevenueAsync(currencyCode, startDate, endDate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get refund revenue info asynchronously
+   * Get basic info about revenue loss from refunds (for all item types), summed up within a time range.
+   * @param currencyCode The code for a currency to get refund data for 
+   * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
+   * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
+   * @return Future(RevenueReportResource)
+  */
+  def getRefundRevenueAsync(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Future[RevenueReportResource] = {
+      helper.getRefundRevenue(currencyCode, startDate, endDate)
+  }
+
 
   /**
    * Get revenue info by country
@@ -137,43 +135,27 @@ class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return PageResourceRevenueCountryReportResource
    */
   def getRevenueByCountry(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceRevenueCountryReportResource] = {
-    // create path and map variables
-    val path = "/reporting/revenue/countries/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRevenueByCountry")
-
-    startDate.map(paramVal => queryParams += "start_date" -> paramVal.toString)
-    endDate.map(paramVal => queryParams += "end_date" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceRevenueCountryReportResource]).asInstanceOf[PageResourceRevenueCountryReportResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getRevenueByCountryAsync(currencyCode, startDate, endDate, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get revenue info by country asynchronously
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by country. Sorted for largest revenue at the top
+   * @param currencyCode The code for a currency to get sales data for 
+   * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
+   * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceRevenueCountryReportResource)
+  */
+  def getRevenueByCountryAsync(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceRevenueCountryReportResource] = {
+      helper.getRevenueByCountry(currencyCode, startDate, endDate, size, page)
+  }
+
 
   /**
    * Get revenue info by item
@@ -186,43 +168,27 @@ class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return PageResourceRevenueProductReportResource
    */
   def getRevenueByItem(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceRevenueProductReportResource] = {
-    // create path and map variables
-    val path = "/reporting/revenue/products/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRevenueByItem")
-
-    startDate.map(paramVal => queryParams += "start_date" -> paramVal.toString)
-    endDate.map(paramVal => queryParams += "end_date" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceRevenueProductReportResource]).asInstanceOf[PageResourceRevenueProductReportResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getRevenueByItemAsync(currencyCode, startDate, endDate, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get revenue info by item asynchronously
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by specific item. Sorted for largest revenue at the top
+   * @param currencyCode The code for a currency to get sales data for 
+   * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
+   * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceRevenueProductReportResource)
+  */
+  def getRevenueByItemAsync(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceRevenueProductReportResource] = {
+      helper.getRevenueByItem(currencyCode, startDate, endDate, size, page)
+  }
+
 
   /**
    * Get subscription revenue info
@@ -233,40 +199,194 @@ class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return RevenueReportResource
    */
   def getSubscriptionRevenue(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Option[RevenueReportResource] = {
+    val await = Try(Await.result(getSubscriptionRevenueAsync(currencyCode, startDate, endDate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get subscription revenue info asynchronously
+   * Get basic info about revenue from sales of new subscriptions as well as recurring payemnts, summed up within a time range
+   * @param currencyCode The code for a currency to get sales data for 
+   * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
+   * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
+   * @return Future(RevenueReportResource)
+  */
+  def getSubscriptionRevenueAsync(currencyCode: String, startDate: Option[Long] = None, endDate: Option[Long] = None): Future[RevenueReportResource] = {
+      helper.getSubscriptionRevenue(currencyCode, startDate, endDate)
+  }
+
+
+}
+
+class ReportingRevenueApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getItemRevenue(currencyCode: String,
+    startDate: Option[Long] = None,
+    endDate: Option[Long] = None
+    )(implicit reader: ClientResponseReader[RevenueReportResource]): Future[RevenueReportResource] = {
     // create path and map variables
-    val path = "/reporting/revenue/subscription-sales/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
+    val path = (addFmt("/reporting/revenue/item-sales/{currency_code}")
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getItemRevenue")
+
+    startDate match {
+      case Some(param) => queryParams += "start_date" -> param.toString
+      case _ => queryParams
+    }
+    endDate match {
+      case Some(param) => queryParams += "end_date" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getRefundRevenue(currencyCode: String,
+    startDate: Option[Long] = None,
+    endDate: Option[Long] = None
+    )(implicit reader: ClientResponseReader[RevenueReportResource]): Future[RevenueReportResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/revenue/refunds/{currency_code}")
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRefundRevenue")
+
+    startDate match {
+      case Some(param) => queryParams += "start_date" -> param.toString
+      case _ => queryParams
+    }
+    endDate match {
+      case Some(param) => queryParams += "end_date" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getRevenueByCountry(currencyCode: String,
+    startDate: Option[Long] = None,
+    endDate: Option[Long] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceRevenueCountryReportResource]): Future[PageResourceRevenueCountryReportResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/revenue/countries/{currency_code}")
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRevenueByCountry")
+
+    startDate match {
+      case Some(param) => queryParams += "start_date" -> param.toString
+      case _ => queryParams
+    }
+    endDate match {
+      case Some(param) => queryParams += "end_date" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getRevenueByItem(currencyCode: String,
+    startDate: Option[Long] = None,
+    endDate: Option[Long] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceRevenueProductReportResource]): Future[PageResourceRevenueProductReportResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/revenue/products/{currency_code}")
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getRevenueByItem")
+
+    startDate match {
+      case Some(param) => queryParams += "start_date" -> param.toString
+      case _ => queryParams
+    }
+    endDate match {
+      case Some(param) => queryParams += "end_date" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getSubscriptionRevenue(currencyCode: String,
+    startDate: Option[Long] = None,
+    endDate: Option[Long] = None
+    )(implicit reader: ClientResponseReader[RevenueReportResource]): Future[RevenueReportResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/revenue/subscription-sales/{currency_code}")
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling ReportingRevenueApi->getSubscriptionRevenue")
 
-    startDate.map(paramVal => queryParams += "start_date" -> paramVal.toString)
-    endDate.map(paramVal => queryParams += "end_date" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
+    startDate match {
+      case Some(param) => queryParams += "start_date" -> param.toString
+      case _ => queryParams
+    }
+    endDate match {
+      case Some(param) => queryParams += "end_date" -> param.toString
+      case _ => queryParams
     }
 
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[RevenueReportResource]).asInstanceOf[RevenueReportResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

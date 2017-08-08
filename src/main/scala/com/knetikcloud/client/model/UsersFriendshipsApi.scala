@@ -12,10 +12,12 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceSimpleUserResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import com.knetikcloud.client.model.StringWrapper
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -27,12 +29,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new UsersFriendshipsApiAsyncHelper(client, config)
 
   /**
    * Add a friend
@@ -42,38 +73,24 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return void
    */
   def addFriend(userId: String, id: Integer) = {
-    // create path and map variables
-    val path = "/users/{user_id}/friends/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->addFriend")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addFriendAsync(userId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a friend asynchronously
+   * As a user, either creates or confirm a pending request. As an admin, call this endpoint twice while inverting the IDs to create a confirmed friendship.
+   * @param userId The id of the user or &#39;me&#39; if logged in 
+   * @param id The id of the user to befriend 
+   * @return Future(void)
+  */
+  def addFriendAsync(userId: String, id: Integer) = {
+      helper.addFriend(userId, id)
+  }
+
 
   /**
    * Get friends list
@@ -84,41 +101,25 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return PageResourceSimpleUserResource
    */
   def getFriends(userId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceSimpleUserResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/friends".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getFriends")
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSimpleUserResource]).asInstanceOf[PageResourceSimpleUserResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getFriendsAsync(userId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get friends list asynchronously
+   * 
+   * @param userId The id of the user or &#39;me&#39; 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceSimpleUserResource)
+  */
+  def getFriendsAsync(userId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceSimpleUserResource] = {
+      helper.getFriends(userId, size, page)
+  }
+
 
   /**
    * Returns the invite token
@@ -127,39 +128,23 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return String
    */
   def getInviteToken(userId: String): Option[String] = {
-    // create path and map variables
-    val path = "/users/{user_id}/invite-token".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getInviteToken")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[String]).asInstanceOf[String])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getInviteTokenAsync(userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns the invite token asynchronously
+   * This is a unique invite token that allows direct connection to the request user.  Exposing that token presents privacy issues if the token is leaked. Use friend request flow instead if confirmation is required
+   * @param userId The id of the user or &#39;me&#39; if logged in 
+   * @return Future(String)
+  */
+  def getInviteTokenAsync(userId: String): Future[String] = {
+      helper.getInviteToken(userId)
+  }
+
 
   /**
    * Get pending invites
@@ -170,41 +155,25 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return PageResourceSimpleUserResource
    */
   def getInvites(userId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceSimpleUserResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/invites".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getInvites")
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSimpleUserResource]).asInstanceOf[PageResourceSimpleUserResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getInvitesAsync(userId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get pending invites asynchronously
+   * Invites that the specified user received
+   * @param userId The id of the user or &#39;me&#39; 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceSimpleUserResource)
+  */
+  def getInvitesAsync(userId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceSimpleUserResource] = {
+      helper.getInvites(userId, size, page)
+  }
+
 
   /**
    * Redeem friendship token
@@ -213,39 +182,25 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @param token The invite token (optional)
    * @return void
    */
-  def redeemFriendshipToken(userId: String, token: Option[String] = None) = {
-    // create path and map variables
-    val path = "/users/{user_id}/friends/tokens".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->redeemFriendshipToken")
-
-    
-
-    var postBody: AnyRef = token.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def redeemFriendshipToken(userId: String, token: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(redeemFriendshipTokenAsync(userId, token), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Redeem friendship token asynchronously
+   * Immediately connects the requested user with the user mapped by the provided invite token
+   * @param userId The id of the user or &#39;me&#39; if logged in 
+   * @param token The invite token (optional)
+   * @return Future(void)
+  */
+  def redeemFriendshipTokenAsync(userId: String, token: Option[StringWrapper] = None) = {
+      helper.redeemFriendshipToken(userId, token)
+  }
+
 
   /**
    * Remove or decline a friend
@@ -255,37 +210,164 @@ class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud
    * @return void
    */
   def removeOrDeclineFriend(userId: String, id: Integer) = {
+    val await = Try(Await.result(removeOrDeclineFriendAsync(userId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Remove or decline a friend asynchronously
+   * 
+   * @param userId The id of the user or &#39;me&#39; if logged in 
+   * @param id The id of the user to befriend 
+   * @return Future(void)
+  */
+  def removeOrDeclineFriendAsync(userId: String, id: Integer) = {
+      helper.removeOrDeclineFriend(userId, id)
+  }
+
+
+}
+
+class UsersFriendshipsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addFriend(userId: String,
+    id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
     // create path and map variables
-    val path = "/users/{user_id}/friends/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/users/{user_id}/friends/{id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->addFriend")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getFriends(userId: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceSimpleUserResource]): Future[PageResourceSimpleUserResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/friends")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getFriends")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getInviteToken(userId: String)(implicit reader: ClientResponseReader[String]): Future[String] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/invite-token")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getInviteToken")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getInvites(userId: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceSimpleUserResource]): Future[PageResourceSimpleUserResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/invites")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->getInvites")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def redeemFriendshipToken(userId: String,
+    token: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/friends/tokens")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->redeemFriendshipToken")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(token))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeOrDeclineFriend(userId: String,
+    id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/friends/{id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersFriendshipsApi->removeOrDeclineFriend")
 
-    
 
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

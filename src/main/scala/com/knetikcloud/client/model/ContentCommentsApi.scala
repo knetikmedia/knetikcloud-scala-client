@@ -12,12 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.CommentResource
 import com.knetikcloud.client.model.CommentSearch
 import com.knetikcloud.client.model.PageResourceCommentResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import com.knetikcloud.client.model.StringWrapper
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -29,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new ContentCommentsApiAsyncHelper(client, config)
 
   /**
    * Add a new comment
@@ -43,37 +74,23 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return CommentResource
    */
   def addComment(commentResource: Option[CommentResource] = None): Option[CommentResource] = {
-    // create path and map variables
-    val path = "/comments".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = commentResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CommentResource]).asInstanceOf[CommentResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addCommentAsync(commentResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a new comment asynchronously
+   * 
+   * @param commentResource The comment to be added (optional)
+   * @return Future(CommentResource)
+  */
+  def addCommentAsync(commentResource: Option[CommentResource] = None): Future[CommentResource] = {
+      helper.addComment(commentResource)
+  }
+
 
   /**
    * Delete a comment
@@ -82,36 +99,23 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return void
    */
   def deleteComment(id: Long) = {
-    // create path and map variables
-    val path = "/comments/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteCommentAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a comment asynchronously
+   * 
+   * @param id The comment id 
+   * @return Future(void)
+  */
+  def deleteCommentAsync(id: Long) = {
+      helper.deleteComment(id)
+  }
+
 
   /**
    * Return a comment
@@ -120,37 +124,23 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return CommentResource
    */
   def getComment(id: Long): Option[CommentResource] = {
-    // create path and map variables
-    val path = "/comments/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CommentResource]).asInstanceOf[CommentResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCommentAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Return a comment asynchronously
+   * 
+   * @param id The comment id 
+   * @return Future(CommentResource)
+  */
+  def getCommentAsync(id: Long): Future[CommentResource] = {
+      helper.getComment(id)
+  }
+
 
   /**
    * Returns a page of comments
@@ -162,43 +152,26 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return PageResourceCommentResource
    */
   def getComments(context: String, contextId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceCommentResource] = {
-    // create path and map variables
-    val path = "/comments".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (context == null) throw new Exception("Missing required parameter 'context' when calling ContentCommentsApi->getComments")
-
-    queryParams += "context" -> context.toString
-    queryParams += "context_id" -> contextId.toString
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceCommentResource]).asInstanceOf[PageResourceCommentResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCommentsAsync(context, contextId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a page of comments asynchronously
+   * 
+   * @param context Get comments by context type 
+   * @param contextId Get comments by context id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceCommentResource)
+  */
+  def getCommentsAsync(context: String, contextId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceCommentResource] = {
+      helper.getComments(context, contextId, size, page)
+  }
+
 
   /**
    * Search the comment index
@@ -209,39 +182,25 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return CommentSearch
    */
   def searchComments(query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[CommentSearch] = {
-    // create path and map variables
-    val path = "/comments/search".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = query.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CommentSearch]).asInstanceOf[CommentSearch])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(searchCommentsAsync(query, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Search the comment index asynchronously
+   * The body is an ElasticSearch query json. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options
+   * @param query The search query (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(CommentSearch)
+  */
+  def searchCommentsAsync(query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[CommentSearch] = {
+      helper.searchComments(query, size, page)
+  }
+
 
   /**
    * Update a comment
@@ -250,36 +209,152 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @param content The comment content (optional)
    * @return void
    */
-  def updateComment(id: Long, content: Option[String] = None) = {
-    // create path and map variables
-    val path = "/comments/{id}/content".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = content.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def updateComment(id: Long, content: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(updateCommentAsync(id, content), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a comment asynchronously
+   * 
+   * @param id The comment id 
+   * @param content The comment content (optional)
+   * @return Future(void)
+  */
+  def updateCommentAsync(id: Long, content: Option[StringWrapper] = None) = {
+      helper.updateComment(id, content)
+  }
+
+
+}
+
+class ContentCommentsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addComment(commentResource: Option[CommentResource] = None
+    )(implicit reader: ClientResponseReader[CommentResource], writer: RequestWriter[CommentResource]): Future[CommentResource] = {
+    // create path and map variables
+    val path = (addFmt("/comments"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(commentResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteComment(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/comments/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getComment(id: Long)(implicit reader: ClientResponseReader[CommentResource]): Future[CommentResource] = {
+    // create path and map variables
+    val path = (addFmt("/comments/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getComments(context: String,
+    contextId: Integer,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceCommentResource]): Future[PageResourceCommentResource] = {
+    // create path and map variables
+    val path = (addFmt("/comments"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (context == null) throw new Exception("Missing required parameter 'context' when calling ContentCommentsApi->getComments")
+
+    queryParams += "context" -> context.toString
+    queryParams += "context_id" -> contextId.toString
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchComments(query: Option[Any] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[CommentSearch], writer: RequestWriter[Any]): Future[CommentSearch] = {
+    // create path and map variables
+    val path = (addFmt("/comments/search"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateComment(id: Long,
+    content: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/comments/{id}/content")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(content))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

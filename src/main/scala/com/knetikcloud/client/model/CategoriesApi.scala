@@ -12,14 +12,15 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.CategoryResource
 import com.knetikcloud.client.model.PageResourceCategoryResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourcestring
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -31,12 +32,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new CategoriesApiAsyncHelper(client, config)
 
   /**
    * Create a new category
@@ -45,37 +75,23 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CategoryResource
    */
   def createCategory(category: Option[CategoryResource] = None): Option[CategoryResource] = {
-    // create path and map variables
-    val path = "/categories".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = category.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CategoryResource]).asInstanceOf[CategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createCategoryAsync(category), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a new category asynchronously
+   * 
+   * @param category The category to create (optional)
+   * @return Future(CategoryResource)
+  */
+  def createCategoryAsync(category: Option[CategoryResource] = None): Future[CategoryResource] = {
+      helper.createCategory(category)
+  }
+
 
   /**
    * Create a category template
@@ -84,37 +100,23 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def createCategoryTemplate(template: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/categories/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createCategoryTemplateAsync(template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a category template asynchronously
+   * Templates define a type of category and the properties they have
+   * @param template The template to create (optional)
+   * @return Future(TemplateResource)
+  */
+  def createCategoryTemplateAsync(template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createCategoryTemplate(template)
+  }
+
 
   /**
    * Delete an existing category
@@ -123,38 +125,23 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteCategory(id: String) = {
-    // create path and map variables
-    val path = "/categories/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->deleteCategory")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteCategoryAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an existing category asynchronously
+   * 
+   * @param id The id of the category to be deleted 
+   * @return Future(void)
+  */
+  def deleteCategoryAsync(id: String) = {
+      helper.deleteCategory(id)
+  }
+
 
   /**
    * Delete a category template
@@ -164,39 +151,24 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteCategoryTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->deleteCategoryTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteCategoryTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a category template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteCategoryTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteCategoryTemplate(id, cascade)
+  }
+
 
   /**
    * List and search categories with optional filters
@@ -209,42 +181,27 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceCategoryResource
    */
   def getCategories(filterSearch: Option[String] = None, filterActive: Option[Boolean] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceCategoryResource] = {
-    // create path and map variables
-    val path = "/categories".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterActive.map(paramVal => queryParams += "filter_active" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceCategoryResource]).asInstanceOf[PageResourceCategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCategoriesAsync(filterSearch, filterActive, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search categories with optional filters asynchronously
+   * 
+   * @param filterSearch Filter for categories whose names begin with provided string (optional)
+   * @param filterActive Filter for categories that are specifically active or inactive (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceCategoryResource)
+  */
+  def getCategoriesAsync(filterSearch: Option[String] = None, filterActive: Option[Boolean] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceCategoryResource] = {
+      helper.getCategories(filterSearch, filterActive, size, page, order)
+  }
+
 
   /**
    * Get a single category
@@ -253,39 +210,23 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CategoryResource
    */
   def getCategory(id: String): Option[CategoryResource] = {
-    // create path and map variables
-    val path = "/categories/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->getCategory")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CategoryResource]).asInstanceOf[CategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCategoryAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single category asynchronously
+   * 
+   * @param id The id of the category to retrieve 
+   * @return Future(CategoryResource)
+  */
+  def getCategoryAsync(id: String): Future[CategoryResource] = {
+      helper.getCategory(id)
+  }
+
 
   /**
    * Get a single category template
@@ -294,39 +235,23 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def getCategoryTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->getCategoryTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCategoryTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single category template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getCategoryTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getCategoryTemplate(id)
+  }
+
 
   /**
    * List and search category templates
@@ -337,40 +262,25 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceTemplateResource
    */
   def getCategoryTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/categories/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCategoryTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search category templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getCategoryTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getCategoryTemplates(size, page, order)
+  }
+
 
   /**
    * List all trivia tags in the system
@@ -380,39 +290,24 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourcestring
    */
   def getTags(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourcestring] = {
-    // create path and map variables
-    val path = "/tags".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourcestring]).asInstanceOf[PageResourcestring])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getTagsAsync(size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List all trivia tags in the system asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourcestring)
+  */
+  def getTagsAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourcestring] = {
+      helper.getTags(size, page)
+  }
+
 
   /**
    * Update an existing category
@@ -422,39 +317,24 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CategoryResource
    */
   def updateCategory(id: String, category: Option[CategoryResource] = None): Option[CategoryResource] = {
-    // create path and map variables
-    val path = "/categories/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->updateCategory")
-
-    
-
-    var postBody: AnyRef = category.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CategoryResource]).asInstanceOf[CategoryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateCategoryAsync(id, category), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an existing category asynchronously
+   * 
+   * @param id The id of the category 
+   * @param category The category to update (optional)
+   * @return Future(CategoryResource)
+  */
+  def updateCategoryAsync(id: String, category: Option[CategoryResource] = None): Future[CategoryResource] = {
+      helper.updateCategory(id, category)
+  }
+
 
   /**
    * Update a category template
@@ -464,38 +344,273 @@ class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def updateCategoryTemplate(id: String, template: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateCategoryTemplateAsync(id, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a category template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param template The updated template information (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateCategoryTemplateAsync(id: String, template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateCategoryTemplate(id, template)
+  }
+
+
+}
+
+class CategoriesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createCategory(category: Option[CategoryResource] = None
+    )(implicit reader: ClientResponseReader[CategoryResource], writer: RequestWriter[CategoryResource]): Future[CategoryResource] = {
     // create path and map variables
-    val path = "/categories/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/categories"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(category))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createCategoryTemplate(template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteCategory(id: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/categories/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->deleteCategory")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteCategoryTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->deleteCategoryTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCategories(filterSearch: Option[String] = None,
+    filterActive: Option[Boolean] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceCategoryResource]): Future[PageResourceCategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterActive match {
+      case Some(param) => queryParams += "filter_active" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCategory(id: String)(implicit reader: ClientResponseReader[CategoryResource]): Future[CategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->getCategory")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCategoryTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->getCategoryTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCategoryTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getTags(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourcestring]): Future[PageResourcestring] = {
+    // create path and map variables
+    val path = (addFmt("/tags"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateCategory(id: String,
+    category: Option[CategoryResource] = None
+    )(implicit reader: ClientResponseReader[CategoryResource], writer: RequestWriter[CategoryResource]): Future[CategoryResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->updateCategory")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(category))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateCategoryTemplate(id: String,
+    template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/categories/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling CategoriesApi->updateCategoryTemplate")
 
-    
 
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

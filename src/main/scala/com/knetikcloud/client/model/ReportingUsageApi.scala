@@ -12,10 +12,11 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceUsageInfo
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -27,12 +28,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new ReportingUsageApiAsyncHelper(client, config)
 
   /**
    * Returns aggregated endpoint usage information by day
@@ -47,44 +77,29 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PageResourceUsageInfo
    */
   def getUsageByDay(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUsageInfo] = {
-    // create path and map variables
-    val path = "/reporting/usage/day".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "start_date" -> startDate.toString
-    queryParams += "end_date" -> endDate.toString
-    combineEndpoints.map(paramVal => queryParams += "combine_endpoints" -> paramVal.toString)
-    method.map(paramVal => queryParams += "method" -> paramVal.toString)
-    url.map(paramVal => queryParams += "url" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUsageInfo]).asInstanceOf[PageResourceUsageInfo])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsageByDayAsync(startDate, endDate, combineEndpoints, method, url, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns aggregated endpoint usage information by day asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
+   * @param method Filter for a certain endpoint method.  Must include url as well to work (optional)
+   * @param url Filter for a certain endpoint.  Must include method as well to work (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUsageInfo)
+  */
+  def getUsageByDayAsync(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUsageInfo] = {
+      helper.getUsageByDay(startDate, endDate, combineEndpoints, method, url, size, page)
+  }
+
 
   /**
    * Returns aggregated endpoint usage information by hour
@@ -99,44 +114,29 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PageResourceUsageInfo
    */
   def getUsageByHour(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUsageInfo] = {
-    // create path and map variables
-    val path = "/reporting/usage/hour".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "start_date" -> startDate.toString
-    queryParams += "end_date" -> endDate.toString
-    combineEndpoints.map(paramVal => queryParams += "combine_endpoints" -> paramVal.toString)
-    method.map(paramVal => queryParams += "method" -> paramVal.toString)
-    url.map(paramVal => queryParams += "url" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUsageInfo]).asInstanceOf[PageResourceUsageInfo])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsageByHourAsync(startDate, endDate, combineEndpoints, method, url, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns aggregated endpoint usage information by hour asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
+   * @param method Filter for a certain endpoint method.  Must include url as well to work (optional)
+   * @param url Filter for a certain endpoint.  Must include method as well to work (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUsageInfo)
+  */
+  def getUsageByHourAsync(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUsageInfo] = {
+      helper.getUsageByHour(startDate, endDate, combineEndpoints, method, url, size, page)
+  }
+
 
   /**
    * Returns aggregated endpoint usage information by minute
@@ -151,44 +151,29 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PageResourceUsageInfo
    */
   def getUsageByMinute(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUsageInfo] = {
-    // create path and map variables
-    val path = "/reporting/usage/minute".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "start_date" -> startDate.toString
-    queryParams += "end_date" -> endDate.toString
-    combineEndpoints.map(paramVal => queryParams += "combine_endpoints" -> paramVal.toString)
-    method.map(paramVal => queryParams += "method" -> paramVal.toString)
-    url.map(paramVal => queryParams += "url" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUsageInfo]).asInstanceOf[PageResourceUsageInfo])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsageByMinuteAsync(startDate, endDate, combineEndpoints, method, url, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns aggregated endpoint usage information by minute asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
+   * @param method Filter for a certain endpoint method.  Must include url as well to work (optional)
+   * @param url Filter for a certain endpoint.  Must include method as well to work (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUsageInfo)
+  */
+  def getUsageByMinuteAsync(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUsageInfo] = {
+      helper.getUsageByMinute(startDate, endDate, combineEndpoints, method, url, size, page)
+  }
+
 
   /**
    * Returns aggregated endpoint usage information by month
@@ -203,44 +188,29 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PageResourceUsageInfo
    */
   def getUsageByMonth(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUsageInfo] = {
-    // create path and map variables
-    val path = "/reporting/usage/month".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "start_date" -> startDate.toString
-    queryParams += "end_date" -> endDate.toString
-    combineEndpoints.map(paramVal => queryParams += "combine_endpoints" -> paramVal.toString)
-    method.map(paramVal => queryParams += "method" -> paramVal.toString)
-    url.map(paramVal => queryParams += "url" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUsageInfo]).asInstanceOf[PageResourceUsageInfo])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsageByMonthAsync(startDate, endDate, combineEndpoints, method, url, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns aggregated endpoint usage information by month asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
+   * @param method Filter for a certain endpoint method.  Must include url as well to work (optional)
+   * @param url Filter for a certain endpoint.  Must include method as well to work (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUsageInfo)
+  */
+  def getUsageByMonthAsync(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUsageInfo] = {
+      helper.getUsageByMonth(startDate, endDate, combineEndpoints, method, url, size, page)
+  }
+
 
   /**
    * Returns aggregated endpoint usage information by year
@@ -255,44 +225,29 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PageResourceUsageInfo
    */
   def getUsageByYear(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUsageInfo] = {
-    // create path and map variables
-    val path = "/reporting/usage/year".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "start_date" -> startDate.toString
-    queryParams += "end_date" -> endDate.toString
-    combineEndpoints.map(paramVal => queryParams += "combine_endpoints" -> paramVal.toString)
-    method.map(paramVal => queryParams += "method" -> paramVal.toString)
-    url.map(paramVal => queryParams += "url" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUsageInfo]).asInstanceOf[PageResourceUsageInfo])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsageByYearAsync(startDate, endDate, combineEndpoints, method, url, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns aggregated endpoint usage information by year asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @param combineEndpoints Whether to combine counts from different endpoints. Removes the url and method from the result object (optional, default to false)
+   * @param method Filter for a certain endpoint method.  Must include url as well to work (optional)
+   * @param url Filter for a certain endpoint.  Must include method as well to work (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUsageInfo)
+  */
+  def getUsageByYearAsync(startDate: Long, endDate: Long, combineEndpoints: Option[Boolean] /* = false*/, method: Option[String] = None, url: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUsageInfo] = {
+      helper.getUsageByYear(startDate, endDate, combineEndpoints, method, url, size, page)
+  }
+
 
   /**
    * Returns list of endpoints called (method and url)
@@ -302,38 +257,266 @@ class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return List[String]
    */
   def getUsageEndpoints(startDate: Long, endDate: Long): Option[List[String]] = {
+    val await = Try(Await.result(getUsageEndpointsAsync(startDate, endDate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Returns list of endpoints called (method and url) asynchronously
+   * 
+   * @param startDate The beginning of the range being requested, unix timestamp in seconds 
+   * @param endDate The ending of the range being requested, unix timestamp in seconds 
+   * @return Future(List[String])
+  */
+  def getUsageEndpointsAsync(startDate: Long, endDate: Long): Future[List[String]] = {
+      helper.getUsageEndpoints(startDate, endDate)
+  }
+
+
+}
+
+class ReportingUsageApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getUsageByDay(startDate: Long,
+    endDate: Long,
+    combineEndpoints: Option[Boolean] = Some(false),
+    method: Option[String] = None,
+    url: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUsageInfo]): Future[PageResourceUsageInfo] = {
     // create path and map variables
-    val path = "/reporting/usage/endpoints".replaceAll("\\{format\\}", "json")
+    val path = (addFmt("/reporting/usage/day"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     queryParams += "start_date" -> startDate.toString
     queryParams += "end_date" -> endDate.toString
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
+    combineEndpoints match {
+      case Some(param) => queryParams += "combine_endpoints" -> param.toString
+      case _ => queryParams
+    }
+    method match {
+      case Some(param) => queryParams += "method" -> param.toString
+      case _ => queryParams
+    }
+    url match {
+      case Some(param) => queryParams += "url" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
     }
 
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
+  def getUsageByHour(startDate: Long,
+    endDate: Long,
+    combineEndpoints: Option[Boolean] = Some(false),
+    method: Option[String] = None,
+    url: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUsageInfo]): Future[PageResourceUsageInfo] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/usage/hour"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "start_date" -> startDate.toString
+    queryParams += "end_date" -> endDate.toString
+    combineEndpoints match {
+      case Some(param) => queryParams += "combine_endpoints" -> param.toString
+      case _ => queryParams
+    }
+    method match {
+      case Some(param) => queryParams += "method" -> param.toString
+      case _ => queryParams
+    }
+    url match {
+      case Some(param) => queryParams += "url" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsageByMinute(startDate: Long,
+    endDate: Long,
+    combineEndpoints: Option[Boolean] = Some(false),
+    method: Option[String] = None,
+    url: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUsageInfo]): Future[PageResourceUsageInfo] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/usage/minute"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "start_date" -> startDate.toString
+    queryParams += "end_date" -> endDate.toString
+    combineEndpoints match {
+      case Some(param) => queryParams += "combine_endpoints" -> param.toString
+      case _ => queryParams
+    }
+    method match {
+      case Some(param) => queryParams += "method" -> param.toString
+      case _ => queryParams
+    }
+    url match {
+      case Some(param) => queryParams += "url" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsageByMonth(startDate: Long,
+    endDate: Long,
+    combineEndpoints: Option[Boolean] = Some(false),
+    method: Option[String] = None,
+    url: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUsageInfo]): Future[PageResourceUsageInfo] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/usage/month"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "start_date" -> startDate.toString
+    queryParams += "end_date" -> endDate.toString
+    combineEndpoints match {
+      case Some(param) => queryParams += "combine_endpoints" -> param.toString
+      case _ => queryParams
+    }
+    method match {
+      case Some(param) => queryParams += "method" -> param.toString
+      case _ => queryParams
+    }
+    url match {
+      case Some(param) => queryParams += "url" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsageByYear(startDate: Long,
+    endDate: Long,
+    combineEndpoints: Option[Boolean] = Some(false),
+    method: Option[String] = None,
+    url: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUsageInfo]): Future[PageResourceUsageInfo] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/usage/year"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "start_date" -> startDate.toString
+    queryParams += "end_date" -> endDate.toString
+    combineEndpoints match {
+      case Some(param) => queryParams += "combine_endpoints" -> param.toString
+      case _ => queryParams
+    }
+    method match {
+      case Some(param) => queryParams += "method" -> param.toString
+      case _ => queryParams
+    }
+    url match {
+      case Some(param) => queryParams += "url" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsageEndpoints(startDate: Long,
+    endDate: Long)(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/usage/endpoints"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "start_date" -> startDate.toString
+    queryParams += "end_date" -> endDate.toString
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

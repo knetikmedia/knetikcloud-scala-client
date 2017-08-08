@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.ChallengeActivityResource
 import com.knetikcloud.client.model.ChallengeEventResource
 import com.knetikcloud.client.model.ChallengeResource
@@ -21,8 +23,7 @@ import com.knetikcloud.client.model.PageResourceChallengeResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -34,12 +35,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new CampaignsChallengesApiAsyncHelper(client, config)
 
   /**
    * Create a challenge
@@ -48,37 +78,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeResource
    */
   def createChallenge(challengeResource: Option[ChallengeResource] = None): Option[ChallengeResource] = {
-    // create path and map variables
-    val path = "/challenges".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = challengeResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeResource]).asInstanceOf[ChallengeResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createChallengeAsync(challengeResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a challenge asynchronously
+   * Challenges do not run on their own.  They must be added to a campaign before events will spawn.
+   * @param challengeResource The challenge resource object (optional)
+   * @return Future(ChallengeResource)
+  */
+  def createChallengeAsync(challengeResource: Option[ChallengeResource] = None): Future[ChallengeResource] = {
+      helper.createChallenge(challengeResource)
+  }
+
 
   /**
    * Create a challenge activity
@@ -89,38 +105,25 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeActivityResource
    */
   def createChallengeActivity(challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None, validateSettings: Option[Boolean] /* = false*/): Option[ChallengeActivityResource] = {
-    // create path and map variables
-    val path = "/challenges/{challenge_id}/activities".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    validateSettings.map(paramVal => queryParams += "validateSettings" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = challengeActivityResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeActivityResource]).asInstanceOf[ChallengeActivityResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createChallengeActivityAsync(challengeId, challengeActivityResource, validateSettings), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a challenge activity asynchronously
+   * 
+   * @param challengeId The challenge id 
+   * @param challengeActivityResource The challenge activity resource object (optional)
+   * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity. (optional, default to false)
+   * @return Future(ChallengeActivityResource)
+  */
+  def createChallengeActivityAsync(challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None, validateSettings: Option[Boolean] /* = false*/): Future[ChallengeActivityResource] = {
+      helper.createChallengeActivity(challengeId, challengeActivityResource, validateSettings)
+  }
+
 
   /**
    * Create a challenge activity template
@@ -129,37 +132,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def createChallengeActivityTemplate(challengeActivityTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/challenge-activities/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = challengeActivityTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createChallengeActivityTemplateAsync(challengeActivityTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a challenge activity template asynchronously
+   * Challenge Activity Templates define a type of challenge activity and the properties they have
+   * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createChallengeActivityTemplateAsync(challengeActivityTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createChallengeActivityTemplate(challengeActivityTemplateResource)
+  }
+
 
   /**
    * Create a challenge template
@@ -168,37 +157,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def createChallengeTemplate(challengeTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/challenges/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = challengeTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createChallengeTemplateAsync(challengeTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a challenge template asynchronously
+   * Challenge Templates define a type of challenge and the properties they have
+   * @param challengeTemplateResource The challenge template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createChallengeTemplateAsync(challengeTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createChallengeTemplate(challengeTemplateResource)
+  }
+
 
   /**
    * Delete a challenge
@@ -207,36 +182,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return void
    */
   def deleteChallenge(id: Long) = {
-    // create path and map variables
-    val path = "/challenges/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteChallengeAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a challenge asynchronously
+   * 
+   * @param id The challenge id 
+   * @return Future(void)
+  */
+  def deleteChallengeAsync(id: Long) = {
+      helper.deleteChallenge(id)
+  }
+
 
   /**
    * Delete a challenge activity
@@ -246,36 +208,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return void
    */
   def deleteChallengeActivity(id: Long, challengeId: Long) = {
-    // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteChallengeActivityAsync(id, challengeId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a challenge activity asynchronously
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
+   * @param challengeId The challenge id 
+   * @return Future(void)
+  */
+  def deleteChallengeActivityAsync(id: Long, challengeId: Long) = {
+      helper.deleteChallengeActivity(id, challengeId)
+  }
+
 
   /**
    * Delete a challenge activity template
@@ -285,39 +235,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return void
    */
   def deleteChallengeActivityTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/challenge-activities/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->deleteChallengeActivityTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteChallengeActivityTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a challenge activity template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteChallengeActivityTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteChallengeActivityTemplate(id, cascade)
+  }
+
 
   /**
    * Delete a challenge event
@@ -326,36 +261,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return void
    */
   def deleteChallengeEvent(id: Long) = {
-    // create path and map variables
-    val path = "/challenges/events/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteChallengeEventAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a challenge event asynchronously
+   * 
+   * @param id The challenge event id 
+   * @return Future(void)
+  */
+  def deleteChallengeEventAsync(id: Long) = {
+      helper.deleteChallengeEvent(id)
+  }
+
 
   /**
    * Delete a challenge template
@@ -365,39 +287,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return void
    */
   def deleteChallengeTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/challenges/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->deleteChallengeTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteChallengeTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a challenge template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteChallengeTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteChallengeTemplate(id, cascade)
+  }
+
 
   /**
    * Retrieve a challenge
@@ -406,37 +313,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeResource
    */
   def getChallenge(id: Long): Option[ChallengeResource] = {
-    // create path and map variables
-    val path = "/challenges/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeResource]).asInstanceOf[ChallengeResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a challenge asynchronously
+   * 
+   * @param id The challenge id 
+   * @return Future(ChallengeResource)
+  */
+  def getChallengeAsync(id: Long): Future[ChallengeResource] = {
+      helper.getChallenge(id)
+  }
+
 
   /**
    * List and search challenge activities
@@ -448,40 +341,26 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceBareChallengeActivityResource
    */
   def getChallengeActivities(challengeId: Long, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceBareChallengeActivityResource] = {
-    // create path and map variables
-    val path = "/challenges/{challenge_id}/activities".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceBareChallengeActivityResource]).asInstanceOf[PageResourceBareChallengeActivityResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeActivitiesAsync(challengeId, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search challenge activities asynchronously
+   * 
+   * @param challengeId The challenge id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceBareChallengeActivityResource)
+  */
+  def getChallengeActivitiesAsync(challengeId: Long, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceBareChallengeActivityResource] = {
+      helper.getChallengeActivities(challengeId, size, page, order)
+  }
+
 
   /**
    * Get a single challenge activity
@@ -491,37 +370,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeActivityResource
    */
   def getChallengeActivity(id: Long, challengeId: Long): Option[ChallengeActivityResource] = {
-    // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeActivityResource]).asInstanceOf[ChallengeActivityResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeActivityAsync(id, challengeId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single challenge activity asynchronously
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
+   * @param challengeId The challenge id 
+   * @return Future(ChallengeActivityResource)
+  */
+  def getChallengeActivityAsync(id: Long, challengeId: Long): Future[ChallengeActivityResource] = {
+      helper.getChallengeActivity(id, challengeId)
+  }
+
 
   /**
    * Get a single challenge activity template
@@ -530,39 +396,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def getChallengeActivityTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/challenge-activities/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->getChallengeActivityTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeActivityTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single challenge activity template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getChallengeActivityTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getChallengeActivityTemplate(id)
+  }
+
 
   /**
    * List and search challenge activity templates
@@ -573,40 +423,25 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceTemplateResource
    */
   def getChallengeActivityTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/challenge-activities/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeActivityTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search challenge activity templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getChallengeActivityTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getChallengeActivityTemplates(size, page, order)
+  }
+
 
   /**
    * Retrieve a single challenge event details
@@ -615,37 +450,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeEventResource
    */
   def getChallengeEvent(id: Long): Option[ChallengeEventResource] = {
-    // create path and map variables
-    val path = "/challenges/events/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeEventResource]).asInstanceOf[ChallengeEventResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeEventAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a single challenge event details asynchronously
+   * 
+   * @param id The challenge event id 
+   * @return Future(ChallengeEventResource)
+  */
+  def getChallengeEventAsync(id: Long): Future[ChallengeEventResource] = {
+      helper.getChallengeEvent(id)
+  }
+
 
   /**
    * Retrieve a list of challenge events
@@ -660,44 +481,29 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceChallengeEventResource
    */
   def getChallengeEvents(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterCampaigns: Option[Boolean] = None, filterChallenge: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceChallengeEventResource] = {
-    // create path and map variables
-    val path = "/challenges/events".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterStartDate.map(paramVal => queryParams += "filter_start_date" -> paramVal.toString)
-    filterEndDate.map(paramVal => queryParams += "filter_end_date" -> paramVal.toString)
-    filterCampaigns.map(paramVal => queryParams += "filter_campaigns" -> paramVal.toString)
-    filterChallenge.map(paramVal => queryParams += "filter_challenge" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceChallengeEventResource]).asInstanceOf[PageResourceChallengeEventResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeEventsAsync(filterStartDate, filterEndDate, filterCampaigns, filterChallenge, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a list of challenge events asynchronously
+   * 
+   * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the event end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterCampaigns check only for events from currently running campaigns (optional)
+   * @param filterChallenge check only for events from the challenge specified by id (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceChallengeEventResource)
+  */
+  def getChallengeEventsAsync(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterCampaigns: Option[Boolean] = None, filterChallenge: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceChallengeEventResource] = {
+      helper.getChallengeEvents(filterStartDate, filterEndDate, filterCampaigns, filterChallenge, size, page, order)
+  }
+
 
   /**
    * Get a single challenge template
@@ -706,39 +512,23 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def getChallengeTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/challenges/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->getChallengeTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single challenge template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getChallengeTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getChallengeTemplate(id)
+  }
+
 
   /**
    * List and search challenge templates
@@ -749,40 +539,25 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceTemplateResource
    */
   def getChallengeTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/challenges/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search challenge templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getChallengeTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getChallengeTemplates(size, page, order)
+  }
+
 
   /**
    * Retrieve a list of challenges
@@ -797,44 +572,29 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceChallengeResource
    */
   def getChallenges(filterTemplate: Option[Boolean] = None, filterActiveCampaign: Option[Boolean] = None, filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceChallengeResource] = {
-    // create path and map variables
-    val path = "/challenges".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterTemplate.map(paramVal => queryParams += "filter_template" -> paramVal.toString)
-    filterActiveCampaign.map(paramVal => queryParams += "filter_active_campaign" -> paramVal.toString)
-    filterStartDate.map(paramVal => queryParams += "filter_start_date" -> paramVal.toString)
-    filterEndDate.map(paramVal => queryParams += "filter_end_date" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceChallengeResource]).asInstanceOf[PageResourceChallengeResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengesAsync(filterTemplate, filterActiveCampaign, filterStartDate, filterEndDate, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a list of challenges asynchronously
+   * 
+   * @param filterTemplate Filter for challenges that are not tied to campaigns (templates) (optional)
+   * @param filterActiveCampaign Filter for challenges that are tied to active campaigns (optional)
+   * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceChallengeResource)
+  */
+  def getChallengesAsync(filterTemplate: Option[Boolean] = None, filterActiveCampaign: Option[Boolean] = None, filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceChallengeResource] = {
+      helper.getChallenges(filterTemplate, filterActiveCampaign, filterStartDate, filterEndDate, size, page, order)
+  }
+
 
   /**
    * Update a challenge
@@ -844,37 +604,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeResource
    */
   def updateChallenge(id: Long, challengeResource: Option[ChallengeResource] = None): Option[ChallengeResource] = {
-    // create path and map variables
-    val path = "/challenges/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = challengeResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeResource]).asInstanceOf[ChallengeResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateChallengeAsync(id, challengeResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a challenge asynchronously
+   * If the challenge is a copy, changes will propagate to all the related challenges
+   * @param id The challenge id 
+   * @param challengeResource The challenge resource object (optional)
+   * @return Future(ChallengeResource)
+  */
+  def updateChallengeAsync(id: Long, challengeResource: Option[ChallengeResource] = None): Future[ChallengeResource] = {
+      helper.updateChallenge(id, challengeResource)
+  }
+
 
   /**
    * Update a challenge activity
@@ -885,37 +632,25 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return ChallengeActivityResource
    */
   def updateChallengeActivity(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Option[ChallengeActivityResource] = {
-    // create path and map variables
-    val path = "/challenges/{challenge_id}/activities/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "challenge_id" + "\\}",apiInvoker.escape(challengeId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = challengeActivityResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ChallengeActivityResource]).asInstanceOf[ChallengeActivityResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateChallengeActivityAsync(id, challengeId, challengeActivityResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a challenge activity asynchronously
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * @param id The challenge_activity id 
+   * @param challengeId The challenge id 
+   * @param challengeActivityResource The challenge activity resource object (optional)
+   * @return Future(ChallengeActivityResource)
+  */
+  def updateChallengeActivityAsync(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Future[ChallengeActivityResource] = {
+      helper.updateChallengeActivity(id, challengeId, challengeActivityResource)
+  }
+
 
   /**
    * Update an challenge activity template
@@ -925,39 +660,24 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def updateChallengeActivityTemplate(id: String, challengeActivityTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/challenge-activities/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->updateChallengeActivityTemplate")
-
-    
-
-    var postBody: AnyRef = challengeActivityTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateChallengeActivityTemplateAsync(id, challengeActivityTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an challenge activity template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateChallengeActivityTemplateAsync(id: String, challengeActivityTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateChallengeActivityTemplate(id, challengeActivityTemplateResource)
+  }
+
 
   /**
    * Update a challenge template
@@ -967,38 +687,553 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return TemplateResource
    */
   def updateChallengeTemplate(id: String, challengeTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateChallengeTemplateAsync(id, challengeTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a challenge template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param challengeTemplateResource The challenge template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateChallengeTemplateAsync(id: String, challengeTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateChallengeTemplate(id, challengeTemplateResource)
+  }
+
+
+}
+
+class CampaignsChallengesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createChallenge(challengeResource: Option[ChallengeResource] = None
+    )(implicit reader: ClientResponseReader[ChallengeResource], writer: RequestWriter[ChallengeResource]): Future[ChallengeResource] = {
     // create path and map variables
-    val path = "/challenges/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/challenges"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(challengeResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createChallengeActivity(challengeId: Long,
+    challengeActivityResource: Option[ChallengeActivityResource] = None,
+    validateSettings: Option[Boolean] = Some(false)
+    )(implicit reader: ClientResponseReader[ChallengeActivityResource], writer: RequestWriter[ChallengeActivityResource]): Future[ChallengeActivityResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{challenge_id}/activities")
+      replaceAll ("\\{" + "challenge_id" + "\\}",challengeId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    validateSettings match {
+      case Some(param) => queryParams += "validateSettings" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(challengeActivityResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createChallengeActivityTemplate(challengeActivityTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenge-activities/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(challengeActivityTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createChallengeTemplate(challengeTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(challengeTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteChallenge(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteChallengeActivity(id: Long,
+    challengeId: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{challenge_id}/activities/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "challenge_id" + "\\}",challengeId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteChallengeActivityTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/challenge-activities/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->deleteChallengeActivityTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteChallengeEvent(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/events/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteChallengeTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->deleteChallengeTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallenge(id: Long)(implicit reader: ClientResponseReader[ChallengeResource]): Future[ChallengeResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeActivities(challengeId: Long,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceBareChallengeActivityResource]): Future[PageResourceBareChallengeActivityResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{challenge_id}/activities")
+      replaceAll ("\\{" + "challenge_id" + "\\}",challengeId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeActivity(id: Long,
+    challengeId: Long)(implicit reader: ClientResponseReader[ChallengeActivityResource]): Future[ChallengeActivityResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{challenge_id}/activities/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "challenge_id" + "\\}",challengeId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeActivityTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenge-activities/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->getChallengeActivityTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeActivityTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenge-activities/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeEvent(id: Long)(implicit reader: ClientResponseReader[ChallengeEventResource]): Future[ChallengeEventResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/events/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeEvents(filterStartDate: Option[String] = None,
+    filterEndDate: Option[String] = None,
+    filterCampaigns: Option[Boolean] = None,
+    filterChallenge: Option[Long] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceChallengeEventResource]): Future[PageResourceChallengeEventResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/events"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterStartDate match {
+      case Some(param) => queryParams += "filter_start_date" -> param.toString
+      case _ => queryParams
+    }
+    filterEndDate match {
+      case Some(param) => queryParams += "filter_end_date" -> param.toString
+      case _ => queryParams
+    }
+    filterCampaigns match {
+      case Some(param) => queryParams += "filter_campaigns" -> param.toString
+      case _ => queryParams
+    }
+    filterChallenge match {
+      case Some(param) => queryParams += "filter_challenge" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->getChallengeTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallenges(filterTemplate: Option[Boolean] = None,
+    filterActiveCampaign: Option[Boolean] = None,
+    filterStartDate: Option[String] = None,
+    filterEndDate: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceChallengeResource]): Future[PageResourceChallengeResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterTemplate match {
+      case Some(param) => queryParams += "filter_template" -> param.toString
+      case _ => queryParams
+    }
+    filterActiveCampaign match {
+      case Some(param) => queryParams += "filter_active_campaign" -> param.toString
+      case _ => queryParams
+    }
+    filterStartDate match {
+      case Some(param) => queryParams += "filter_start_date" -> param.toString
+      case _ => queryParams
+    }
+    filterEndDate match {
+      case Some(param) => queryParams += "filter_end_date" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateChallenge(id: Long,
+    challengeResource: Option[ChallengeResource] = None
+    )(implicit reader: ClientResponseReader[ChallengeResource], writer: RequestWriter[ChallengeResource]): Future[ChallengeResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(challengeResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateChallengeActivity(id: Long,
+    challengeId: Long,
+    challengeActivityResource: Option[ChallengeActivityResource] = None
+    )(implicit reader: ClientResponseReader[ChallengeActivityResource], writer: RequestWriter[ChallengeActivityResource]): Future[ChallengeActivityResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/{challenge_id}/activities/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "challenge_id" + "\\}",challengeId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(challengeActivityResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateChallengeActivityTemplate(id: String,
+    challengeActivityTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenge-activities/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->updateChallengeActivityTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(challengeActivityTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateChallengeTemplate(id: String,
+    challengeTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/challenges/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling CampaignsChallengesApi->updateChallengeTemplate")
 
-    
 
-    var postBody: AnyRef = challengeTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(challengeTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

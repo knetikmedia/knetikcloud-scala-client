@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.AnswerResource
 import com.knetikcloud.client.model.Collectionstring
 import com.knetikcloud.client.model.DeltaResource
@@ -22,8 +24,8 @@ import com.knetikcloud.client.model.PageResourceQuestionTemplateResource
 import com.knetikcloud.client.model.QuestionResource
 import com.knetikcloud.client.model.QuestionTemplateResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import com.knetikcloud.client.model.StringWrapper
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -35,12 +37,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new GamificationTriviaApiAsyncHelper(client, config)
 
   /**
    * Add an answer to a question
@@ -50,39 +81,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return AnswerResource
    */
   def addQuestionAnswers(questionId: String, answer: Option[AnswerResource] = None): Option[AnswerResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/{question_id}/answers".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "question_id" + "\\}",apiInvoker.escape(questionId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->addQuestionAnswers")
-
-    
-
-    var postBody: AnyRef = answer.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AnswerResource]).asInstanceOf[AnswerResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addQuestionAnswersAsync(questionId, answer), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add an answer to a question asynchronously
+   * 
+   * @param questionId The id of the question 
+   * @param answer The new answer (optional)
+   * @return Future(AnswerResource)
+  */
+  def addQuestionAnswersAsync(questionId: String, answer: Option[AnswerResource] = None): Future[AnswerResource] = {
+      helper.addQuestionAnswers(questionId, answer)
+  }
+
 
   /**
    * Add a tag to a question
@@ -91,39 +107,25 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @param tag The new tag (optional)
    * @return void
    */
-  def addQuestionTag(id: String, tag: Option[String] = None) = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}/tags".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->addQuestionTag")
-
-    
-
-    var postBody: AnyRef = tag.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def addQuestionTag(id: String, tag: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(addQuestionTagAsync(id, tag), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a tag to a question asynchronously
+   * 
+   * @param id The id of the question 
+   * @param tag The new tag (optional)
+   * @return Future(void)
+  */
+  def addQuestionTagAsync(id: String, tag: Option[StringWrapper] = None) = {
+      helper.addQuestionTag(id, tag)
+  }
+
 
   /**
    * Add a tag to a batch of questions
@@ -139,46 +141,32 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @param filterImportId Filter for questions from a specific import job (optional)
    * @return Integer
    */
-  def addTagToQuestionsBatch(tag: Option[String] = None, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Option[Integer] = {
-    // create path and map variables
-    val path = "/trivia/questions/tags".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterIdset.map(paramVal => queryParams += "filter_idset" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    filterImportId.map(paramVal => queryParams += "filter_import_id" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = tag.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[Integer]).asInstanceOf[Integer])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def addTagToQuestionsBatch(tag: Option[StringWrapper] = None, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Option[Integer] = {
+    val await = Try(Await.result(addTagToQuestionsBatchAsync(tag, filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished, filterImportId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a tag to a batch of questions asynchronously
+   * All questions that dont&#39;t have the tag and match filters will have it added. The returned number is the number of questions updated.
+   * @param tag The tag to add (optional)
+   * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
+   * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
+   * @param filterCategory Filter for questions with specified category, by id (optional)
+   * @param filterTag Filter for questions with specified tag (optional)
+   * @param filterTagset Filter for questions with specified tags (separated by comma) (optional)
+   * @param filterType Filter for questions with specified type (optional)
+   * @param filterPublished Filter for questions currenctly published or not (optional)
+   * @param filterImportId Filter for questions from a specific import job (optional)
+   * @return Future(Integer)
+  */
+  def addTagToQuestionsBatchAsync(tag: Option[StringWrapper] = None, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Future[Integer] = {
+      helper.addTagToQuestionsBatch(tag, filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished, filterImportId)
+  }
+
 
   /**
    * Create an import job
@@ -187,37 +175,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return ImportJobResource
    */
   def createImportJob(request: Option[ImportJobResource] = None): Option[ImportJobResource] = {
-    // create path and map variables
-    val path = "/trivia/import".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ImportJobResource]).asInstanceOf[ImportJobResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createImportJobAsync(request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create an import job asynchronously
+   * Set up a job to import a set of trivia questions from a cvs file at a remote url. the file will be validated asynchronously but will not be processed until started manually with the process endpoint.
+   * @param request The new import job (optional)
+   * @return Future(ImportJobResource)
+  */
+  def createImportJobAsync(request: Option[ImportJobResource] = None): Future[ImportJobResource] = {
+      helper.createImportJob(request)
+  }
+
 
   /**
    * Create a question
@@ -226,37 +200,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionResource
    */
   def createQuestion(question: Option[QuestionResource] = None): Option[QuestionResource] = {
-    // create path and map variables
-    val path = "/trivia/questions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = question.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionResource]).asInstanceOf[QuestionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createQuestionAsync(question), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a question asynchronously
+   * 
+   * @param question The new question (optional)
+   * @return Future(QuestionResource)
+  */
+  def createQuestionAsync(question: Option[QuestionResource] = None): Future[QuestionResource] = {
+      helper.createQuestion(question)
+  }
+
 
   /**
    * Create a question template
@@ -265,37 +225,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionTemplateResource
    */
   def createQuestionTemplate(questionTemplateResource: Option[QuestionTemplateResource] = None): Option[QuestionTemplateResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = questionTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionTemplateResource]).asInstanceOf[QuestionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createQuestionTemplateAsync(questionTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a question template asynchronously
+   * Question templates define a type of question and the properties they have
+   * @param questionTemplateResource The question template resource object (optional)
+   * @return Future(QuestionTemplateResource)
+  */
+  def createQuestionTemplateAsync(questionTemplateResource: Option[QuestionTemplateResource] = None): Future[QuestionTemplateResource] = {
+      helper.createQuestionTemplate(questionTemplateResource)
+  }
+
 
   /**
    * Delete an import job
@@ -304,36 +250,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteImportJob(id: Long) = {
-    // create path and map variables
-    val path = "/trivia/import/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteImportJobAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an import job asynchronously
+   * Also deletes all questions that were imported by it
+   * @param id The id of the job 
+   * @return Future(void)
+  */
+  def deleteImportJobAsync(id: Long) = {
+      helper.deleteImportJob(id)
+  }
+
 
   /**
    * Delete a question
@@ -342,38 +275,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteQuestion(id: String) = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestion")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteQuestionAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a question asynchronously
+   * 
+   * @param id The id of the question 
+   * @return Future(void)
+  */
+  def deleteQuestionAsync(id: String) = {
+      helper.deleteQuestion(id)
+  }
+
 
   /**
    * Remove an answer from a question
@@ -383,40 +301,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteQuestionAnswers(questionId: String, id: String) = {
-    // create path and map variables
-    val path = "/trivia/questions/{question_id}/answers/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "question_id" + "\\}",apiInvoker.escape(questionId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->deleteQuestionAnswers")
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestionAnswers")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteQuestionAnswersAsync(questionId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Remove an answer from a question asynchronously
+   * 
+   * @param questionId The id of the question 
+   * @param id The id of the answer 
+   * @return Future(void)
+  */
+  def deleteQuestionAnswersAsync(questionId: String, id: String) = {
+      helper.deleteQuestionAnswers(questionId, id)
+  }
+
 
   /**
    * Delete a question template
@@ -426,39 +328,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteQuestionTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/trivia/questions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestionTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteQuestionTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a question template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteQuestionTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteQuestionTemplate(id, cascade)
+  }
+
 
   /**
    * Get an import job
@@ -467,37 +354,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return ImportJobResource
    */
   def getImportJob(id: Long): Option[ImportJobResource] = {
-    // create path and map variables
-    val path = "/trivia/import/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ImportJobResource]).asInstanceOf[ImportJobResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getImportJobAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get an import job asynchronously
+   * 
+   * @param id The id of the job 
+   * @return Future(ImportJobResource)
+  */
+  def getImportJobAsync(id: Long): Future[ImportJobResource] = {
+      helper.getImportJob(id)
+  }
+
 
   /**
    * Get a list of import job
@@ -512,44 +385,29 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return PageResourceImportJobResource
    */
   def getImportJobs(filterVendor: Option[String] = None, filterCategory: Option[String] = None, filterName: Option[String] = None, filterStatus: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceImportJobResource] = {
-    // create path and map variables
-    val path = "/trivia/import".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterVendor.map(paramVal => queryParams += "filter_vendor" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    filterStatus.map(paramVal => queryParams += "filter_status" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceImportJobResource]).asInstanceOf[PageResourceImportJobResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getImportJobsAsync(filterVendor, filterCategory, filterName, filterStatus, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a list of import job asynchronously
+   * 
+   * @param filterVendor Filter for jobs by vendor id (optional)
+   * @param filterCategory Filter for jobs by category id (optional)
+   * @param filterName Filter for jobs which name *STARTS* with the given string (optional)
+   * @param filterStatus Filter for jobs that are in a specific set of statuses (comma separated) (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceImportJobResource)
+  */
+  def getImportJobsAsync(filterVendor: Option[String] = None, filterCategory: Option[String] = None, filterName: Option[String] = None, filterStatus: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceImportJobResource] = {
+      helper.getImportJobs(filterVendor, filterCategory, filterName, filterStatus, size, page, order)
+  }
+
 
   /**
    * Get a single question
@@ -558,39 +416,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionResource
    */
   def getQuestion(id: String): Option[QuestionResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestion")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionResource]).asInstanceOf[QuestionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single question asynchronously
+   * 
+   * @param id The id of the question 
+   * @return Future(QuestionResource)
+  */
+  def getQuestionAsync(id: String): Future[QuestionResource] = {
+      helper.getQuestion(id)
+  }
+
 
   /**
    * Get an answer for a question
@@ -600,41 +442,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return AnswerResource
    */
   def getQuestionAnswer(questionId: String, id: String): Option[AnswerResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/{question_id}/answers/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "question_id" + "\\}",apiInvoker.escape(questionId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->getQuestionAnswer")
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionAnswer")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AnswerResource]).asInstanceOf[AnswerResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionAnswerAsync(questionId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get an answer for a question asynchronously
+   * 
+   * @param questionId The id of the question 
+   * @param id The id of the answer 
+   * @return Future(AnswerResource)
+  */
+  def getQuestionAnswerAsync(questionId: String, id: String): Future[AnswerResource] = {
+      helper.getQuestionAnswer(questionId, id)
+  }
+
 
   /**
    * List the answers available for a question
@@ -643,39 +468,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return List[AnswerResource]
    */
   def getQuestionAnswers(questionId: String): Option[List[AnswerResource]] = {
-    // create path and map variables
-    val path = "/trivia/questions/{question_id}/answers".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "question_id" + "\\}",apiInvoker.escape(questionId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->getQuestionAnswers")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[AnswerResource]).asInstanceOf[List[AnswerResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionAnswersAsync(questionId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List the answers available for a question asynchronously
+   * 
+   * @param questionId The id of the question 
+   * @return Future(List[AnswerResource])
+  */
+  def getQuestionAnswersAsync(questionId: String): Future[List[AnswerResource]] = {
+      helper.getQuestionAnswers(questionId)
+  }
+
 
   /**
    * List question deltas in ascending order of updated date
@@ -684,38 +493,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return List[DeltaResource]
    */
   def getQuestionDeltas(since: Option[Long] = None): Option[List[DeltaResource]] = {
-    // create path and map variables
-    val path = "/trivia/questions/delta".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    since.map(paramVal => queryParams += "since" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[DeltaResource]).asInstanceOf[List[DeltaResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionDeltasAsync(since), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List question deltas in ascending order of updated date asynchronously
+   * The &#39;since&#39; parameter is important to avoid getting a full list of all questions. Implementors should make sure they pass the updated date of the last resource loaded, not the date of the last request, in order to avoid gaps
+   * @param since Timestamp in seconds (optional)
+   * @return Future(List[DeltaResource])
+  */
+  def getQuestionDeltasAsync(since: Option[Long] = None): Future[List[DeltaResource]] = {
+      helper.getQuestionDeltas(since)
+  }
+
 
   /**
    * List the tags for a question
@@ -724,39 +518,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return List[String]
    */
   def getQuestionTags(id: String): Option[List[String]] = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}/tags".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionTags")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionTagsAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List the tags for a question asynchronously
+   * 
+   * @param id The id of the question 
+   * @return Future(List[String])
+  */
+  def getQuestionTagsAsync(id: String): Future[List[String]] = {
+      helper.getQuestionTags(id)
+  }
+
 
   /**
    * Get a single question template
@@ -765,39 +543,23 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionTemplateResource
    */
   def getQuestionTemplate(id: String): Option[QuestionTemplateResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionTemplateResource]).asInstanceOf[QuestionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single question template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(QuestionTemplateResource)
+  */
+  def getQuestionTemplateAsync(id: String): Future[QuestionTemplateResource] = {
+      helper.getQuestionTemplate(id)
+  }
+
 
   /**
    * List and search question templates
@@ -808,40 +570,25 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return PageResourceQuestionTemplateResource
    */
   def getQuestionTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceQuestionTemplateResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceQuestionTemplateResource]).asInstanceOf[PageResourceQuestionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search question templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceQuestionTemplateResource)
+  */
+  def getQuestionTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceQuestionTemplateResource] = {
+      helper.getQuestionTemplates(size, page, order)
+  }
+
 
   /**
    * List and search questions
@@ -860,48 +607,33 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return PageResourceQuestionResource
    */
   def getQuestions(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTag: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Option[PageResourceQuestionResource] = {
-    // create path and map variables
-    val path = "/trivia/questions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterIdset.map(paramVal => queryParams += "filter_idset" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    filterImportId.map(paramVal => queryParams += "filter_import_id" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceQuestionResource]).asInstanceOf[PageResourceQuestionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionsAsync(size, page, order, filterSearch, filterIdset, filterCategory, filterTagset, filterTag, filterType, filterPublished, filterImportId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search questions asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
+   * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
+   * @param filterCategory Filter for questions with specified category, by id (optional)
+   * @param filterTagset Filter for questions with specified tags (separated by comma) (optional)
+   * @param filterTag Filter for questions with specified tag (optional)
+   * @param filterType Filter for questions with specified type.  Allowable values: (&#39;TEXT&#39;, &#39;IMAGE&#39;, &#39;VIDEO&#39;, &#39;AUDIO&#39;) (optional)
+   * @param filterPublished Filter for questions currenctly published or not (optional)
+   * @param filterImportId Filter for questions from a specific import job (optional)
+   * @return Future(PageResourceQuestionResource)
+  */
+  def getQuestionsAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTag: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Future[PageResourceQuestionResource] = {
+      helper.getQuestions(size, page, order, filterSearch, filterIdset, filterCategory, filterTagset, filterTag, filterType, filterPublished, filterImportId)
+  }
+
 
   /**
    * Count questions based on filters
@@ -916,44 +648,29 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return Long
    */
   def getQuestionsCount(filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None): Option[Long] = {
-    // create path and map variables
-    val path = "/trivia/questions/count".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterIdset.map(paramVal => queryParams += "filter_idset" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[Long]).asInstanceOf[Long])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getQuestionsCountAsync(filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Count questions based on filters asynchronously
+   * This is also provided by the list endpoint so you don&#39;t need to call this for pagination purposes
+   * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
+   * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
+   * @param filterCategory Filter for questions with specified category, by id (optional)
+   * @param filterTag Filter for questions with specified tag (optional)
+   * @param filterTagset Filter for questions with specified tags (separated by comma) (optional)
+   * @param filterType Filter for questions with specified type.  Allowable values: (&#39;TEXT&#39;, &#39;IMAGE&#39;, &#39;VIDEO&#39;, &#39;AUDIO&#39;) (optional)
+   * @param filterPublished Filter for questions currenctly published or not (optional)
+   * @return Future(Long)
+  */
+  def getQuestionsCountAsync(filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None): Future[Long] = {
+      helper.getQuestionsCount(filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished)
+  }
+
 
   /**
    * Start processing an import job
@@ -963,38 +680,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return ImportJobResource
    */
   def processImportJob(id: Long, publishNow: Boolean): Option[ImportJobResource] = {
-    // create path and map variables
-    val path = "/trivia/import/{id}/process".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    queryParams += "publish_now" -> publishNow.toString
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ImportJobResource]).asInstanceOf[ImportJobResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(processImportJobAsync(id, publishNow), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Start processing an import job asynchronously
+   * Will process the CSV file and add new questions asynchronously. The status of the job must be &#39;VALID&#39;.
+   * @param id The id of the job 
+   * @param publishNow Whether the new questions should be published live immediately 
+   * @return Future(ImportJobResource)
+  */
+  def processImportJobAsync(id: Long, publishNow: Boolean): Future[ImportJobResource] = {
+      helper.processImportJob(id, publishNow)
+  }
+
 
   /**
    * Remove a tag from a question
@@ -1004,40 +707,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def removeQuestionTag(id: String, tag: String) = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}/tags/{tag}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "tag" + "\\}",apiInvoker.escape(tag))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->removeQuestionTag")
-
-    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling GamificationTriviaApi->removeQuestionTag")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeQuestionTagAsync(id, tag), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Remove a tag from a question asynchronously
+   * 
+   * @param id The id of the question 
+   * @param tag The tag to remove 
+   * @return Future(void)
+  */
+  def removeQuestionTagAsync(id: String, tag: String) = {
+      helper.removeQuestionTag(id, tag)
+  }
+
 
   /**
    * Remove a tag from a batch of questions
@@ -1054,47 +741,31 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return Integer
    */
   def removeTagToQuestionsBatch(tag: String, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Option[Integer] = {
-    // create path and map variables
-    val path = "/trivia/questions/tags/{tag}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "tag" + "\\}",apiInvoker.escape(tag))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling GamificationTriviaApi->removeTagToQuestionsBatch")
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterIdset.map(paramVal => queryParams += "filter_idset" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    filterImportId.map(paramVal => queryParams += "filter_import_id" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[Integer]).asInstanceOf[Integer])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeTagToQuestionsBatchAsync(tag, filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished, filterImportId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Remove a tag from a batch of questions asynchronously
+   * ll questions that have the tag and match filters will have it removed. The returned number is the number of questions updated.
+   * @param tag The tag to remove 
+   * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
+   * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
+   * @param filterCategory Filter for questions with specified category, by id (optional)
+   * @param filterTag Filter for questions with specified tag (optional)
+   * @param filterTagset Filter for questions with specified tags (separated by comma) (optional)
+   * @param filterType Filter for questions with specified type.  Allowable values: (&#39;TEXT&#39;, &#39;IMAGE&#39;, &#39;VIDEO&#39;, &#39;AUDIO&#39;) (optional)
+   * @param filterPublished Filter for questions currenctly published or not (optional)
+   * @param filterImportId Filter for questions from a specific import job (optional)
+   * @return Future(Integer)
+  */
+  def removeTagToQuestionsBatchAsync(tag: String, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTag: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Future[Integer] = {
+      helper.removeTagToQuestionsBatch(tag, filterSearch, filterIdset, filterCategory, filterTag, filterTagset, filterType, filterPublished, filterImportId)
+  }
+
 
   /**
    * List and search tags by the beginning of the string
@@ -1105,40 +776,25 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return Collectionstring
    */
   def searchQuestionTags(filterSearch: Option[String] = None, filterCategory: Option[String] = None, filterImportId: Option[Long] = None): Option[Collectionstring] = {
-    // create path and map variables
-    val path = "/trivia/tags".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterImportId.map(paramVal => queryParams += "filter_import_id" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[Collectionstring]).asInstanceOf[Collectionstring])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(searchQuestionTagsAsync(filterSearch, filterCategory, filterImportId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search tags by the beginning of the string asynchronously
+   * For performance reasons, search &amp; category filters are mutually exclusive. If category is specified, search filter will be ignored in order to do fast matches for typeahead.
+   * @param filterSearch Filter for tags starting with the given text (optional)
+   * @param filterCategory Filter for tags on questions from a specific category (optional)
+   * @param filterImportId Filter for tags on questions from a specific import job (optional)
+   * @return Future(Collectionstring)
+  */
+  def searchQuestionTagsAsync(filterSearch: Option[String] = None, filterCategory: Option[String] = None, filterImportId: Option[Long] = None): Future[Collectionstring] = {
+      helper.searchQuestionTags(filterSearch, filterCategory, filterImportId)
+  }
+
 
   /**
    * Update an import job
@@ -1148,37 +804,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return ImportJobResource
    */
   def updateImportJob(id: Long, request: Option[ImportJobResource] = None): Option[ImportJobResource] = {
-    // create path and map variables
-    val path = "/trivia/import/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ImportJobResource]).asInstanceOf[ImportJobResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateImportJobAsync(id, request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an import job asynchronously
+   * Changes should be made before process is started for there to be any effect.
+   * @param id The id of the job 
+   * @param request The updated job (optional)
+   * @return Future(ImportJobResource)
+  */
+  def updateImportJobAsync(id: Long, request: Option[ImportJobResource] = None): Future[ImportJobResource] = {
+      helper.updateImportJob(id, request)
+  }
+
 
   /**
    * Update a question
@@ -1188,39 +831,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionResource
    */
   def updateQuestion(id: String, question: Option[QuestionResource] = None): Option[QuestionResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestion")
-
-    
-
-    var postBody: AnyRef = question.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionResource]).asInstanceOf[QuestionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateQuestionAsync(id, question), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a question asynchronously
+   * 
+   * @param id The id of the question 
+   * @param question The updated question (optional)
+   * @return Future(QuestionResource)
+  */
+  def updateQuestionAsync(id: String, question: Option[QuestionResource] = None): Future[QuestionResource] = {
+      helper.updateQuestion(id, question)
+  }
+
 
   /**
    * Update an answer for a question
@@ -1231,40 +859,25 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def updateQuestionAnswer(questionId: String, id: String, answer: Option[AnswerResource] = None) = {
-    // create path and map variables
-    val path = "/trivia/questions/{question_id}/answers/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "question_id" + "\\}",apiInvoker.escape(questionId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->updateQuestionAnswer")
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestionAnswer")
-
-    
-
-    var postBody: AnyRef = answer.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateQuestionAnswerAsync(questionId, id, answer), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an answer for a question asynchronously
+   * 
+   * @param questionId The id of the question 
+   * @param id The id of the answer 
+   * @param answer The updated answer (optional)
+   * @return Future(void)
+  */
+  def updateQuestionAnswerAsync(questionId: String, id: String, answer: Option[AnswerResource] = None) = {
+      helper.updateQuestionAnswer(questionId, id, answer)
+  }
+
 
   /**
    * Update a question template
@@ -1274,39 +887,24 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return QuestionTemplateResource
    */
   def updateQuestionTemplate(id: String, questionTemplateResource: Option[QuestionTemplateResource] = None): Option[QuestionTemplateResource] = {
-    // create path and map variables
-    val path = "/trivia/questions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestionTemplate")
-
-    
-
-    var postBody: AnyRef = questionTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[QuestionTemplateResource]).asInstanceOf[QuestionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateQuestionTemplateAsync(id, questionTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a question template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param questionTemplateResource The question template resource object (optional)
+   * @return Future(QuestionTemplateResource)
+  */
+  def updateQuestionTemplateAsync(id: String, questionTemplateResource: Option[QuestionTemplateResource] = None): Future[QuestionTemplateResource] = {
+      helper.updateQuestionTemplate(id, questionTemplateResource)
+  }
+
 
   /**
    * Bulk update questions
@@ -1322,43 +920,850 @@ class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return Integer
    */
   def updateQuestionsInBulk(question: Option[QuestionResource] = None, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Option[Integer] = {
-    // create path and map variables
-    val path = "/trivia/questions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    filterIdset.map(paramVal => queryParams += "filter_idset" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    filterImportId.map(paramVal => queryParams += "filter_import_id" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = question.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[Integer]).asInstanceOf[Integer])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateQuestionsInBulkAsync(question, filterSearch, filterIdset, filterCategory, filterTagset, filterType, filterPublished, filterImportId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Bulk update questions asynchronously
+   * Will update all questions that match filters used (or all questions in system if no filters used). Body should match a question resource with only those properties you wish to set. Null values will be ignored. Returned number is how many were updated.
+   * @param question New values for a set of question fields (optional)
+   * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
+   * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
+   * @param filterCategory Filter for questions with specified category, by id (optional)
+   * @param filterTagset Filter for questions with specified tags (separated by comma) (optional)
+   * @param filterType Filter for questions with specified type.  Allowable values: (&#39;TEXT&#39;, &#39;IMAGE&#39;, &#39;VIDEO&#39;, &#39;AUDIO&#39;) (optional)
+   * @param filterPublished Filter for questions currenctly published or not (optional)
+   * @param filterImportId Filter for questions from a specific import job (optional)
+   * @return Future(Integer)
+  */
+  def updateQuestionsInBulkAsync(question: Option[QuestionResource] = None, filterSearch: Option[String] = None, filterIdset: Option[String] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterType: Option[String] = None, filterPublished: Option[Boolean] = None, filterImportId: Option[Long] = None): Future[Integer] = {
+      helper.updateQuestionsInBulk(question, filterSearch, filterIdset, filterCategory, filterTagset, filterType, filterPublished, filterImportId)
+  }
+
+
+}
+
+class GamificationTriviaApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addQuestionAnswers(questionId: String,
+    answer: Option[AnswerResource] = None
+    )(implicit reader: ClientResponseReader[AnswerResource], writer: RequestWriter[AnswerResource]): Future[AnswerResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{question_id}/answers")
+      replaceAll ("\\{" + "question_id" + "\\}",questionId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->addQuestionAnswers")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(answer))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addQuestionTag(id: String,
+    tag: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}/tags")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->addQuestionTag")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(tag))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addTagToQuestionsBatch(tag: Option[StringWrapper] = None,
+    filterSearch: Option[String] = None,
+    filterIdset: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterType: Option[String] = None,
+    filterPublished: Option[Boolean] = None,
+    filterImportId: Option[Long] = None
+    )(implicit reader: ClientResponseReader[Integer], writer: RequestWriter[StringWrapper]): Future[Integer] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/tags"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterIdset match {
+      case Some(param) => queryParams += "filter_idset" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+    filterImportId match {
+      case Some(param) => queryParams += "filter_import_id" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(tag))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createImportJob(request: Option[ImportJobResource] = None
+    )(implicit reader: ClientResponseReader[ImportJobResource], writer: RequestWriter[ImportJobResource]): Future[ImportJobResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createQuestion(question: Option[QuestionResource] = None
+    )(implicit reader: ClientResponseReader[QuestionResource], writer: RequestWriter[QuestionResource]): Future[QuestionResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(question))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createQuestionTemplate(questionTemplateResource: Option[QuestionTemplateResource] = None
+    )(implicit reader: ClientResponseReader[QuestionTemplateResource], writer: RequestWriter[QuestionTemplateResource]): Future[QuestionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(questionTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteImportJob(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteQuestion(id: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestion")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteQuestionAnswers(questionId: String,
+    id: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{question_id}/answers/{id}")
+      replaceAll ("\\{" + "question_id" + "\\}",questionId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->deleteQuestionAnswers")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestionAnswers")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteQuestionTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->deleteQuestionTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getImportJob(id: Long)(implicit reader: ClientResponseReader[ImportJobResource]): Future[ImportJobResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getImportJobs(filterVendor: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterName: Option[String] = None,
+    filterStatus: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceImportJobResource]): Future[PageResourceImportJobResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterVendor match {
+      case Some(param) => queryParams += "filter_vendor" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    filterStatus match {
+      case Some(param) => queryParams += "filter_status" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestion(id: String)(implicit reader: ClientResponseReader[QuestionResource]): Future[QuestionResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestion")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionAnswer(questionId: String,
+    id: String)(implicit reader: ClientResponseReader[AnswerResource]): Future[AnswerResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{question_id}/answers/{id}")
+      replaceAll ("\\{" + "question_id" + "\\}",questionId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->getQuestionAnswer")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionAnswer")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionAnswers(questionId: String)(implicit reader: ClientResponseReader[List[AnswerResource]]): Future[List[AnswerResource]] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{question_id}/answers")
+      replaceAll ("\\{" + "question_id" + "\\}",questionId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->getQuestionAnswers")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionDeltas(since: Option[Long] = None
+    )(implicit reader: ClientResponseReader[List[DeltaResource]]): Future[List[DeltaResource]] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/delta"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    since match {
+      case Some(param) => queryParams += "since" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionTags(id: String)(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}/tags")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionTags")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionTemplate(id: String)(implicit reader: ClientResponseReader[QuestionTemplateResource]): Future[QuestionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->getQuestionTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceQuestionTemplateResource]): Future[PageResourceQuestionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestions(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC),
+    filterSearch: Option[String] = None,
+    filterIdset: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterType: Option[String] = None,
+    filterPublished: Option[Boolean] = None,
+    filterImportId: Option[Long] = None
+    )(implicit reader: ClientResponseReader[PageResourceQuestionResource]): Future[PageResourceQuestionResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterIdset match {
+      case Some(param) => queryParams += "filter_idset" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+    filterImportId match {
+      case Some(param) => queryParams += "filter_import_id" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getQuestionsCount(filterSearch: Option[String] = None,
+    filterIdset: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterType: Option[String] = None,
+    filterPublished: Option[Boolean] = None
+    )(implicit reader: ClientResponseReader[Long]): Future[Long] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/count"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterIdset match {
+      case Some(param) => queryParams += "filter_idset" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def processImportJob(id: Long,
+    publishNow: Boolean)(implicit reader: ClientResponseReader[ImportJobResource]): Future[ImportJobResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import/{id}/process")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    queryParams += "publish_now" -> publishNow.toString
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeQuestionTag(id: String,
+    tag: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}/tags/{tag}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "tag" + "\\}",tag.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->removeQuestionTag")
+
+    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling GamificationTriviaApi->removeQuestionTag")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeTagToQuestionsBatch(tag: String,
+    filterSearch: Option[String] = None,
+    filterIdset: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterType: Option[String] = None,
+    filterPublished: Option[Boolean] = None,
+    filterImportId: Option[Long] = None
+    )(implicit reader: ClientResponseReader[Integer]): Future[Integer] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/tags/{tag}")
+      replaceAll ("\\{" + "tag" + "\\}",tag.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling GamificationTriviaApi->removeTagToQuestionsBatch")
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterIdset match {
+      case Some(param) => queryParams += "filter_idset" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+    filterImportId match {
+      case Some(param) => queryParams += "filter_import_id" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchQuestionTags(filterSearch: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterImportId: Option[Long] = None
+    )(implicit reader: ClientResponseReader[Collectionstring]): Future[Collectionstring] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/tags"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterImportId match {
+      case Some(param) => queryParams += "filter_import_id" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateImportJob(id: Long,
+    request: Option[ImportJobResource] = None
+    )(implicit reader: ClientResponseReader[ImportJobResource], writer: RequestWriter[ImportJobResource]): Future[ImportJobResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/import/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateQuestion(id: String,
+    question: Option[QuestionResource] = None
+    )(implicit reader: ClientResponseReader[QuestionResource], writer: RequestWriter[QuestionResource]): Future[QuestionResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestion")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(question))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateQuestionAnswer(questionId: String,
+    id: String,
+    answer: Option[AnswerResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[AnswerResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/{question_id}/answers/{id}")
+      replaceAll ("\\{" + "question_id" + "\\}",questionId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (questionId == null) throw new Exception("Missing required parameter 'questionId' when calling GamificationTriviaApi->updateQuestionAnswer")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestionAnswer")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(answer))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateQuestionTemplate(id: String,
+    questionTemplateResource: Option[QuestionTemplateResource] = None
+    )(implicit reader: ClientResponseReader[QuestionTemplateResource], writer: RequestWriter[QuestionTemplateResource]): Future[QuestionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationTriviaApi->updateQuestionTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(questionTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateQuestionsInBulk(question: Option[QuestionResource] = None,
+    filterSearch: Option[String] = None,
+    filterIdset: Option[String] = None,
+    filterCategory: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterType: Option[String] = None,
+    filterPublished: Option[Boolean] = None,
+    filterImportId: Option[Long] = None
+    )(implicit reader: ClientResponseReader[Integer], writer: RequestWriter[QuestionResource]): Future[Integer] = {
+    // create path and map variables
+    val path = (addFmt("/trivia/questions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    filterIdset match {
+      case Some(param) => queryParams += "filter_idset" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+    filterImportId match {
+      case Some(param) => queryParams += "filter_import_id" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(question))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

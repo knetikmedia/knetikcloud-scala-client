@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.BreEventLog
 import com.knetikcloud.client.model.ForwardLog
 import com.knetikcloud.client.model.PageResourceBreEventLog
@@ -19,8 +21,7 @@ import com.knetikcloud.client.model.PageResourceForwardLog
 import com.knetikcloud.client.model.PageResourceUserActionLog
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.UserActionLog
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -32,12 +33,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new LogsApiAsyncHelper(client, config)
 
   /**
    * Add a user log entry
@@ -46,36 +76,23 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def addUserLog(logEntry: Option[UserActionLog] = None) = {
-    // create path and map variables
-    val path = "/audit/logs".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = logEntry.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addUserLogAsync(logEntry), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a user log entry asynchronously
+   * 
+   * @param logEntry The user log entry to be added (optional)
+   * @return Future(void)
+  */
+  def addUserLogAsync(logEntry: Option[UserActionLog] = None) = {
+      helper.addUserLog(logEntry)
+  }
+
 
   /**
    * Get an existing BRE event log entry by id
@@ -84,39 +101,23 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return BreEventLog
    */
   def getBREEventLog(id: String): Option[BreEventLog] = {
-    // create path and map variables
-    val path = "/bre/logs/event-log/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getBREEventLog")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BreEventLog]).asInstanceOf[BreEventLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREEventLogAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get an existing BRE event log entry by id asynchronously
+   * 
+   * @param id The BRE event log entry id 
+   * @return Future(BreEventLog)
+  */
+  def getBREEventLogAsync(id: String): Future[BreEventLog] = {
+      helper.getBREEventLog(id)
+  }
+
 
   /**
    * Returns a list of BRE event log entries
@@ -130,43 +131,28 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceBreEventLog
    */
   def getBREEventLogs(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Option[PageResourceBreEventLog] = {
-    // create path and map variables
-    val path = "/bre/logs/event-log".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterStartDate.map(paramVal => queryParams += "filter_start_date" -> paramVal.toString)
-    filterEventName.map(paramVal => queryParams += "filter_event_name" -> paramVal.toString)
-    filterEventId.map(paramVal => queryParams += "filter_event_id" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceBreEventLog]).asInstanceOf[PageResourceBreEventLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREEventLogsAsync(filterStartDate, filterEventName, filterEventId, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a list of BRE event log entries asynchronously
+   * 
+   * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterEventName Filter event logs by event name (optional)
+   * @param filterEventId Filter event logs by request id (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
+   * @return Future(PageResourceBreEventLog)
+  */
+  def getBREEventLogsAsync(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Future[PageResourceBreEventLog] = {
+      helper.getBREEventLogs(filterStartDate, filterEventName, filterEventId, size, page, order)
+  }
+
 
   /**
    * Get an existing forward log entry by id
@@ -175,39 +161,23 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return ForwardLog
    */
   def getBREForwardLog(id: String): Option[ForwardLog] = {
-    // create path and map variables
-    val path = "/bre/logs/forward-log/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getBREForwardLog")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ForwardLog]).asInstanceOf[ForwardLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREForwardLogAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get an existing forward log entry by id asynchronously
+   * 
+   * @param id The forward log entry id 
+   * @return Future(ForwardLog)
+  */
+  def getBREForwardLogAsync(id: String): Future[ForwardLog] = {
+      helper.getBREForwardLog(id)
+  }
+
 
   /**
    * Returns a list of forward log entries
@@ -221,43 +191,28 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceForwardLog
    */
   def getBREForwardLogs(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Option[PageResourceForwardLog] = {
-    // create path and map variables
-    val path = "/bre/logs/forward-log".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterStartDate.map(paramVal => queryParams += "filter_start_date" -> paramVal.toString)
-    filterEndDate.map(paramVal => queryParams += "filter_end_date" -> paramVal.toString)
-    filterStatusCode.map(paramVal => queryParams += "filter_status_code" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceForwardLog]).asInstanceOf[PageResourceForwardLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREForwardLogsAsync(filterStartDate, filterEndDate, filterStatusCode, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a list of forward log entries asynchronously
+   * 
+   * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the log end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterStatusCode Filter forward logs by http status code (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
+   * @return Future(PageResourceForwardLog)
+  */
+  def getBREForwardLogsAsync(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Future[PageResourceForwardLog] = {
+      helper.getBREForwardLogs(filterStartDate, filterEndDate, filterStatusCode, size, page, order)
+  }
+
 
   /**
    * Returns a user log entry by id
@@ -266,39 +221,23 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return UserActionLog
    */
   def getUserLog(id: String): Option[UserActionLog] = {
-    // create path and map variables
-    val path = "/audit/logs/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getUserLog")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserActionLog]).asInstanceOf[UserActionLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserLogAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a user log entry by id asynchronously
+   * 
+   * @param id The user log entry id 
+   * @return Future(UserActionLog)
+  */
+  def getUserLogAsync(id: String): Future[UserActionLog] = {
+      helper.getUserLog(id)
+  }
+
 
   /**
    * Returns a page of user logs entries
@@ -311,41 +250,231 @@ class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceUserActionLog
    */
   def getUserLogs(filterUser: Option[Integer] = None, filterActionName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = timestamp:DESC*/): Option[PageResourceUserActionLog] = {
-    // create path and map variables
-    val path = "/audit/logs".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterUser.map(paramVal => queryParams += "filter_user" -> paramVal.toString)
-    filterActionName.map(paramVal => queryParams += "filter_action_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUserActionLog]).asInstanceOf[PageResourceUserActionLog])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserLogsAsync(filterUser, filterActionName, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a page of user logs entries asynchronously
+   * 
+   * @param filterUser Filter for actions taken by a specific user by id (optional)
+   * @param filterActionName Filter for actions of a specific name (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to timestamp:DESC)
+   * @return Future(PageResourceUserActionLog)
+  */
+  def getUserLogsAsync(filterUser: Option[Integer] = None, filterActionName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = timestamp:DESC*/): Future[PageResourceUserActionLog] = {
+      helper.getUserLogs(filterUser, filterActionName, size, page, order)
+  }
+
+
+}
+
+class LogsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addUserLog(logEntry: Option[UserActionLog] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[UserActionLog]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/audit/logs"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(logEntry))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBREEventLog(id: String)(implicit reader: ClientResponseReader[BreEventLog]): Future[BreEventLog] = {
+    // create path and map variables
+    val path = (addFmt("/bre/logs/event-log/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getBREEventLog")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBREEventLogs(filterStartDate: Option[String] = None,
+    filterEventName: Option[String] = None,
+    filterEventId: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:DESC)
+    )(implicit reader: ClientResponseReader[PageResourceBreEventLog]): Future[PageResourceBreEventLog] = {
+    // create path and map variables
+    val path = (addFmt("/bre/logs/event-log"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterStartDate match {
+      case Some(param) => queryParams += "filter_start_date" -> param.toString
+      case _ => queryParams
+    }
+    filterEventName match {
+      case Some(param) => queryParams += "filter_event_name" -> param.toString
+      case _ => queryParams
+    }
+    filterEventId match {
+      case Some(param) => queryParams += "filter_event_id" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBREForwardLog(id: String)(implicit reader: ClientResponseReader[ForwardLog]): Future[ForwardLog] = {
+    // create path and map variables
+    val path = (addFmt("/bre/logs/forward-log/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getBREForwardLog")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBREForwardLogs(filterStartDate: Option[String] = None,
+    filterEndDate: Option[String] = None,
+    filterStatusCode: Option[Integer] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:DESC)
+    )(implicit reader: ClientResponseReader[PageResourceForwardLog]): Future[PageResourceForwardLog] = {
+    // create path and map variables
+    val path = (addFmt("/bre/logs/forward-log"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterStartDate match {
+      case Some(param) => queryParams += "filter_start_date" -> param.toString
+      case _ => queryParams
+    }
+    filterEndDate match {
+      case Some(param) => queryParams += "filter_end_date" -> param.toString
+      case _ => queryParams
+    }
+    filterStatusCode match {
+      case Some(param) => queryParams += "filter_status_code" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserLog(id: String)(implicit reader: ClientResponseReader[UserActionLog]): Future[UserActionLog] = {
+    // create path and map variables
+    val path = (addFmt("/audit/logs/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling LogsApi->getUserLog")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserLogs(filterUser: Option[Integer] = None,
+    filterActionName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(timestamp:DESC)
+    )(implicit reader: ClientResponseReader[PageResourceUserActionLog]): Future[PageResourceUserActionLog] = {
+    // create path and map variables
+    val path = (addFmt("/audit/logs"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterUser match {
+      case Some(param) => queryParams += "filter_user" -> param.toString
+      case _ => queryParams
+    }
+    filterActionName match {
+      case Some(param) => queryParams += "filter_action_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

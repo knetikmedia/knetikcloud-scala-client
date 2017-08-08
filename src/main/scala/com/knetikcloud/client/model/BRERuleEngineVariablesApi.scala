@@ -12,11 +12,12 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceSimpleReferenceResourceobject
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.VariableTypeResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -28,12 +29,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class BRERuleEngineVariablesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new BRERuleEngineVariablesApiAsyncHelper(client, config)
 
   /**
    * Get a list of variable types available
@@ -41,37 +71,22 @@ class BRERuleEngineVariablesApi(val defBasePath: String = "https://sandbox.kneti
    * @return List[VariableTypeResource]
    */
   def getBREVariableTypes(): Option[List[VariableTypeResource]] = {
-    // create path and map variables
-    val path = "/bre/variable-types".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[VariableTypeResource]).asInstanceOf[List[VariableTypeResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREVariableTypesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a list of variable types available asynchronously
+   * Types include integer, string, user and invoice. These are used to qualify trigger parameters and action variables with strong typing.
+   * @return Future(List[VariableTypeResource])
+  */
+  def getBREVariableTypesAsync(): Future[List[VariableTypeResource]] = {
+      helper.getBREVariableTypes()
+  }
+
 
   /**
    * List valid values for a type
@@ -83,41 +98,79 @@ class BRERuleEngineVariablesApi(val defBasePath: String = "https://sandbox.kneti
    * @return PageResourceSimpleReferenceResourceobject
    */
   def getBREVariableValues(name: String, filterName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceSimpleReferenceResourceobject] = {
+    val await = Try(Await.result(getBREVariableValuesAsync(name, filterName, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * List valid values for a type asynchronously
+   * Used to lookup users to fill in a user constant for example. Only types marked as enumerable are suppoorted here.
+   * @param name The name of the type 
+   * @param filterName Filter results by those with names starting with this string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceSimpleReferenceResourceobject)
+  */
+  def getBREVariableValuesAsync(name: String, filterName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceSimpleReferenceResourceobject] = {
+      helper.getBREVariableValues(name, filterName, size, page)
+  }
+
+
+}
+
+class BRERuleEngineVariablesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getBREVariableTypes()(implicit reader: ClientResponseReader[List[VariableTypeResource]]): Future[List[VariableTypeResource]] = {
     // create path and map variables
-    val path = "/bre/variable-types/{name}/values".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
+    val path = (addFmt("/bre/variable-types"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBREVariableValues(name: String,
+    filterName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceSimpleReferenceResourceobject]): Future[PageResourceSimpleReferenceResourceobject] = {
+    // create path and map variables
+    val path = (addFmt("/bre/variable-types/{name}/values")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (name == null) throw new Exception("Missing required parameter 'name' when calling BRERuleEngineVariablesApi->getBREVariableValues")
 
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
     }
 
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSimpleReferenceResourceobject]).asInstanceOf[PageResourceSimpleReferenceResourceobject])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

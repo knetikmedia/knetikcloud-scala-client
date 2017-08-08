@@ -14,6 +14,8 @@ package com.knetikcloud.client.model
 
 
 case class StripeCreatePaymentMethod (
+  /* Additional optional details to store on the payment method. If included, all fields in the details will override any defaults */
+  details: Option[PaymentMethodDetails],
   /* A token from Stripe to identify payment info to be tied to the customer */
   token: String,
   /* The id of the user, if null the logged in user is used. Admin privilege need to specify other users */

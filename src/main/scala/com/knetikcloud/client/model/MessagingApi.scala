@@ -12,13 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.RawEmailResource
 import com.knetikcloud.client.model.RawSMSResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateEmailResource
 import com.knetikcloud.client.model.TemplateSMSResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new MessagingApiAsyncHelper(client, config)
 
   /**
    * Send a raw email to one or more users
@@ -44,36 +74,23 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def sendRawEmail(rawEmailResource: Option[RawEmailResource] = None) = {
-    // create path and map variables
-    val path = "/messaging/raw-email".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = rawEmailResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(sendRawEmailAsync(rawEmailResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Send a raw email to one or more users asynchronously
+   * 
+   * @param rawEmailResource The new raw email to be sent (optional)
+   * @return Future(void)
+  */
+  def sendRawEmailAsync(rawEmailResource: Option[RawEmailResource] = None) = {
+      helper.sendRawEmail(rawEmailResource)
+  }
+
 
   /**
    * Send a raw SMS
@@ -82,36 +99,23 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def sendRawSMS(rawSMSResource: Option[RawSMSResource] = None) = {
-    // create path and map variables
-    val path = "/messaging/raw-sms".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = rawSMSResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(sendRawSMSAsync(rawSMSResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Send a raw SMS asynchronously
+   * Sends a raw SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * @param rawSMSResource The new raw SMS to be sent (optional)
+   * @return Future(void)
+  */
+  def sendRawSMSAsync(rawSMSResource: Option[RawSMSResource] = None) = {
+      helper.sendRawSMS(rawSMSResource)
+  }
+
 
   /**
    * Send a templated email to one or more users
@@ -120,36 +124,23 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def sendTemplatedEmail(messageResource: Option[TemplateEmailResource] = None) = {
-    // create path and map variables
-    val path = "/messaging/templated-email".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = messageResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(sendTemplatedEmailAsync(messageResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Send a templated email to one or more users asynchronously
+   * 
+   * @param messageResource The new template email to be sent (optional)
+   * @return Future(void)
+  */
+  def sendTemplatedEmailAsync(messageResource: Option[TemplateEmailResource] = None) = {
+      helper.sendTemplatedEmail(messageResource)
+  }
+
 
   /**
    * Send a new templated SMS
@@ -158,35 +149,91 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def sendTemplatedSMS(templateSMSResource: Option[TemplateSMSResource] = None) = {
-    // create path and map variables
-    val path = "/messaging/templated-sms".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = templateSMSResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(sendTemplatedSMSAsync(templateSMSResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Send a new templated SMS asynchronously
+   * Sends a templated SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * @param templateSMSResource The new template SMS to be sent (optional)
+   * @return Future(void)
+  */
+  def sendTemplatedSMSAsync(templateSMSResource: Option[TemplateSMSResource] = None) = {
+      helper.sendTemplatedSMS(templateSMSResource)
+  }
+
+
+}
+
+class MessagingApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def sendRawEmail(rawEmailResource: Option[RawEmailResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[RawEmailResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/raw-email"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(rawEmailResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendRawSMS(rawSMSResource: Option[RawSMSResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[RawSMSResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/raw-sms"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(rawSMSResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendTemplatedEmail(messageResource: Option[TemplateEmailResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[TemplateEmailResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templated-email"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(messageResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendTemplatedSMS(templateSMSResource: Option[TemplateSMSResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[TemplateSMSResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templated-sms"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(templateSMSResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

@@ -12,13 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.ArtistResource
 import com.knetikcloud.client.model.PageResourceArtistResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new MediaArtistsApiAsyncHelper(client, config)
 
   /**
    * Adds a new artist in the system
@@ -44,37 +74,23 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return ArtistResource
    */
   def addArtist(artistResource: Option[ArtistResource] = None): Option[ArtistResource] = {
-    // create path and map variables
-    val path = "/media/artists".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = artistResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ArtistResource]).asInstanceOf[ArtistResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addArtistAsync(artistResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds a new artist in the system asynchronously
+   * Adds a new artist in the system. Use specific media contributions endpoint to add contributions
+   * @param artistResource The new artist (optional)
+   * @return Future(ArtistResource)
+  */
+  def addArtistAsync(artistResource: Option[ArtistResource] = None): Future[ArtistResource] = {
+      helper.addArtist(artistResource)
+  }
+
 
   /**
    * Create an artist template
@@ -83,37 +99,23 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return TemplateResource
    */
   def createArtistTemplate(artistTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/media/artists/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = artistTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createArtistTemplateAsync(artistTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create an artist template asynchronously
+   * Artist Templates define a type of artist and the properties they have
+   * @param artistTemplateResource The artist template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createArtistTemplateAsync(artistTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createArtistTemplate(artistTemplateResource)
+  }
+
 
   /**
    * Removes an artist from the system IF no resources are attached to it
@@ -122,36 +124,23 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return void
    */
   def deleteArtist(id: Long) = {
-    // create path and map variables
-    val path = "/media/artists/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteArtistAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Removes an artist from the system IF no resources are attached to it asynchronously
+   * 
+   * @param id The artist id 
+   * @return Future(void)
+  */
+  def deleteArtistAsync(id: Long) = {
+      helper.deleteArtist(id)
+  }
+
 
   /**
    * Delete an artist template
@@ -161,39 +150,24 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return void
    */
   def deleteArtistTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/media/artists/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaArtistsApi->deleteArtistTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteArtistTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an artist template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteArtistTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteArtistTemplate(id, cascade)
+  }
+
 
   /**
    * Loads a specific artist details
@@ -203,38 +177,24 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return ArtistResource
    */
   def getArtist(id: Long, showContributions: Option[Integer] = None): Option[ArtistResource] = {
-    // create path and map variables
-    val path = "/media/artists/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    showContributions.map(paramVal => queryParams += "show_contributions" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ArtistResource]).asInstanceOf[ArtistResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getArtistAsync(id, showContributions), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Loads a specific artist details asynchronously
+   * 
+   * @param id The artist id 
+   * @param showContributions The number of contributions to show fetch (optional)
+   * @return Future(ArtistResource)
+  */
+  def getArtistAsync(id: Long, showContributions: Option[Integer] = None): Future[ArtistResource] = {
+      helper.getArtist(id, showContributions)
+  }
+
 
   /**
    * Get a single artist template
@@ -243,39 +203,23 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return TemplateResource
    */
   def getArtistTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/media/artists/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaArtistsApi->getArtistTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getArtistTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single artist template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getArtistTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getArtistTemplate(id)
+  }
+
 
   /**
    * List and search artist templates
@@ -286,40 +230,25 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return PageResourceTemplateResource
    */
   def getArtistTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/media/artists/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getArtistTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search artist templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getArtistTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getArtistTemplates(size, page, order)
+  }
+
 
   /**
    * Search for artists
@@ -331,41 +260,26 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return PageResourceArtistResource
    */
   def getArtists(filterArtistsByName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceArtistResource] = {
-    // create path and map variables
-    val path = "/media/artists".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterArtistsByName.map(paramVal => queryParams += "filter_artists_by_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceArtistResource]).asInstanceOf[PageResourceArtistResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getArtistsAsync(filterArtistsByName, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Search for artists asynchronously
+   * 
+   * @param filterArtistsByName Filter for artists which name *STARTS* with the given string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceArtistResource)
+  */
+  def getArtistsAsync(filterArtistsByName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceArtistResource] = {
+      helper.getArtists(filterArtistsByName, size, page, order)
+  }
+
 
   /**
    * Modifies an artist details
@@ -375,36 +289,24 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return void
    */
   def updateArtist(id: Long, artistResource: Option[ArtistResource] = None) = {
-    // create path and map variables
-    val path = "/media/artists/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = artistResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateArtistAsync(id, artistResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Modifies an artist details asynchronously
+   * 
+   * @param id The artist id 
+   * @param artistResource The new artist (optional)
+   * @return Future(void)
+  */
+  def updateArtistAsync(id: Long, artistResource: Option[ArtistResource] = None) = {
+      helper.updateArtist(id, artistResource)
+  }
+
 
   /**
    * Update an artist template
@@ -414,38 +316,243 @@ class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return TemplateResource
    */
   def updateArtistTemplate(id: String, artistTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateArtistTemplateAsync(id, artistTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update an artist template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param artistTemplateResource The artist template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateArtistTemplateAsync(id: String, artistTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateArtistTemplate(id, artistTemplateResource)
+  }
+
+
+}
+
+class MediaArtistsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addArtist(artistResource: Option[ArtistResource] = None
+    )(implicit reader: ClientResponseReader[ArtistResource], writer: RequestWriter[ArtistResource]): Future[ArtistResource] = {
     // create path and map variables
-    val path = "/media/artists/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/media/artists"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(artistResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createArtistTemplate(artistTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(artistTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteArtist(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteArtistTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaArtistsApi->deleteArtistTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getArtist(id: Long,
+    showContributions: Option[Integer] = None
+    )(implicit reader: ClientResponseReader[ArtistResource]): Future[ArtistResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    showContributions match {
+      case Some(param) => queryParams += "show_contributions" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getArtistTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaArtistsApi->getArtistTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getArtistTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getArtists(filterArtistsByName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceArtistResource]): Future[PageResourceArtistResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterArtistsByName match {
+      case Some(param) => queryParams += "filter_artists_by_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateArtist(id: Long,
+    artistResource: Option[ArtistResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ArtistResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(artistResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateArtistTemplate(id: String,
+    artistTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/artists/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaArtistsApi->updateArtistTemplate")
 
-    
 
-    var postBody: AnyRef = artistTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(artistTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

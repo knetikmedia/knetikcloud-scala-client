@@ -14,7 +14,8 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
-import com.knetikcloud.client.model.PageResourceBillingReport
+import com.knetikcloud.client.model.FattMerchantPaymentMethodRequest
+import com.knetikcloud.client.model.PaymentMethodResource
 import com.knetikcloud.client.model.Result
 import io.swagger.client.{ApiInvoker, ApiException}
 
@@ -42,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class PaymentsFattMerchantApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -62,17 +63,16 @@ class ReportingSubscriptionsApi(val defBasePath: String = "https://sandbox.kneti
 
   val config = SwaggerConfig.forUrl(new URI(defBasePath))
   val client = new RestClient(config)
-  val helper = new ReportingSubscriptionsApiAsyncHelper(client, config)
+  val helper = new PaymentsFattMerchantApiAsyncHelper(client, config)
 
   /**
-   * Get a list of available subscription reports in most recent first order
-   * 
-   * @param size The number of objects returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return PageResourceBillingReport
+   * Create or update a FattMerchant payment method for a user
+   * Stores customer information and creates a payment method that can be used to pay invoices through the payments endpoints.
+   * @param request Request containing payment method information for user (optional)
+   * @return PaymentMethodResource
    */
-  def getSubscriptionReports(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceBillingReport] = {
-    val await = Try(Await.result(getSubscriptionReportsAsync(size, page), Duration.Inf))
+  def createOrUpdateFattMerchantPaymentMethod(request: Option[FattMerchantPaymentMethodRequest] = None): Option[PaymentMethodResource] = {
+    val await = Try(Await.result(createOrUpdateFattMerchantPaymentMethodAsync(request), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -80,41 +80,31 @@ class ReportingSubscriptionsApi(val defBasePath: String = "https://sandbox.kneti
   }
 
   /**
-   * Get a list of available subscription reports in most recent first order asynchronously
-   * 
-   * @param size The number of objects returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return Future(PageResourceBillingReport)
+   * Create or update a FattMerchant payment method for a user asynchronously
+   * Stores customer information and creates a payment method that can be used to pay invoices through the payments endpoints.
+   * @param request Request containing payment method information for user (optional)
+   * @return Future(PaymentMethodResource)
   */
-  def getSubscriptionReportsAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceBillingReport] = {
-      helper.getSubscriptionReports(size, page)
+  def createOrUpdateFattMerchantPaymentMethodAsync(request: Option[FattMerchantPaymentMethodRequest] = None): Future[PaymentMethodResource] = {
+      helper.createOrUpdateFattMerchantPaymentMethod(request)
   }
 
 
 }
 
-class ReportingSubscriptionsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+class PaymentsFattMerchantApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
 
-  def getSubscriptionReports(size: Option[Integer] = Some(25),
-    page: Option[Integer] = Some(1)
-    )(implicit reader: ClientResponseReader[PageResourceBillingReport]): Future[PageResourceBillingReport] = {
+  def createOrUpdateFattMerchantPaymentMethod(request: Option[FattMerchantPaymentMethodRequest] = None
+    )(implicit reader: ClientResponseReader[PaymentMethodResource], writer: RequestWriter[FattMerchantPaymentMethodRequest]): Future[PaymentMethodResource] = {
     // create path and map variables
-    val path = (addFmt("/reporting/subscription"))
+    val path = (addFmt("/payment/provider/fattmerchant/payment-methods"))
 
     // query params
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
-    size match {
-      case Some(param) => queryParams += "size" -> param.toString
-      case _ => queryParams
-    }
-    page match {
-      case Some(param) => queryParams += "page" -> param.toString
-      case _ => queryParams
-    }
 
-    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(request))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }

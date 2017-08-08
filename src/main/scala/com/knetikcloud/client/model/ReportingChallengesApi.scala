@@ -12,10 +12,11 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceChallengeEventParticipantResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -27,12 +28,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class ReportingChallengesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new ReportingChallengesApiAsyncHelper(client, config)
 
   /**
    * Retrieve a challenge event leaderboard details
@@ -44,41 +74,26 @@ class ReportingChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceChallengeEventParticipantResource
    */
   def getChallengeEventLeaderboard(filterEvent: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceChallengeEventParticipantResource] = {
-    // create path and map variables
-    val path = "/reporting/events/leaderboard".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterEvent.map(paramVal => queryParams += "filter_event" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceChallengeEventParticipantResource]).asInstanceOf[PageResourceChallengeEventParticipantResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeEventLeaderboardAsync(filterEvent, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a challenge event leaderboard details asynchronously
+   * Lists all leaderboard entries with additional user details
+   * @param filterEvent A sepecific challenge event id (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
+   * @return Future(PageResourceChallengeEventParticipantResource)
+  */
+  def getChallengeEventLeaderboardAsync(filterEvent: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceChallengeEventParticipantResource] = {
+      helper.getChallengeEventLeaderboard(filterEvent, size, page, order)
+  }
+
 
   /**
    * Retrieve a challenge event participant details
@@ -90,40 +105,100 @@ class ReportingChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PageResourceChallengeEventParticipantResource
    */
   def getChallengeEventParticipants(filterEvent: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceChallengeEventParticipantResource] = {
-    // create path and map variables
-    val path = "/reporting/events/participants".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterEvent.map(paramVal => queryParams += "filter_event" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceChallengeEventParticipantResource]).asInstanceOf[PageResourceChallengeEventParticipantResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getChallengeEventParticipantsAsync(filterEvent, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a challenge event participant details asynchronously
+   * Lists all user submitted scores sorted by value, including those that do not apear in the leaderboard due to value or aggregation
+   * @param filterEvent A sepecific challenge event id (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
+   * @return Future(PageResourceChallengeEventParticipantResource)
+  */
+  def getChallengeEventParticipantsAsync(filterEvent: Option[Long] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceChallengeEventParticipantResource] = {
+      helper.getChallengeEventParticipants(filterEvent, size, page, order)
+  }
+
+
+}
+
+class ReportingChallengesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getChallengeEventLeaderboard(filterEvent: Option[Long] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = None
+    )(implicit reader: ClientResponseReader[PageResourceChallengeEventParticipantResource]): Future[PageResourceChallengeEventParticipantResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/events/leaderboard"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterEvent match {
+      case Some(param) => queryParams += "filter_event" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getChallengeEventParticipants(filterEvent: Option[Long] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = None
+    )(implicit reader: ClientResponseReader[PageResourceChallengeEventParticipantResource]): Future[PageResourceChallengeEventParticipantResource] = {
+    // create path and map variables
+    val path = (addFmt("/reporting/events/participants"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterEvent match {
+      case Some(param) => queryParams += "filter_event" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

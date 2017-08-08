@@ -12,11 +12,12 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.LeaderboardEntryResource
 import com.knetikcloud.client.model.LeaderboardResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -28,12 +29,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class GamificationLeaderboardsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new GamificationLeaderboardsApiAsyncHelper(client, config)
 
   /**
    * Retrieves leaderboard details and paginated entries
@@ -46,44 +76,27 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://sandbox.kne
    * @return LeaderboardResource
    */
   def getLeaderboard(contextType: String, contextId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = score:DESC,updated:ASC,user_id:ASC*/): Option[LeaderboardResource] = {
-    // create path and map variables
-    val path = "/leaderboards/{context_type}/{context_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "context_type" + "\\}",apiInvoker.escape(contextType)).replaceAll("\\{" + "context_id" + "\\}",apiInvoker.escape(contextId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (contextType == null) throw new Exception("Missing required parameter 'contextType' when calling GamificationLeaderboardsApi->getLeaderboard")
-
-    if (contextId == null) throw new Exception("Missing required parameter 'contextId' when calling GamificationLeaderboardsApi->getLeaderboard")
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[LeaderboardResource]).asInstanceOf[LeaderboardResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getLeaderboardAsync(contextType, contextId, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieves leaderboard details and paginated entries asynchronously
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. Sorting is based on the fields of LeaderboardEntryResource rather than the returned LeaderboardResource.
+   * @param contextType The context type for the leaderboard 
+   * @param contextId The context id for the leaderboard 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to score:DESC,updated:ASC,user_id:ASC)
+   * @return Future(LeaderboardResource)
+  */
+  def getLeaderboardAsync(contextType: String, contextId: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = score:DESC,updated:ASC,user_id:ASC*/): Future[LeaderboardResource] = {
+      helper.getLeaderboard(contextType, contextId, size, page, order)
+  }
+
 
   /**
    * Retrieves a specific user entry with rank
@@ -94,43 +107,25 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://sandbox.kne
    * @return LeaderboardEntryResource
    */
   def getLeaderboardRank(contextType: String, contextId: String, id: String): Option[LeaderboardEntryResource] = {
-    // create path and map variables
-    val path = "/leaderboards/{context_type}/{context_id}/users/{id}/rank".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "context_type" + "\\}",apiInvoker.escape(contextType)).replaceAll("\\{" + "context_id" + "\\}",apiInvoker.escape(contextId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (contextType == null) throw new Exception("Missing required parameter 'contextType' when calling GamificationLeaderboardsApi->getLeaderboardRank")
-
-    if (contextId == null) throw new Exception("Missing required parameter 'contextId' when calling GamificationLeaderboardsApi->getLeaderboardRank")
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationLeaderboardsApi->getLeaderboardRank")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[LeaderboardEntryResource]).asInstanceOf[LeaderboardEntryResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getLeaderboardRankAsync(contextType, contextId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieves a specific user entry with rank asynchronously
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard
+   * @param contextType The context type for the leaderboard 
+   * @param contextId The context id for the leaderboard 
+   * @param id The id of a user 
+   * @return Future(LeaderboardEntryResource)
+  */
+  def getLeaderboardRankAsync(contextType: String, contextId: String, id: String): Future[LeaderboardEntryResource] = {
+      helper.getLeaderboardRank(contextType, contextId, id)
+  }
+
 
   /**
    * Get a list of available leaderboard strategy names
@@ -138,36 +133,105 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://sandbox.kne
    * @return List[String]
    */
   def getLeaderboardStrategies(): Option[List[String]] = {
-    // create path and map variables
-    val path = "/leaderboards/strategies".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getLeaderboardStrategiesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a list of available leaderboard strategy names asynchronously
+   * 
+   * @return Future(List[String])
+  */
+  def getLeaderboardStrategiesAsync(): Future[List[String]] = {
+      helper.getLeaderboardStrategies()
+  }
+
+
+}
+
+class GamificationLeaderboardsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getLeaderboard(contextType: String,
+    contextId: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(score:DESC,updated:ASC,user_id:ASC)
+    )(implicit reader: ClientResponseReader[LeaderboardResource]): Future[LeaderboardResource] = {
+    // create path and map variables
+    val path = (addFmt("/leaderboards/{context_type}/{context_id}")
+      replaceAll ("\\{" + "context_type" + "\\}",contextType.toString)
+      replaceAll ("\\{" + "context_id" + "\\}",contextId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (contextType == null) throw new Exception("Missing required parameter 'contextType' when calling GamificationLeaderboardsApi->getLeaderboard")
+
+    if (contextId == null) throw new Exception("Missing required parameter 'contextId' when calling GamificationLeaderboardsApi->getLeaderboard")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getLeaderboardRank(contextType: String,
+    contextId: String,
+    id: String)(implicit reader: ClientResponseReader[LeaderboardEntryResource]): Future[LeaderboardEntryResource] = {
+    // create path and map variables
+    val path = (addFmt("/leaderboards/{context_type}/{context_id}/users/{id}/rank")
+      replaceAll ("\\{" + "context_type" + "\\}",contextType.toString)
+      replaceAll ("\\{" + "context_id" + "\\}",contextId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (contextType == null) throw new Exception("Missing required parameter 'contextType' when calling GamificationLeaderboardsApi->getLeaderboardRank")
+
+    if (contextId == null) throw new Exception("Missing required parameter 'contextId' when calling GamificationLeaderboardsApi->getLeaderboardRank")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationLeaderboardsApi->getLeaderboardRank")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getLeaderboardStrategies()(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/leaderboards/strategies"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

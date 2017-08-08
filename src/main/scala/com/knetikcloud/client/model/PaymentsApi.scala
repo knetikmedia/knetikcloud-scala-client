@@ -12,11 +12,12 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PaymentAuthorizationResource
 import com.knetikcloud.client.model.PaymentMethodResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -28,12 +29,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new PaymentsApiAsyncHelper(client, config)
 
   /**
    * Create a new payment method for a user
@@ -43,37 +73,24 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PaymentMethodResource
    */
   def createPaymentMethod(userId: Integer, paymentMethod: Option[PaymentMethodResource] = None): Option[PaymentMethodResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/payment-methods".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = paymentMethod.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PaymentMethodResource]).asInstanceOf[PaymentMethodResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createPaymentMethodAsync(userId, paymentMethod), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a new payment method for a user asynchronously
+   * 
+   * @param userId ID of the user for whom the payment method is being created 
+   * @param paymentMethod Payment method being created (optional)
+   * @return Future(PaymentMethodResource)
+  */
+  def createPaymentMethodAsync(userId: Integer, paymentMethod: Option[PaymentMethodResource] = None): Future[PaymentMethodResource] = {
+      helper.createPaymentMethod(userId, paymentMethod)
+  }
+
 
   /**
    * Delete an existing payment method for a user
@@ -83,36 +100,24 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deletePaymentMethod(userId: Integer, id: Integer) = {
-    // create path and map variables
-    val path = "/users/{user_id}/payment-methods/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deletePaymentMethodAsync(userId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an existing payment method for a user asynchronously
+   * 
+   * @param userId ID of the user for whom the payment method is being updated 
+   * @param id ID of the payment method being deleted 
+   * @return Future(void)
+  */
+  def deletePaymentMethodAsync(userId: Integer, id: Integer) = {
+      helper.deletePaymentMethod(userId, id)
+  }
+
 
   /**
    * Get a single payment method for a user
@@ -122,37 +127,24 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PaymentMethodResource
    */
   def getPaymentMethod(userId: Integer, id: Integer): Option[PaymentMethodResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/payment-methods/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PaymentMethodResource]).asInstanceOf[PaymentMethodResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getPaymentMethodAsync(userId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single payment method for a user asynchronously
+   * 
+   * @param userId ID of the user for whom the payment method is being retrieved 
+   * @param id ID of the payment method being retrieved 
+   * @return Future(PaymentMethodResource)
+  */
+  def getPaymentMethodAsync(userId: Integer, id: Integer): Future[PaymentMethodResource] = {
+      helper.getPaymentMethod(userId, id)
+  }
+
 
   /**
    * Get all payment methods for a user
@@ -168,44 +160,30 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[PaymentMethodResource]
    */
   def getPaymentMethods(userId: Integer, filterName: Option[String] = None, filterPaymentType: Option[String] = None, filterPaymentMethodTypeId: Option[Integer] = None, filterPaymentMethodTypeName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[List[PaymentMethodResource]] = {
-    // create path and map variables
-    val path = "/users/{user_id}/payment-methods".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    filterPaymentType.map(paramVal => queryParams += "filter_payment_type" -> paramVal.toString)
-    filterPaymentMethodTypeId.map(paramVal => queryParams += "filter_payment_method_type_id" -> paramVal.toString)
-    filterPaymentMethodTypeName.map(paramVal => queryParams += "filter_payment_method_type_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[PaymentMethodResource]).asInstanceOf[List[PaymentMethodResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getPaymentMethodsAsync(userId, filterName, filterPaymentType, filterPaymentMethodTypeId, filterPaymentMethodTypeName, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get all payment methods for a user asynchronously
+   * 
+   * @param userId ID of the user for whom the payment methods are being retrieved 
+   * @param filterName Filter for payment methods whose name starts with a given string (optional)
+   * @param filterPaymentType Filter for payment methods with a specific payment type (optional)
+   * @param filterPaymentMethodTypeId Filter for payment methods with a specific payment method type by id (optional)
+   * @param filterPaymentMethodTypeName Filter for payment methods whose payment method type name starts with a given string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(List[PaymentMethodResource])
+  */
+  def getPaymentMethodsAsync(userId: Integer, filterName: Option[String] = None, filterPaymentType: Option[String] = None, filterPaymentMethodTypeId: Option[Integer] = None, filterPaymentMethodTypeName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[List[PaymentMethodResource]] = {
+      helper.getPaymentMethods(userId, filterName, filterPaymentType, filterPaymentMethodTypeId, filterPaymentMethodTypeName, size, page, order)
+  }
+
 
   /**
    * Authorize payment of an invoice for later capture
@@ -214,37 +192,23 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PaymentAuthorizationResource
    */
   def paymentAuthorization(request: Option[PaymentAuthorizationResource] = None): Option[PaymentAuthorizationResource] = {
-    // create path and map variables
-    val path = "/payment/authorizations".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PaymentAuthorizationResource]).asInstanceOf[PaymentAuthorizationResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(paymentAuthorizationAsync(request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Authorize payment of an invoice for later capture asynchronously
+   * 
+   * @param request Payment authorization request (optional)
+   * @return Future(PaymentAuthorizationResource)
+  */
+  def paymentAuthorizationAsync(request: Option[PaymentAuthorizationResource] = None): Future[PaymentAuthorizationResource] = {
+      helper.paymentAuthorization(request)
+  }
+
 
   /**
    * Capture an existing invoice payment authorization
@@ -253,36 +217,23 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def paymentCapture(id: Integer) = {
-    // create path and map variables
-    val path = "/payment/authorizations/{id}/capture".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(paymentCaptureAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Capture an existing invoice payment authorization asynchronously
+   * 
+   * @param id ID of the payment authorization to capture 
+   * @return Future(void)
+  */
+  def paymentCaptureAsync(id: Integer) = {
+      helper.paymentCapture(id)
+  }
+
 
   /**
    * Update an existing payment method for a user
@@ -293,36 +244,187 @@ class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PaymentMethodResource
    */
   def updatePaymentMethod(userId: Integer, id: Integer, paymentMethod: Option[PaymentMethodResource] = None): Option[PaymentMethodResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/payment-methods/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = paymentMethod.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PaymentMethodResource]).asInstanceOf[PaymentMethodResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updatePaymentMethodAsync(userId, id, paymentMethod), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an existing payment method for a user asynchronously
+   * 
+   * @param userId ID of the user for whom the payment method is being updated 
+   * @param id ID of the payment method being updated 
+   * @param paymentMethod The updated payment method data (optional)
+   * @return Future(PaymentMethodResource)
+  */
+  def updatePaymentMethodAsync(userId: Integer, id: Integer, paymentMethod: Option[PaymentMethodResource] = None): Future[PaymentMethodResource] = {
+      helper.updatePaymentMethod(userId, id, paymentMethod)
+  }
+
+
+}
+
+class PaymentsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createPaymentMethod(userId: Integer,
+    paymentMethod: Option[PaymentMethodResource] = None
+    )(implicit reader: ClientResponseReader[PaymentMethodResource], writer: RequestWriter[PaymentMethodResource]): Future[PaymentMethodResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/payment-methods")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(paymentMethod))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deletePaymentMethod(userId: Integer,
+    id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/payment-methods/{id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getPaymentMethod(userId: Integer,
+    id: Integer)(implicit reader: ClientResponseReader[PaymentMethodResource]): Future[PaymentMethodResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/payment-methods/{id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getPaymentMethods(userId: Integer,
+    filterName: Option[String] = None,
+    filterPaymentType: Option[String] = None,
+    filterPaymentMethodTypeId: Option[Integer] = None,
+    filterPaymentMethodTypeName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[List[PaymentMethodResource]]): Future[List[PaymentMethodResource]] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/payment-methods")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    filterPaymentType match {
+      case Some(param) => queryParams += "filter_payment_type" -> param.toString
+      case _ => queryParams
+    }
+    filterPaymentMethodTypeId match {
+      case Some(param) => queryParams += "filter_payment_method_type_id" -> param.toString
+      case _ => queryParams
+    }
+    filterPaymentMethodTypeName match {
+      case Some(param) => queryParams += "filter_payment_method_type_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def paymentAuthorization(request: Option[PaymentAuthorizationResource] = None
+    )(implicit reader: ClientResponseReader[PaymentAuthorizationResource], writer: RequestWriter[PaymentAuthorizationResource]): Future[PaymentAuthorizationResource] = {
+    // create path and map variables
+    val path = (addFmt("/payment/authorizations"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def paymentCapture(id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/payment/authorizations/{id}/capture")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updatePaymentMethod(userId: Integer,
+    id: Integer,
+    paymentMethod: Option[PaymentMethodResource] = None
+    )(implicit reader: ClientResponseReader[PaymentMethodResource], writer: RequestWriter[PaymentMethodResource]): Future[PaymentMethodResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/payment-methods/{id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(paymentMethod))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

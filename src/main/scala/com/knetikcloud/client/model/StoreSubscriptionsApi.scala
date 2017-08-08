@@ -12,13 +12,14 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceSubscriptionResource
 import com.knetikcloud.client.model.PageResourceSubscriptionTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.SubscriptionResource
 import com.knetikcloud.client.model.SubscriptionTemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +31,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new StoreSubscriptionsApiAsyncHelper(client, config)
 
   /**
    * Creates a subscription item and associated plans
@@ -44,37 +74,23 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return SubscriptionResource
    */
   def createSubscription(subscriptionResource: Option[SubscriptionResource] = None): Option[SubscriptionResource] = {
-    // create path and map variables
-    val path = "/subscriptions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = subscriptionResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SubscriptionResource]).asInstanceOf[SubscriptionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createSubscriptionAsync(subscriptionResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Creates a subscription item and associated plans asynchronously
+   * 
+   * @param subscriptionResource The subscription to be created (optional)
+   * @return Future(SubscriptionResource)
+  */
+  def createSubscriptionAsync(subscriptionResource: Option[SubscriptionResource] = None): Future[SubscriptionResource] = {
+      helper.createSubscription(subscriptionResource)
+  }
+
 
   /**
    * Create a subscription template
@@ -83,37 +99,23 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return SubscriptionTemplateResource
    */
   def createSubscriptionTemplate(subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None): Option[SubscriptionTemplateResource] = {
-    // create path and map variables
-    val path = "/subscriptions/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = subscriptionTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SubscriptionTemplateResource]).asInstanceOf[SubscriptionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createSubscriptionTemplateAsync(subscriptionTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a subscription template asynchronously
+   * Subscription Templates define a type of subscription and the properties they have.
+   * @param subscriptionTemplateResource The new subscription template (optional)
+   * @return Future(SubscriptionTemplateResource)
+  */
+  def createSubscriptionTemplateAsync(subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None): Future[SubscriptionTemplateResource] = {
+      helper.createSubscriptionTemplate(subscriptionTemplateResource)
+  }
+
 
   /**
    * Delete a subscription plan
@@ -123,38 +125,24 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteSubscription(id: Integer, planId: String) = {
-    // create path and map variables
-    val path = "/subscriptions/{id}/plans/{plan_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "plan_id" + "\\}",apiInvoker.escape(planId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (planId == null) throw new Exception("Missing required parameter 'planId' when calling StoreSubscriptionsApi->deleteSubscription")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteSubscriptionAsync(id, planId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a subscription plan asynchronously
+   * Must not be locked or a migration target
+   * @param id The id of the subscription 
+   * @param planId The id of the plan 
+   * @return Future(void)
+  */
+  def deleteSubscriptionAsync(id: Integer, planId: String) = {
+      helper.deleteSubscription(id, planId)
+  }
+
 
   /**
    * Delete a subscription template
@@ -164,39 +152,24 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def deleteSubscriptionTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/subscriptions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreSubscriptionsApi->deleteSubscriptionTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteSubscriptionTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a subscription template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
+   * @return Future(void)
+  */
+  def deleteSubscriptionTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteSubscriptionTemplate(id, cascade)
+  }
+
 
   /**
    * Retrieve a single subscription item and associated plans
@@ -205,37 +178,23 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return SubscriptionResource
    */
   def getSubscription(id: Integer): Option[SubscriptionResource] = {
-    // create path and map variables
-    val path = "/subscriptions/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SubscriptionResource]).asInstanceOf[SubscriptionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getSubscriptionAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a single subscription item and associated plans asynchronously
+   * 
+   * @param id The id of the subscription 
+   * @return Future(SubscriptionResource)
+  */
+  def getSubscriptionAsync(id: Integer): Future[SubscriptionResource] = {
+      helper.getSubscription(id)
+  }
+
 
   /**
    * Get a single subscription template
@@ -244,39 +203,23 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return SubscriptionTemplateResource
    */
   def getSubscriptionTemplate(id: String): Option[SubscriptionTemplateResource] = {
-    // create path and map variables
-    val path = "/subscriptions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreSubscriptionsApi->getSubscriptionTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SubscriptionTemplateResource]).asInstanceOf[SubscriptionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getSubscriptionTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single subscription template asynchronously
+   * Subscription Templates define a type of subscription and the properties they have.
+   * @param id The id of the template 
+   * @return Future(SubscriptionTemplateResource)
+  */
+  def getSubscriptionTemplateAsync(id: String): Future[SubscriptionTemplateResource] = {
+      helper.getSubscriptionTemplate(id)
+  }
+
 
   /**
    * List and search subscription templates
@@ -287,40 +230,25 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return PageResourceSubscriptionTemplateResource
    */
   def getSubscriptionTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceSubscriptionTemplateResource] = {
-    // create path and map variables
-    val path = "/subscriptions/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSubscriptionTemplateResource]).asInstanceOf[PageResourceSubscriptionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getSubscriptionTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search subscription templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceSubscriptionTemplateResource)
+  */
+  def getSubscriptionTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceSubscriptionTemplateResource] = {
+      helper.getSubscriptionTemplates(size, page, order)
+  }
+
 
   /**
    * List available subscription items and associated plans
@@ -331,40 +259,25 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return PageResourceSubscriptionResource
    */
   def getSubscriptions(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceSubscriptionResource] = {
-    // create path and map variables
-    val path = "/subscriptions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSubscriptionResource]).asInstanceOf[PageResourceSubscriptionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getSubscriptionsAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List available subscription items and associated plans asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceSubscriptionResource)
+  */
+  def getSubscriptionsAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceSubscriptionResource] = {
+      helper.getSubscriptions(size, page, order)
+  }
+
 
   /**
    * Processes subscriptions and charge dues
@@ -372,36 +285,22 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def processSubscriptions() = {
-    // create path and map variables
-    val path = "/subscriptions/process".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(processSubscriptionsAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Processes subscriptions and charge dues asynchronously
+   * 
+   * @return Future(void)
+  */
+  def processSubscriptionsAsync() = {
+      helper.processSubscriptions()
+  }
+
 
   /**
    * Updates a subscription item and associated plans
@@ -411,36 +310,24 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def updateSubscription(id: Integer, subscriptionResource: Option[SubscriptionResource] = None) = {
-    // create path and map variables
-    val path = "/subscriptions/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = subscriptionResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateSubscriptionAsync(id, subscriptionResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Updates a subscription item and associated plans asynchronously
+   * Will not remove plans left out
+   * @param id The id of the subscription 
+   * @param subscriptionResource The subscription resource object (optional)
+   * @return Future(void)
+  */
+  def updateSubscriptionAsync(id: Integer, subscriptionResource: Option[SubscriptionResource] = None) = {
+      helper.updateSubscription(id, subscriptionResource)
+  }
+
 
   /**
    * Update a subscription template
@@ -450,38 +337,251 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return SubscriptionTemplateResource
    */
   def updateSubscriptionTemplate(id: String, subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None): Option[SubscriptionTemplateResource] = {
+    val await = Try(Await.result(updateSubscriptionTemplateAsync(id, subscriptionTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a subscription template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param subscriptionTemplateResource The subscription template resource object (optional)
+   * @return Future(SubscriptionTemplateResource)
+  */
+  def updateSubscriptionTemplateAsync(id: String, subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None): Future[SubscriptionTemplateResource] = {
+      helper.updateSubscriptionTemplate(id, subscriptionTemplateResource)
+  }
+
+
+}
+
+class StoreSubscriptionsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createSubscription(subscriptionResource: Option[SubscriptionResource] = None
+    )(implicit reader: ClientResponseReader[SubscriptionResource], writer: RequestWriter[SubscriptionResource]): Future[SubscriptionResource] = {
     // create path and map variables
-    val path = "/subscriptions/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/subscriptions"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(subscriptionResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createSubscriptionTemplate(subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None
+    )(implicit reader: ClientResponseReader[SubscriptionTemplateResource], writer: RequestWriter[SubscriptionTemplateResource]): Future[SubscriptionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(subscriptionTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteSubscription(id: Integer,
+    planId: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/{id}/plans/{plan_id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "plan_id" + "\\}",planId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (planId == null) throw new Exception("Missing required parameter 'planId' when calling StoreSubscriptionsApi->deleteSubscription")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteSubscriptionTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreSubscriptionsApi->deleteSubscriptionTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getSubscription(id: Integer)(implicit reader: ClientResponseReader[SubscriptionResource]): Future[SubscriptionResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getSubscriptionTemplate(id: String)(implicit reader: ClientResponseReader[SubscriptionTemplateResource]): Future[SubscriptionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreSubscriptionsApi->getSubscriptionTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getSubscriptionTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceSubscriptionTemplateResource]): Future[PageResourceSubscriptionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getSubscriptions(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceSubscriptionResource]): Future[PageResourceSubscriptionResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def processSubscriptions()(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/process"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateSubscription(id: Integer,
+    subscriptionResource: Option[SubscriptionResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[SubscriptionResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(subscriptionResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateSubscriptionTemplate(id: String,
+    subscriptionTemplateResource: Option[SubscriptionTemplateResource] = None
+    )(implicit reader: ClientResponseReader[SubscriptionTemplateResource], writer: RequestWriter[SubscriptionTemplateResource]): Future[SubscriptionTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/subscriptions/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreSubscriptionsApi->updateSubscriptionTemplate")
 
-    
 
-    var postBody: AnyRef = subscriptionTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SubscriptionTemplateResource]).asInstanceOf[SubscriptionTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(subscriptionTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

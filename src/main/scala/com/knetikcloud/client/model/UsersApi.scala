@@ -12,15 +12,17 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.NewPasswordRequest
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourceUserBaseResource
 import com.knetikcloud.client.model.PasswordResetRequest
 import com.knetikcloud.client.model.Result
+import com.knetikcloud.client.model.StringWrapper
 import com.knetikcloud.client.model.TemplateResource
 import com.knetikcloud.client.model.UserResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -32,12 +34,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new UsersApiAsyncHelper(client, config)
 
   /**
    * Add a tag to a user
@@ -46,39 +77,25 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param tag tag 
    * @return void
    */
-  def addUserTag(userId: Integer, tag: String) = {
-    // create path and map variables
-    val path = "/users/{user_id}/tags".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling UsersApi->addUserTag")
-
-    
-
-    var postBody: AnyRef = tag
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def addUserTag(userId: Integer, tag: StringWrapper) = {
+    val await = Try(Await.result(addUserTagAsync(userId, tag), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a tag to a user asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param tag tag 
+   * @return Future(void)
+  */
+  def addUserTagAsync(userId: Integer, tag: StringWrapper) = {
+      helper.addUserTag(userId, tag)
+  }
+
 
   /**
    * Create a user template
@@ -87,37 +104,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def createUserTemplate(userTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/users/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = userTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createUserTemplateAsync(userTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a user template asynchronously
+   * User Templates define a type of user and the properties they have
+   * @param userTemplateResource The user template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createUserTemplateAsync(userTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createUserTemplate(userTemplateResource)
+  }
+
 
   /**
    * Delete a user template
@@ -127,39 +130,24 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteUserTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/users/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->deleteUserTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteUserTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a user template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteUserTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteUserTemplate(id, cascade)
+  }
+
 
   /**
    * Get a single user
@@ -168,39 +156,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return UserResource
    */
   def getUser(id: String): Option[UserResource] = {
-    // create path and map variables
-    val path = "/users/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->getUser")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserResource]).asInstanceOf[UserResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single user asynchronously
+   * Additional private info is included as USERS_ADMIN
+   * @param id The id of the user or &#39;me&#39; 
+   * @return Future(UserResource)
+  */
+  def getUserAsync(id: String): Future[UserResource] = {
+      helper.getUser(id)
+  }
+
 
   /**
    * List tags for a user
@@ -209,37 +181,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[String]
    */
   def getUserTags(userId: Integer): Option[List[String]] = {
-    // create path and map variables
-    val path = "/users/{user_id}/tags".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserTagsAsync(userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List tags for a user asynchronously
+   * 
+   * @param userId The id of the user 
+   * @return Future(List[String])
+  */
+  def getUserTagsAsync(userId: Integer): Future[List[String]] = {
+      helper.getUserTags(userId)
+  }
+
 
   /**
    * Get a single user template
@@ -248,39 +206,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def getUserTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/users/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->getUserTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single user template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getUserTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getUserTemplate(id)
+  }
+
 
   /**
    * List and search user templates
@@ -291,40 +233,25 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceTemplateResource
    */
   def getUserTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/users/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search user templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getUserTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getUserTemplates(size, page, order)
+  }
+
 
   /**
    * List and search users
@@ -345,50 +272,35 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceUserBaseResource
    */
   def getUsers(filterDisplayname: Option[String] = None, filterEmail: Option[String] = None, filterFirstname: Option[String] = None, filterFullname: Option[String] = None, filterLastname: Option[String] = None, filterUsername: Option[String] = None, filterTag: Option[String] = None, filterGroup: Option[String] = None, filterRole: Option[String] = None, filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceUserBaseResource] = {
-    // create path and map variables
-    val path = "/users".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterDisplayname.map(paramVal => queryParams += "filter_displayname" -> paramVal.toString)
-    filterEmail.map(paramVal => queryParams += "filter_email" -> paramVal.toString)
-    filterFirstname.map(paramVal => queryParams += "filter_firstname" -> paramVal.toString)
-    filterFullname.map(paramVal => queryParams += "filter_fullname" -> paramVal.toString)
-    filterLastname.map(paramVal => queryParams += "filter_lastname" -> paramVal.toString)
-    filterUsername.map(paramVal => queryParams += "filter_username" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterGroup.map(paramVal => queryParams += "filter_group" -> paramVal.toString)
-    filterRole.map(paramVal => queryParams += "filter_role" -> paramVal.toString)
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUserBaseResource]).asInstanceOf[PageResourceUserBaseResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsersAsync(filterDisplayname, filterEmail, filterFirstname, filterFullname, filterLastname, filterUsername, filterTag, filterGroup, filterRole, filterSearch, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search users asynchronously
+   * Additional private info is included as USERS_ADMIN
+   * @param filterDisplayname Filter for users whose display name starts with provided string. (optional)
+   * @param filterEmail Filter for users whose email starts with provided string. Requires USERS_ADMIN permission (optional)
+   * @param filterFirstname Filter for users whose first name starts with provided string. Requires USERS_ADMIN permission (optional)
+   * @param filterFullname Filter for users whose full name starts with provided string. Requires USERS_ADMIN permission (optional)
+   * @param filterLastname Filter for users whose last name starts with provided string. Requires USERS_ADMIN permission (optional)
+   * @param filterUsername Filter for users whose username starts with the provided string. Requires USERS_ADMIN permission (optional)
+   * @param filterTag Filter for users who have a given tag (optional)
+   * @param filterGroup Filter for users in a given group, by unique name (optional)
+   * @param filterRole Filter for users with a given role (optional)
+   * @param filterSearch Filter for users whose display_name starts with the provided string, or username if display_name is null (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceUserBaseResource)
+  */
+  def getUsersAsync(filterDisplayname: Option[String] = None, filterEmail: Option[String] = None, filterFirstname: Option[String] = None, filterFullname: Option[String] = None, filterLastname: Option[String] = None, filterUsername: Option[String] = None, filterTag: Option[String] = None, filterGroup: Option[String] = None, filterRole: Option[String] = None, filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceUserBaseResource] = {
+      helper.getUsers(filterDisplayname, filterEmail, filterFirstname, filterFullname, filterLastname, filterUsername, filterTag, filterGroup, filterRole, filterSearch, size, page, order)
+  }
+
 
   /**
    * Choose a new password after a reset
@@ -398,36 +310,24 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def passwordReset(id: Integer, newPasswordRequest: Option[NewPasswordRequest] = None) = {
-    // create path and map variables
-    val path = "/users/{id}/password-reset".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = newPasswordRequest.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(passwordResetAsync(id, newPasswordRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Choose a new password after a reset asynchronously
+   * Finish resetting a user&#39;s password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * @param id The id of the user 
+   * @param newPasswordRequest The new password request object (optional)
+   * @return Future(void)
+  */
+  def passwordResetAsync(id: Integer, newPasswordRequest: Option[NewPasswordRequest] = None) = {
+      helper.passwordReset(id, newPasswordRequest)
+  }
+
 
   /**
    * Register a new user
@@ -436,37 +336,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return UserResource
    */
   def registerUser(userResource: Option[UserResource] = None): Option[UserResource] = {
-    // create path and map variables
-    val path = "/users".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = userResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserResource]).asInstanceOf[UserResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(registerUserAsync(userResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Register a new user asynchronously
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security
+   * @param userResource The user resource object (optional)
+   * @return Future(UserResource)
+  */
+  def registerUserAsync(userResource: Option[UserResource] = None): Future[UserResource] = {
+      helper.registerUser(userResource)
+  }
+
 
   /**
    * Remove a tag from a user
@@ -476,38 +362,24 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def removeUserTag(userId: Integer, tag: String) = {
-    // create path and map variables
-    val path = "/users/{user_id}/tags/{tag}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "tag" + "\\}",apiInvoker.escape(tag))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling UsersApi->removeUserTag")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeUserTagAsync(userId, tag), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Remove a tag from a user asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param tag The tag to remove 
+   * @return Future(void)
+  */
+  def removeUserTagAsync(userId: Integer, tag: String) = {
+      helper.removeUserTag(userId, tag)
+  }
+
 
   /**
    * Set a user&#39;s password
@@ -516,37 +388,25 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param password The new plain text password (optional)
    * @return void
    */
-  def setPassword(id: Integer, password: Option[String] = None) = {
-    // create path and map variables
-    val path = "/users/{id}/password".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = password.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setPassword(id: Integer, password: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(setPasswordAsync(id, password), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set a user&#39;s password asynchronously
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * @param id The id of the user 
+   * @param password The new plain text password (optional)
+   * @return Future(void)
+  */
+  def setPasswordAsync(id: Integer, password: Option[StringWrapper] = None) = {
+      helper.setPassword(id, password)
+  }
+
 
   /**
    * Reset a user&#39;s password
@@ -555,36 +415,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def startPasswordReset(id: Integer) = {
-    // create path and map variables
-    val path = "/users/{id}/password-reset".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(startPasswordResetAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Reset a user&#39;s password asynchronously
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit
+   * @param id The id of the user 
+   * @return Future(void)
+  */
+  def startPasswordResetAsync(id: Integer) = {
+      helper.startPasswordReset(id)
+  }
+
 
   /**
    * Reset a user&#39;s password without user id
@@ -593,36 +440,23 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def submitPasswordReset(passwordReset: Option[PasswordResetRequest] = None) = {
-    // create path and map variables
-    val path = "/users/password-reset".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = passwordReset.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(submitPasswordResetAsync(passwordReset), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Reset a user&#39;s password without user id asynchronously
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number
+   * @param passwordReset An object containing one of three methods to look up a user (optional)
+   * @return Future(void)
+  */
+  def submitPasswordResetAsync(passwordReset: Option[PasswordResetRequest] = None) = {
+      helper.submitPasswordReset(passwordReset)
+  }
+
 
   /**
    * Update a user
@@ -632,38 +466,24 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def updateUser(id: String, userResource: Option[UserResource] = None) = {
-    // create path and map variables
-    val path = "/users/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->updateUser")
-
-    
-
-    var postBody: AnyRef = userResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateUserAsync(id, userResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a user asynchronously
+   * Password will not be edited on this endpoint, use password specific endpoints.
+   * @param id The id of the user or &#39;me&#39; 
+   * @param userResource The user resource object (optional)
+   * @return Future(void)
+  */
+  def updateUserAsync(id: String, userResource: Option[UserResource] = None) = {
+      helper.updateUser(id, userResource)
+  }
+
 
   /**
    * Update a user template
@@ -673,38 +493,392 @@ class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return TemplateResource
    */
   def updateUserTemplate(id: String, userTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateUserTemplateAsync(id, userTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a user template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param userTemplateResource The user template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateUserTemplateAsync(id: String, userTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateUserTemplate(id, userTemplateResource)
+  }
+
+
+}
+
+class UsersApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addUserTag(userId: Integer,
+    tag: StringWrapper)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
     // create path and map variables
-    val path = "/users/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/users/{user_id}/tags")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling UsersApi->addUserTag")
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(tag))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createUserTemplate(userTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(userTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteUserTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->deleteUserTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUser(id: String)(implicit reader: ClientResponseReader[UserResource]): Future[UserResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->getUser")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserTags(userId: Integer)(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/tags")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->getUserTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsers(filterDisplayname: Option[String] = None,
+    filterEmail: Option[String] = None,
+    filterFirstname: Option[String] = None,
+    filterFullname: Option[String] = None,
+    filterLastname: Option[String] = None,
+    filterUsername: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterGroup: Option[String] = None,
+    filterRole: Option[String] = None,
+    filterSearch: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceUserBaseResource]): Future[PageResourceUserBaseResource] = {
+    // create path and map variables
+    val path = (addFmt("/users"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterDisplayname match {
+      case Some(param) => queryParams += "filter_displayname" -> param.toString
+      case _ => queryParams
+    }
+    filterEmail match {
+      case Some(param) => queryParams += "filter_email" -> param.toString
+      case _ => queryParams
+    }
+    filterFirstname match {
+      case Some(param) => queryParams += "filter_firstname" -> param.toString
+      case _ => queryParams
+    }
+    filterFullname match {
+      case Some(param) => queryParams += "filter_fullname" -> param.toString
+      case _ => queryParams
+    }
+    filterLastname match {
+      case Some(param) => queryParams += "filter_lastname" -> param.toString
+      case _ => queryParams
+    }
+    filterUsername match {
+      case Some(param) => queryParams += "filter_username" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterGroup match {
+      case Some(param) => queryParams += "filter_group" -> param.toString
+      case _ => queryParams
+    }
+    filterRole match {
+      case Some(param) => queryParams += "filter_role" -> param.toString
+      case _ => queryParams
+    }
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def passwordReset(id: Integer,
+    newPasswordRequest: Option[NewPasswordRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[NewPasswordRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{id}/password-reset")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(newPasswordRequest))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def registerUser(userResource: Option[UserResource] = None
+    )(implicit reader: ClientResponseReader[UserResource], writer: RequestWriter[UserResource]): Future[UserResource] = {
+    // create path and map variables
+    val path = (addFmt("/users"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(userResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeUserTag(userId: Integer,
+    tag: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/tags/{tag}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "tag" + "\\}",tag.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (tag == null) throw new Exception("Missing required parameter 'tag' when calling UsersApi->removeUserTag")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setPassword(id: Integer,
+    password: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{id}/password")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(password))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def startPasswordReset(id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{id}/password-reset")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def submitPasswordReset(passwordReset: Option[PasswordResetRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[PasswordResetRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/password-reset"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(passwordReset))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateUser(id: String,
+    userResource: Option[UserResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[UserResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->updateUser")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(userResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateUserTemplate(id: String,
+    userTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersApi->updateUserTemplate")
 
-    
 
-    var postBody: AnyRef = userTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(userTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

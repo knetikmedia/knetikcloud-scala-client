@@ -12,12 +12,13 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.BundleItem
 import com.knetikcloud.client.model.ItemTemplateResource
 import com.knetikcloud.client.model.PageResourceItemTemplateResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -29,12 +30,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new StoreBundlesApiAsyncHelper(client, config)
 
   /**
    * Create a bundle item
@@ -44,38 +74,24 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return BundleItem
    */
   def createBundleItem(cascade: Option[Boolean] /* = false*/, bundleItem: Option[BundleItem] = None): Option[BundleItem] = {
-    // create path and map variables
-    val path = "/store/bundles".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = bundleItem.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BundleItem]).asInstanceOf[BundleItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createBundleItemAsync(cascade, bundleItem), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a bundle item asynchronously
+   * The SKU for the bundle itself must be unique and there can only be one SKU.  Extra notes for price_override:  The price of all the items (multiplied by the quantity) must equal the price of the bundle.  With individual prices set, items will be processed individually and can be refunded as such.  However, if all prices are set to null, the price of the bundle will be used and will be treated as one item.
+   * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
+   * @param bundleItem The bundle item object (optional)
+   * @return Future(BundleItem)
+  */
+  def createBundleItemAsync(cascade: Option[Boolean] /* = false*/, bundleItem: Option[BundleItem] = None): Future[BundleItem] = {
+      helper.createBundleItem(cascade, bundleItem)
+  }
+
 
   /**
    * Create a bundle template
@@ -84,37 +100,23 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return ItemTemplateResource
    */
   def createBundleTemplate(bundleTemplateResource: Option[ItemTemplateResource] = None): Option[ItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/bundles/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = bundleTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ItemTemplateResource]).asInstanceOf[ItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createBundleTemplateAsync(bundleTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a bundle template asynchronously
+   * Bundle Templates define a type of bundle and the properties they have.
+   * @param bundleTemplateResource The new bundle template (optional)
+   * @return Future(ItemTemplateResource)
+  */
+  def createBundleTemplateAsync(bundleTemplateResource: Option[ItemTemplateResource] = None): Future[ItemTemplateResource] = {
+      helper.createBundleTemplate(bundleTemplateResource)
+  }
+
 
   /**
    * Delete a bundle item
@@ -123,36 +125,23 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return void
    */
   def deleteBundleItem(id: Integer) = {
-    // create path and map variables
-    val path = "/store/bundles/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteBundleItemAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a bundle item asynchronously
+   * 
+   * @param id The id of the bundle 
+   * @return Future(void)
+  */
+  def deleteBundleItemAsync(id: Integer) = {
+      helper.deleteBundleItem(id)
+  }
+
 
   /**
    * Delete a bundle template
@@ -162,39 +151,24 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return void
    */
   def deleteBundleTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/store/bundles/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreBundlesApi->deleteBundleTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteBundleTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a bundle template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
+   * @return Future(void)
+  */
+  def deleteBundleTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteBundleTemplate(id, cascade)
+  }
+
 
   /**
    * Get a single bundle item
@@ -203,37 +177,23 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return BundleItem
    */
   def getBundleItem(id: Integer): Option[BundleItem] = {
-    // create path and map variables
-    val path = "/store/bundles/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BundleItem]).asInstanceOf[BundleItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBundleItemAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single bundle item asynchronously
+   * 
+   * @param id The id of the bundle 
+   * @return Future(BundleItem)
+  */
+  def getBundleItemAsync(id: Integer): Future[BundleItem] = {
+      helper.getBundleItem(id)
+  }
+
 
   /**
    * Get a single bundle template
@@ -242,39 +202,23 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return ItemTemplateResource
    */
   def getBundleTemplate(id: String): Option[ItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/bundles/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreBundlesApi->getBundleTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ItemTemplateResource]).asInstanceOf[ItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBundleTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single bundle template asynchronously
+   * Bundle Templates define a type of bundle and the properties they have.
+   * @param id The id of the template 
+   * @return Future(ItemTemplateResource)
+  */
+  def getBundleTemplateAsync(id: String): Future[ItemTemplateResource] = {
+      helper.getBundleTemplate(id)
+  }
+
 
   /**
    * List and search bundle templates
@@ -285,40 +229,25 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return PageResourceItemTemplateResource
    */
   def getBundleTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/bundles/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceItemTemplateResource]).asInstanceOf[PageResourceItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBundleTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search bundle templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceItemTemplateResource)
+  */
+  def getBundleTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceItemTemplateResource] = {
+      helper.getBundleTemplates(size, page, order)
+  }
+
 
   /**
    * Update a bundle item
@@ -329,38 +258,25 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return BundleItem
    */
   def updateBundleItem(id: Integer, cascade: Option[Boolean] /* = false*/, bundleItem: Option[BundleItem] = None): Option[BundleItem] = {
-    // create path and map variables
-    val path = "/store/bundles/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = bundleItem.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[BundleItem]).asInstanceOf[BundleItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateBundleItemAsync(id, cascade, bundleItem), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a bundle item asynchronously
+   * 
+   * @param id The id of the bundle 
+   * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
+   * @param bundleItem The bundle item object (optional)
+   * @return Future(BundleItem)
+  */
+  def updateBundleItemAsync(id: Integer, cascade: Option[Boolean] /* = false*/, bundleItem: Option[BundleItem] = None): Future[BundleItem] = {
+      helper.updateBundleItem(id, cascade, bundleItem)
+  }
+
 
   /**
    * Update a bundle template
@@ -370,38 +286,212 @@ class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com
    * @return ItemTemplateResource
    */
   def updateBundleTemplate(id: String, bundleTemplateResource: Option[ItemTemplateResource] = None): Option[ItemTemplateResource] = {
+    val await = Try(Await.result(updateBundleTemplateAsync(id, bundleTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a bundle template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param bundleTemplateResource The bundle template resource object (optional)
+   * @return Future(ItemTemplateResource)
+  */
+  def updateBundleTemplateAsync(id: String, bundleTemplateResource: Option[ItemTemplateResource] = None): Future[ItemTemplateResource] = {
+      helper.updateBundleTemplate(id, bundleTemplateResource)
+  }
+
+
+}
+
+class StoreBundlesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createBundleItem(cascade: Option[Boolean] = Some(false),
+    bundleItem: Option[BundleItem] = None
+    )(implicit reader: ClientResponseReader[BundleItem], writer: RequestWriter[BundleItem]): Future[BundleItem] = {
     // create path and map variables
-    val path = "/store/bundles/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/store/bundles"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(bundleItem))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createBundleTemplate(bundleTemplateResource: Option[ItemTemplateResource] = None
+    )(implicit reader: ClientResponseReader[ItemTemplateResource], writer: RequestWriter[ItemTemplateResource]): Future[ItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(bundleTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteBundleItem(id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteBundleTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreBundlesApi->deleteBundleTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBundleItem(id: Integer)(implicit reader: ClientResponseReader[BundleItem]): Future[BundleItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBundleTemplate(id: String)(implicit reader: ClientResponseReader[ItemTemplateResource]): Future[ItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreBundlesApi->getBundleTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBundleTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceItemTemplateResource]): Future[PageResourceItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateBundleItem(id: Integer,
+    cascade: Option[Boolean] = Some(false),
+    bundleItem: Option[BundleItem] = None
+    )(implicit reader: ClientResponseReader[BundleItem], writer: RequestWriter[BundleItem]): Future[BundleItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(bundleItem))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateBundleTemplate(id: String,
+    bundleTemplateResource: Option[ItemTemplateResource] = None
+    )(implicit reader: ClientResponseReader[ItemTemplateResource], writer: RequestWriter[ItemTemplateResource]): Future[ItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/bundles/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreBundlesApi->updateBundleTemplate")
 
-    
 
-    var postBody: AnyRef = bundleTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[ItemTemplateResource]).asInstanceOf[ItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(bundleTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

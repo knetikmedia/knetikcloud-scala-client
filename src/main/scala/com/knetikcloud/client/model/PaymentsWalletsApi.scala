@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PageResourceSimpleWallet
 import com.knetikcloud.client.model.PageResourceWalletTotalResponse
 import com.knetikcloud.client.model.PageResourceWalletTransactionResource
@@ -19,8 +21,7 @@ import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.SimpleWallet
 import com.knetikcloud.client.model.WalletAlterRequest
 import com.knetikcloud.client.model.WalletTransactionResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -32,12 +33,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new PaymentsWalletsApiAsyncHelper(client, config)
 
   /**
    * Returns the user&#39;s wallet for the given currency code
@@ -47,39 +77,24 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return SimpleWallet
    */
   def getUserWallet(userId: Integer, currencyCode: String): Option[SimpleWallet] = {
-    // create path and map variables
-    val path = "/users/{user_id}/wallets/{currency_code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling PaymentsWalletsApi->getUserWallet")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[SimpleWallet]).asInstanceOf[SimpleWallet])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserWalletAsync(userId, currencyCode), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns the user&#39;s wallet for the given currency code asynchronously
+   * 
+   * @param userId The ID of the user for whom wallet is being retrieved 
+   * @param currencyCode Currency code of the user&#39;s wallet 
+   * @return Future(SimpleWallet)
+  */
+  def getUserWalletAsync(userId: Integer, currencyCode: String): Future[SimpleWallet] = {
+      helper.getUserWallet(userId, currencyCode)
+  }
+
 
   /**
    * Retrieve a user&#39;s wallet transactions
@@ -96,46 +111,31 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return PageResourceWalletTransactionResource
    */
   def getUserWalletTransactions(userId: Integer, currencyCode: String, filterType: Option[String] = None, filterMaxDate: Option[Long] = None, filterMinDate: Option[Long] = None, filterSign: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceWalletTransactionResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/wallets/{currency_code}/transactions".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling PaymentsWalletsApi->getUserWalletTransactions")
-
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterMaxDate.map(paramVal => queryParams += "filter_max_date" -> paramVal.toString)
-    filterMinDate.map(paramVal => queryParams += "filter_min_date" -> paramVal.toString)
-    filterSign.map(paramVal => queryParams += "filter_sign" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceWalletTransactionResource]).asInstanceOf[PageResourceWalletTransactionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserWalletTransactionsAsync(userId, currencyCode, filterType, filterMaxDate, filterMinDate, filterSign, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a user&#39;s wallet transactions asynchronously
+   * 
+   * @param userId The ID of the user for whom wallet transactions are being retrieved 
+   * @param currencyCode Currency code of the user&#39;s wallet 
+   * @param filterType Filter for transactions with specified type (optional)
+   * @param filterMaxDate Filter for transactions from no earlier than the specified date as a unix timestamp in seconds (optional)
+   * @param filterMinDate Filter for transactions from no later than the specified date as a unix timestamp in seconds (optional)
+   * @param filterSign Filter for transactions with amount with the given sign.  Allowable values: (&#39;positive&#39;, &#39;negative&#39;) (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceWalletTransactionResource)
+  */
+  def getUserWalletTransactionsAsync(userId: Integer, currencyCode: String, filterType: Option[String] = None, filterMaxDate: Option[Long] = None, filterMinDate: Option[Long] = None, filterSign: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceWalletTransactionResource] = {
+      helper.getUserWalletTransactions(userId, currencyCode, filterType, filterMaxDate, filterMinDate, filterSign, size, page, order)
+  }
+
 
   /**
    * List all of a user&#39;s wallets
@@ -144,37 +144,23 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return List[SimpleWallet]
    */
   def getUserWallets(userId: Integer): Option[List[SimpleWallet]] = {
-    // create path and map variables
-    val path = "/users/{user_id}/wallets".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[SimpleWallet]).asInstanceOf[List[SimpleWallet]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserWalletsAsync(userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List all of a user&#39;s wallets asynchronously
+   * 
+   * @param userId The ID of the user for whom wallets are being retrieved 
+   * @return Future(List[SimpleWallet])
+  */
+  def getUserWalletsAsync(userId: Integer): Future[List[SimpleWallet]] = {
+      helper.getUserWallets(userId)
+  }
+
 
   /**
    * Retrieves a summation of wallet balances by currency code
@@ -182,37 +168,22 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return PageResourceWalletTotalResponse
    */
   def getWalletBalances(): Option[PageResourceWalletTotalResponse] = {
-    // create path and map variables
-    val path = "/wallets/totals".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceWalletTotalResponse]).asInstanceOf[PageResourceWalletTotalResponse])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getWalletBalancesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieves a summation of wallet balances by currency code asynchronously
+   * 
+   * @return Future(PageResourceWalletTotalResponse)
+  */
+  def getWalletBalancesAsync(): Future[PageResourceWalletTotalResponse] = {
+      helper.getWalletBalances()
+  }
+
 
   /**
    * Retrieve wallet transactions across the system
@@ -231,48 +202,33 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return PageResourceWalletTransactionResource
    */
   def getWalletTransactions(filterInvoice: Option[Integer] = None, filterType: Option[String] = None, filterDate: Option[String] = None, filterSign: Option[String] = None, filterUserId: Option[Integer] = None, filterUsername: Option[String] = None, filterDetails: Option[String] = None, filterCurrencyCode: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceWalletTransactionResource] = {
-    // create path and map variables
-    val path = "/wallets/transactions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterInvoice.map(paramVal => queryParams += "filter_invoice" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    filterDate.map(paramVal => queryParams += "filter_date" -> paramVal.toString)
-    filterSign.map(paramVal => queryParams += "filter_sign" -> paramVal.toString)
-    filterUserId.map(paramVal => queryParams += "filter_user_id" -> paramVal.toString)
-    filterUsername.map(paramVal => queryParams += "filter_username" -> paramVal.toString)
-    filterDetails.map(paramVal => queryParams += "filter_details" -> paramVal.toString)
-    filterCurrencyCode.map(paramVal => queryParams += "filter_currency_code" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceWalletTransactionResource]).asInstanceOf[PageResourceWalletTransactionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getWalletTransactionsAsync(filterInvoice, filterType, filterDate, filterSign, filterUserId, filterUsername, filterDetails, filterCurrencyCode, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve wallet transactions across the system asynchronously
+   * 
+   * @param filterInvoice Filter for transactions from a specific invoice (optional)
+   * @param filterType Filter for transactions with specified type (optional)
+   * @param filterDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds. Can be repeated for a range, eg: GT,123,LT,456  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
+   * @param filterSign Filter for transactions with amount with the given sign (optional)
+   * @param filterUserId Filter for transactions for specific userId (optional)
+   * @param filterUsername Filter for transactions for specific username that start with the given string (optional)
+   * @param filterDetails Filter for transactions for specific details that start with the given string (optional)
+   * @param filterCurrencyCode Filter for transactions for specific currency code (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceWalletTransactionResource)
+  */
+  def getWalletTransactionsAsync(filterInvoice: Option[Integer] = None, filterType: Option[String] = None, filterDate: Option[String] = None, filterSign: Option[String] = None, filterUserId: Option[Integer] = None, filterUsername: Option[String] = None, filterDetails: Option[String] = None, filterCurrencyCode: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceWalletTransactionResource] = {
+      helper.getWalletTransactions(filterInvoice, filterType, filterDate, filterSign, filterUserId, filterUsername, filterDetails, filterCurrencyCode, size, page, order)
+  }
+
 
   /**
    * Retrieve a list of wallets across the system
@@ -283,40 +239,25 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return PageResourceSimpleWallet
    */
   def getWallets(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceSimpleWallet] = {
-    // create path and map variables
-    val path = "/wallets".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceSimpleWallet]).asInstanceOf[PageResourceSimpleWallet])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getWalletsAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve a list of wallets across the system asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceSimpleWallet)
+  */
+  def getWalletsAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceSimpleWallet] = {
+      helper.getWallets(size, page, order)
+  }
+
 
   /**
    * Updates the balance for a user&#39;s wallet
@@ -327,38 +268,258 @@ class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @return WalletTransactionResource
    */
   def updateWalletBalance(userId: Integer, currencyCode: String, request: Option[WalletAlterRequest] = None): Option[WalletTransactionResource] = {
+    val await = Try(Await.result(updateWalletBalanceAsync(userId, currencyCode, request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Updates the balance for a user&#39;s wallet asynchronously
+   * 
+   * @param userId The ID of the user for whom wallet is being modified 
+   * @param currencyCode Currency code of the user&#39;s wallet 
+   * @param request The requested balance modification to be made to the user&#39;s wallet (optional)
+   * @return Future(WalletTransactionResource)
+  */
+  def updateWalletBalanceAsync(userId: Integer, currencyCode: String, request: Option[WalletAlterRequest] = None): Future[WalletTransactionResource] = {
+      helper.updateWalletBalance(userId, currencyCode, request)
+  }
+
+
+}
+
+class PaymentsWalletsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getUserWallet(userId: Integer,
+    currencyCode: String)(implicit reader: ClientResponseReader[SimpleWallet]): Future[SimpleWallet] = {
     // create path and map variables
-    val path = "/users/{user_id}/wallets/{currency_code}/balance".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "currency_code" + "\\}",apiInvoker.escape(currencyCode))
+    val path = (addFmt("/users/{user_id}/wallets/{currency_code}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling PaymentsWalletsApi->getUserWallet")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserWalletTransactions(userId: Integer,
+    currencyCode: String,
+    filterType: Option[String] = None,
+    filterMaxDate: Option[Long] = None,
+    filterMinDate: Option[Long] = None,
+    filterSign: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceWalletTransactionResource]): Future[PageResourceWalletTransactionResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/wallets/{currency_code}/transactions")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling PaymentsWalletsApi->getUserWalletTransactions")
+
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterMaxDate match {
+      case Some(param) => queryParams += "filter_max_date" -> param.toString
+      case _ => queryParams
+    }
+    filterMinDate match {
+      case Some(param) => queryParams += "filter_min_date" -> param.toString
+      case _ => queryParams
+    }
+    filterSign match {
+      case Some(param) => queryParams += "filter_sign" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserWallets(userId: Integer)(implicit reader: ClientResponseReader[List[SimpleWallet]]): Future[List[SimpleWallet]] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/wallets")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getWalletBalances()(implicit reader: ClientResponseReader[PageResourceWalletTotalResponse]): Future[PageResourceWalletTotalResponse] = {
+    // create path and map variables
+    val path = (addFmt("/wallets/totals"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getWalletTransactions(filterInvoice: Option[Integer] = None,
+    filterType: Option[String] = None,
+    filterDate: Option[String] = None,
+    filterSign: Option[String] = None,
+    filterUserId: Option[Integer] = None,
+    filterUsername: Option[String] = None,
+    filterDetails: Option[String] = None,
+    filterCurrencyCode: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceWalletTransactionResource]): Future[PageResourceWalletTransactionResource] = {
+    // create path and map variables
+    val path = (addFmt("/wallets/transactions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterInvoice match {
+      case Some(param) => queryParams += "filter_invoice" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    filterDate match {
+      case Some(param) => queryParams += "filter_date" -> param.toString
+      case _ => queryParams
+    }
+    filterSign match {
+      case Some(param) => queryParams += "filter_sign" -> param.toString
+      case _ => queryParams
+    }
+    filterUserId match {
+      case Some(param) => queryParams += "filter_user_id" -> param.toString
+      case _ => queryParams
+    }
+    filterUsername match {
+      case Some(param) => queryParams += "filter_username" -> param.toString
+      case _ => queryParams
+    }
+    filterDetails match {
+      case Some(param) => queryParams += "filter_details" -> param.toString
+      case _ => queryParams
+    }
+    filterCurrencyCode match {
+      case Some(param) => queryParams += "filter_currency_code" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getWallets(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceSimpleWallet]): Future[PageResourceSimpleWallet] = {
+    // create path and map variables
+    val path = (addFmt("/wallets"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateWalletBalance(userId: Integer,
+    currencyCode: String,
+    request: Option[WalletAlterRequest] = None
+    )(implicit reader: ClientResponseReader[WalletTransactionResource], writer: RequestWriter[WalletAlterRequest]): Future[WalletTransactionResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/wallets/{currency_code}/balance")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "currency_code" + "\\}",currencyCode.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (currencyCode == null) throw new Exception("Missing required parameter 'currencyCode' when calling PaymentsWalletsApi->updateWalletBalance")
 
-    
 
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[WalletTransactionResource]).asInstanceOf[WalletTransactionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

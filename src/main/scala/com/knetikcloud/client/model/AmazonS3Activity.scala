@@ -16,6 +16,8 @@ package com.knetikcloud.client.model
 case class AmazonS3Activity (
   /* S3 action (i.e., 'PUT') associated with the activity */
   action: Option[String],
+  /* URL for accessing the resource via CDN if configured (will default to the main url if not) */
+  cdnUrl: Option[String],
   /* Date the resource was created in S3 */
   createdDate: Option[Long],
   /* Name of the file being processed as a resource in S3 */
@@ -24,7 +26,7 @@ case class AmazonS3Activity (
   id: Option[Long],
   /* S3 object key for the resource */
   objectKey: Option[String],
-  /* URL for accessing the S3 resource */
+  /* URL for posting and later accessing the S3 resource */
   url: Option[String],
   /* The id of the user that created this S3 activity */
   userId: Option[Integer]

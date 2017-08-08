@@ -12,10 +12,11 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.ActionResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -27,12 +28,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class BRERuleEngineActionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new BRERuleEngineActionsApiAsyncHelper(client, config)
 
   /**
    * Get a list of available actions
@@ -44,40 +74,65 @@ class BRERuleEngineActionsApi(val defBasePath: String = "https://sandbox.knetikc
    * @return List[ActionResource]
    */
   def getBREActions(filterCategory: Option[String] = None, filterName: Option[String] = None, filterTags: Option[String] = None, filterSearch: Option[String] = None): Option[List[ActionResource]] = {
-    // create path and map variables
-    val path = "/bre/actions".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    filterTags.map(paramVal => queryParams += "filter_tags" -> paramVal.toString)
-    filterSearch.map(paramVal => queryParams += "filter_search" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[ActionResource]).asInstanceOf[List[ActionResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBREActionsAsync(filterCategory, filterName, filterTags, filterSearch), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a list of available actions asynchronously
+   * 
+   * @param filterCategory Filter for actions that are within a specific category (optional)
+   * @param filterName Filter for actions that have names containing the given string (optional)
+   * @param filterTags Filter for actions that have all of the given tags (comma separated list) (optional)
+   * @param filterSearch Filter for actions containing the given words somewhere within name, description and tags (optional)
+   * @return Future(List[ActionResource])
+  */
+  def getBREActionsAsync(filterCategory: Option[String] = None, filterName: Option[String] = None, filterTags: Option[String] = None, filterSearch: Option[String] = None): Future[List[ActionResource]] = {
+      helper.getBREActions(filterCategory, filterName, filterTags, filterSearch)
+  }
+
+
+}
+
+class BRERuleEngineActionsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getBREActions(filterCategory: Option[String] = None,
+    filterName: Option[String] = None,
+    filterTags: Option[String] = None,
+    filterSearch: Option[String] = None
+    )(implicit reader: ClientResponseReader[List[ActionResource]]): Future[List[ActionResource]] = {
+    // create path and map variables
+    val path = (addFmt("/bre/actions"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    filterTags match {
+      case Some(param) => queryParams += "filter_tags" -> param.toString
+      case _ => queryParams
+    }
+    filterSearch match {
+      case Some(param) => queryParams += "filter_search" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

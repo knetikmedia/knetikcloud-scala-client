@@ -12,11 +12,12 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.CurrencyResource
 import com.knetikcloud.client.model.PageResourceCurrencyResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -28,12 +29,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new CurrenciesApiAsyncHelper(client, config)
 
   /**
    * Create a currency
@@ -42,37 +72,23 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CurrencyResource
    */
   def createCurrency(currency: Option[CurrencyResource] = None): Option[CurrencyResource] = {
-    // create path and map variables
-    val path = "/currencies".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = currency.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CurrencyResource]).asInstanceOf[CurrencyResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createCurrencyAsync(currency), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a currency asynchronously
+   * 
+   * @param currency The currency object (optional)
+   * @return Future(CurrencyResource)
+  */
+  def createCurrencyAsync(currency: Option[CurrencyResource] = None): Future[CurrencyResource] = {
+      helper.createCurrency(currency)
+  }
+
 
   /**
    * Delete a currency
@@ -81,38 +97,23 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteCurrency(code: String) = {
-    // create path and map variables
-    val path = "/currencies/{code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "code" + "\\}",apiInvoker.escape(code))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (code == null) throw new Exception("Missing required parameter 'code' when calling CurrenciesApi->deleteCurrency")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteCurrencyAsync(code), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a currency asynchronously
+   * 
+   * @param code The currency code 
+   * @return Future(void)
+  */
+  def deleteCurrencyAsync(code: String) = {
+      helper.deleteCurrency(code)
+  }
+
 
   /**
    * List and search currencies
@@ -125,42 +126,27 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceCurrencyResource
    */
   def getCurrencies(filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Option[PageResourceCurrencyResource] = {
-    // create path and map variables
-    val path = "/currencies".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterEnabledCurrencies.map(paramVal => queryParams += "filter_enabled_currencies" -> paramVal.toString)
-    filterType.map(paramVal => queryParams += "filter_type" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceCurrencyResource]).asInstanceOf[PageResourceCurrencyResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCurrenciesAsync(filterEnabledCurrencies, filterType, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search currencies asynchronously
+   * 
+   * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config (optional)
+   * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;) (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
+   * @return Future(PageResourceCurrencyResource)
+  */
+  def getCurrenciesAsync(filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Future[PageResourceCurrencyResource] = {
+      helper.getCurrencies(filterEnabledCurrencies, filterType, size, page, order)
+  }
+
 
   /**
    * Get a single currency
@@ -169,39 +155,23 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return CurrencyResource
    */
   def getCurrency(code: String): Option[CurrencyResource] = {
-    // create path and map variables
-    val path = "/currencies/{code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "code" + "\\}",apiInvoker.escape(code))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (code == null) throw new Exception("Missing required parameter 'code' when calling CurrenciesApi->getCurrency")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CurrencyResource]).asInstanceOf[CurrencyResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getCurrencyAsync(code), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single currency asynchronously
+   * 
+   * @param code The currency code 
+   * @return Future(CurrencyResource)
+  */
+  def getCurrencyAsync(code: String): Future[CurrencyResource] = {
+      helper.getCurrency(code)
+  }
+
 
   /**
    * Update a currency
@@ -211,37 +181,140 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def updateCurrency(code: String, currency: Option[CurrencyResource] = None) = {
+    val await = Try(Await.result(updateCurrencyAsync(code, currency), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a currency asynchronously
+   * 
+   * @param code The currency code 
+   * @param currency The currency object (optional)
+   * @return Future(void)
+  */
+  def updateCurrencyAsync(code: String, currency: Option[CurrencyResource] = None) = {
+      helper.updateCurrency(code, currency)
+  }
+
+
+}
+
+class CurrenciesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createCurrency(currency: Option[CurrencyResource] = None
+    )(implicit reader: ClientResponseReader[CurrencyResource], writer: RequestWriter[CurrencyResource]): Future[CurrencyResource] = {
     // create path and map variables
-    val path = "/currencies/{code}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "code" + "\\}",apiInvoker.escape(code))
+    val path = (addFmt("/currencies"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(currency))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteCurrency(code: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/currencies/{code}")
+      replaceAll ("\\{" + "code" + "\\}",code.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (code == null) throw new Exception("Missing required parameter 'code' when calling CurrenciesApi->deleteCurrency")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCurrencies(filterEnabledCurrencies: Option[Boolean] = None,
+    filterType: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(name:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceCurrencyResource]): Future[PageResourceCurrencyResource] = {
+    // create path and map variables
+    val path = (addFmt("/currencies"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterEnabledCurrencies match {
+      case Some(param) => queryParams += "filter_enabled_currencies" -> param.toString
+      case _ => queryParams
+    }
+    filterType match {
+      case Some(param) => queryParams += "filter_type" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getCurrency(code: String)(implicit reader: ClientResponseReader[CurrencyResource]): Future[CurrencyResource] = {
+    // create path and map variables
+    val path = (addFmt("/currencies/{code}")
+      replaceAll ("\\{" + "code" + "\\}",code.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (code == null) throw new Exception("Missing required parameter 'code' when calling CurrenciesApi->getCurrency")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateCurrency(code: String,
+    currency: Option[CurrencyResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[CurrencyResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/currencies/{code}")
+      replaceAll ("\\{" + "code" + "\\}",code.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (code == null) throw new Exception("Missing required parameter 'code' when calling CurrenciesApi->updateCurrency")
 
-    
 
-    var postBody: AnyRef = currency.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(currency))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

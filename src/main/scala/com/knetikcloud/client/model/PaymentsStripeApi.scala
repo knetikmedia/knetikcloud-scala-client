@@ -12,12 +12,13 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PaymentMethodResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.StripeCreatePaymentMethod
 import com.knetikcloud.client.model.StripePaymentRequest
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -29,12 +30,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class PaymentsStripeApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new PaymentsStripeApiAsyncHelper(client, config)
 
   /**
    * Create a Stripe payment method for a user
@@ -43,37 +73,23 @@ class PaymentsStripeApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return PaymentMethodResource
    */
   def createStripePaymentMethod(request: Option[StripeCreatePaymentMethod] = None): Option[PaymentMethodResource] = {
-    // create path and map variables
-    val path = "/payment/provider/stripe/payment-methods".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PaymentMethodResource]).asInstanceOf[PaymentMethodResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createStripePaymentMethodAsync(request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a Stripe payment method for a user asynchronously
+   * Stores customer information and creates a payment method that can be used to pay invoices through the payments endpoints.
+   * @param request The request to create a Stripe customer with payment info (optional)
+   * @return Future(PaymentMethodResource)
+  */
+  def createStripePaymentMethodAsync(request: Option[StripeCreatePaymentMethod] = None): Future[PaymentMethodResource] = {
+      helper.createStripePaymentMethod(request)
+  }
+
 
   /**
    * Pay with a single use token
@@ -82,35 +98,59 @@ class PaymentsStripeApi(val defBasePath: String = "https://sandbox.knetikcloud.c
    * @return void
    */
   def payStripeInvoice(request: Option[StripePaymentRequest] = None) = {
-    // create path and map variables
-    val path = "/payment/provider/stripe/payments".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(payStripeInvoiceAsync(request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Pay with a single use token asynchronously
+   * 
+   * @param request The request to pay an invoice (optional)
+   * @return Future(void)
+  */
+  def payStripeInvoiceAsync(request: Option[StripePaymentRequest] = None) = {
+      helper.payStripeInvoice(request)
+  }
+
+
+}
+
+class PaymentsStripeApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createStripePaymentMethod(request: Option[StripeCreatePaymentMethod] = None
+    )(implicit reader: ClientResponseReader[PaymentMethodResource], writer: RequestWriter[StripeCreatePaymentMethod]): Future[PaymentMethodResource] = {
+    // create path and map variables
+    val path = (addFmt("/payment/provider/stripe/payment-methods"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def payStripeInvoice(request: Option[StripePaymentRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StripePaymentRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/payment/provider/stripe/payments"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

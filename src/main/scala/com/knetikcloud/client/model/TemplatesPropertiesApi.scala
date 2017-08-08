@@ -12,10 +12,11 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.PropertyFieldListResource
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -27,12 +28,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class TemplatesPropertiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new TemplatesPropertiesApiAsyncHelper(client, config)
 
   /**
    * Get details for a template property type
@@ -41,39 +71,23 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return PropertyFieldListResource
    */
   def getTemplatePropertyType(_type: String): Option[PropertyFieldListResource] = {
-    // create path and map variables
-    val path = "/templates/properties/{type}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "type" + "\\}",apiInvoker.escape(_type))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (_type == null) throw new Exception("Missing required parameter '_type' when calling TemplatesPropertiesApi->getTemplatePropertyType")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PropertyFieldListResource]).asInstanceOf[PropertyFieldListResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getTemplatePropertyTypeAsync(_type), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get details for a template property type asynchronously
+   * 
+   * @param _type type 
+   * @return Future(PropertyFieldListResource)
+  */
+  def getTemplatePropertyTypeAsync(_type: String): Future[PropertyFieldListResource] = {
+      helper.getTemplatePropertyType(_type)
+  }
+
 
   /**
    * List template property types
@@ -81,36 +95,59 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @return List[PropertyFieldListResource]
    */
   def getTemplatePropertyTypes(): Option[List[PropertyFieldListResource]] = {
-    // create path and map variables
-    val path = "/templates/properties".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[PropertyFieldListResource]).asInstanceOf[List[PropertyFieldListResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getTemplatePropertyTypesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List template property types asynchronously
+   * 
+   * @return Future(List[PropertyFieldListResource])
+  */
+  def getTemplatePropertyTypesAsync(): Future[List[PropertyFieldListResource]] = {
+      helper.getTemplatePropertyTypes()
+  }
+
+
+}
+
+class TemplatesPropertiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getTemplatePropertyType(_type: String)(implicit reader: ClientResponseReader[PropertyFieldListResource]): Future[PropertyFieldListResource] = {
+    // create path and map variables
+    val path = (addFmt("/templates/properties/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling TemplatesPropertiesApi->getTemplatePropertyType")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getTemplatePropertyTypes()(implicit reader: ClientResponseReader[List[PropertyFieldListResource]]): Future[List[PropertyFieldListResource]] = {
+    // create path and map variables
+    val path = (addFmt("/templates/properties"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

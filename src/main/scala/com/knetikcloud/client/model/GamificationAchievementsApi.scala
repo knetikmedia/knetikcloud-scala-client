@@ -12,16 +12,18 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.AchievementDefinitionResource
 import com.knetikcloud.client.model.BreTriggerResource
+import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.PageResourceAchievementDefinitionResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourceUserAchievementGroupResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
 import com.knetikcloud.client.model.UserAchievementGroupResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -33,12 +35,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new GamificationAchievementsApiAsyncHelper(client, config)
 
   /**
    * Create a new achievement definition
@@ -47,37 +78,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return AchievementDefinitionResource
    */
   def createAchievement(achievement: Option[AchievementDefinitionResource] = None): Option[AchievementDefinitionResource] = {
-    // create path and map variables
-    val path = "/achievements".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = achievement.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AchievementDefinitionResource]).asInstanceOf[AchievementDefinitionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createAchievementAsync(achievement), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a new achievement definition asynchronously
+   * If the definition contains a trigger event name, a BRE rule is created, so that tracking logic is executed when the triggering event occurs. If no trigger event name is specified, the user&#39;s achievement status must manually be updated via the API.
+   * @param achievement The achievement definition (optional)
+   * @return Future(AchievementDefinitionResource)
+  */
+  def createAchievementAsync(achievement: Option[AchievementDefinitionResource] = None): Future[AchievementDefinitionResource] = {
+      helper.createAchievement(achievement)
+  }
+
 
   /**
    * Create an achievement template
@@ -86,37 +103,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return TemplateResource
    */
   def createAchievementTemplate(template: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/achievements/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createAchievementTemplateAsync(template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create an achievement template asynchronously
+   * Achievement templates define a type of achievement and the properties they have
+   * @param template The achievement template to be created (optional)
+   * @return Future(TemplateResource)
+  */
+  def createAchievementTemplateAsync(template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createAchievementTemplate(template)
+  }
+
 
   /**
    * Delete an achievement definition
@@ -125,38 +128,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return void
    */
   def deleteAchievement(name: String) = {
-    // create path and map variables
-    val path = "/achievements/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->deleteAchievement")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteAchievementAsync(name), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an achievement definition asynchronously
+   * Will also disable the associated generated rule, if any.
+   * @param name The name of the achievement 
+   * @return Future(void)
+  */
+  def deleteAchievementAsync(name: String) = {
+      helper.deleteAchievement(name)
+  }
+
 
   /**
    * Delete an achievement template
@@ -166,39 +154,24 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return void
    */
   def deleteAchievementTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/achievements/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationAchievementsApi->deleteAchievementTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteAchievementTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an achievement template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteAchievementTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteAchievementTemplate(id, cascade)
+  }
+
 
   /**
    * Get a single achievement definition
@@ -207,39 +180,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return AchievementDefinitionResource
    */
   def getAchievement(name: String): Option[AchievementDefinitionResource] = {
-    // create path and map variables
-    val path = "/achievements/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->getAchievement")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AchievementDefinitionResource]).asInstanceOf[AchievementDefinitionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getAchievementAsync(name), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single achievement definition asynchronously
+   * 
+   * @param name The name of the achievement 
+   * @return Future(AchievementDefinitionResource)
+  */
+  def getAchievementAsync(name: String): Future[AchievementDefinitionResource] = {
+      helper.getAchievement(name)
+  }
+
 
   /**
    * Get a single achievement template
@@ -248,39 +205,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return TemplateResource
    */
   def getAchievementTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/achievements/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationAchievementsApi->getAchievementTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getAchievementTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single achievement template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getAchievementTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getAchievementTemplate(id)
+  }
+
 
   /**
    * List and search achievement templates
@@ -291,40 +232,25 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return PageResourceTemplateResource
    */
   def getAchievementTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/achievements/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getAchievementTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search achievement templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getAchievementTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getAchievementTemplates(size, page, order)
+  }
+
 
   /**
    * Get the list of triggers that can be used to trigger an achievement progress update
@@ -332,37 +258,22 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return List[BreTriggerResource]
    */
   def getAchievementTriggers(): Option[List[BreTriggerResource]] = {
-    // create path and map variables
-    val path = "/achievements/triggers".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[BreTriggerResource]).asInstanceOf[List[BreTriggerResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getAchievementTriggersAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get the list of triggers that can be used to trigger an achievement progress update asynchronously
+   * 
+   * @return Future(List[BreTriggerResource])
+  */
+  def getAchievementTriggersAsync(): Future[List[BreTriggerResource]] = {
+      helper.getAchievementTriggers()
+  }
+
 
   /**
    * Get all achievement definitions in the system
@@ -377,44 +288,29 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return PageResourceAchievementDefinitionResource
    */
   def getAchievements(filterTagset: Option[String] = None, filterName: Option[String] = None, filterHidden: Option[Boolean] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/, filterDerived: Option[Boolean] /* = false*/): Option[PageResourceAchievementDefinitionResource] = {
-    // create path and map variables
-    val path = "/achievements".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    filterHidden.map(paramVal => queryParams += "filter_hidden" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    filterDerived.map(paramVal => queryParams += "filter_derived" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceAchievementDefinitionResource]).asInstanceOf[PageResourceAchievementDefinitionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getAchievementsAsync(filterTagset, filterName, filterHidden, size, page, order, filterDerived), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get all achievement definitions in the system asynchronously
+   * 
+   * @param filterTagset Filter for achievements with specified tags (separated by comma) (optional)
+   * @param filterName Filter for achievements whose name contains a string (optional)
+   * @param filterHidden Filter for achievements that are hidden or not (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
+   * @param filterDerived Filter for achievements that are derived from other services (optional, default to false)
+   * @return Future(PageResourceAchievementDefinitionResource)
+  */
+  def getAchievementsAsync(filterTagset: Option[String] = None, filterName: Option[String] = None, filterHidden: Option[Boolean] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/, filterDerived: Option[Boolean] /* = false*/): Future[PageResourceAchievementDefinitionResource] = {
+      helper.getAchievements(filterTagset, filterName, filterHidden, size, page, order, filterDerived)
+  }
+
 
   /**
    * Get a list of derived achievements
@@ -423,39 +319,23 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return List[AchievementDefinitionResource]
    */
   def getDerivedAchievements(name: String): Option[List[AchievementDefinitionResource]] = {
-    // create path and map variables
-    val path = "/achievements/derived/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->getDerivedAchievements")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[AchievementDefinitionResource]).asInstanceOf[List[AchievementDefinitionResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getDerivedAchievementsAsync(name), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a list of derived achievements asynchronously
+   * Used by other services that depend on achievements
+   * @param name The name of the derived achievement 
+   * @return Future(List[AchievementDefinitionResource])
+  */
+  def getDerivedAchievementsAsync(name: String): Future[List[AchievementDefinitionResource]] = {
+      helper.getDerivedAchievements(name)
+  }
+
 
   /**
    * Retrieve progress on a given achievement for a given user
@@ -465,39 +345,24 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return UserAchievementGroupResource
    */
   def getUserAchievementProgress(userId: Integer, achievementName: String): Option[UserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/achievements/{achievement_name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "achievement_name" + "\\}",apiInvoker.escape(achievementName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->getUserAchievementProgress")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserAchievementGroupResource]).asInstanceOf[UserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserAchievementProgressAsync(userId, achievementName), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve progress on a given achievement for a given user asynchronously
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * @param userId The user&#39;s id 
+   * @param achievementName The achievement&#39;s name 
+   * @return Future(UserAchievementGroupResource)
+  */
+  def getUserAchievementProgressAsync(userId: Integer, achievementName: String): Future[UserAchievementGroupResource] = {
+      helper.getUserAchievementProgress(userId, achievementName)
+  }
+
 
   /**
    * Retrieve progress on achievements for a given user
@@ -511,42 +376,28 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return PageResourceUserAchievementGroupResource
    */
   def getUserAchievementsProgress(userId: Integer, filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/achievements".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterAchievementDerived.map(paramVal => queryParams += "filter_achievement_derived" -> paramVal.toString)
-    filterAchievementTagset.map(paramVal => queryParams += "filter_achievement_tagset" -> paramVal.toString)
-    filterAchievementName.map(paramVal => queryParams += "filter_achievement_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUserAchievementGroupResource]).asInstanceOf[PageResourceUserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserAchievementsProgressAsync(userId, filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve progress on achievements for a given user asynchronously
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * @param userId The user&#39;s id 
+   * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
+   * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
+   * @param filterAchievementName Filter for achievements whose name contains a string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUserAchievementGroupResource)
+  */
+  def getUserAchievementsProgressAsync(userId: Integer, filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUserAchievementGroupResource] = {
+      helper.getUserAchievementsProgress(userId, filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page)
+  }
+
 
   /**
    * Retrieve progress on a given achievement for all users
@@ -560,44 +411,28 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return PageResourceUserAchievementGroupResource
    */
   def getUsersAchievementProgress(achievementName: String, filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/achievements/{achievement_name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "achievement_name" + "\\}",apiInvoker.escape(achievementName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->getUsersAchievementProgress")
-
-    filterAchievementDerived.map(paramVal => queryParams += "filter_achievement_derived" -> paramVal.toString)
-    filterAchievementTagset.map(paramVal => queryParams += "filter_achievement_tagset" -> paramVal.toString)
-    filterAchievementName.map(paramVal => queryParams += "filter_achievement_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUserAchievementGroupResource]).asInstanceOf[PageResourceUserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsersAchievementProgressAsync(achievementName, filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve progress on a given achievement for all users asynchronously
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * @param achievementName The achievement&#39;s name 
+   * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
+   * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
+   * @param filterAchievementName Filter for achievements whose name contains a string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUserAchievementGroupResource)
+  */
+  def getUsersAchievementProgressAsync(achievementName: String, filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUserAchievementGroupResource] = {
+      helper.getUsersAchievementProgress(achievementName, filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page)
+  }
+
 
   /**
    * Retrieve progress on achievements for all users
@@ -610,42 +445,27 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return PageResourceUserAchievementGroupResource
    */
   def getUsersAchievementsProgress(filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceUserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/achievements".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterAchievementDerived.map(paramVal => queryParams += "filter_achievement_derived" -> paramVal.toString)
-    filterAchievementTagset.map(paramVal => queryParams += "filter_achievement_tagset" -> paramVal.toString)
-    filterAchievementName.map(paramVal => queryParams += "filter_achievement_name" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceUserAchievementGroupResource]).asInstanceOf[PageResourceUserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsersAchievementsProgressAsync(filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve progress on achievements for all users asynchronously
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
+   * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
+   * @param filterAchievementName Filter for achievements whose name contains a string (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceUserAchievementGroupResource)
+  */
+  def getUsersAchievementsProgressAsync(filterAchievementDerived: Option[Boolean] = None, filterAchievementTagset: Option[String] = None, filterAchievementName: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceUserAchievementGroupResource] = {
+      helper.getUsersAchievementsProgress(filterAchievementDerived, filterAchievementTagset, filterAchievementName, size, page)
+  }
+
 
   /**
    * Increment an achievement progress record for a user
@@ -655,40 +475,26 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @param progress The amount to add to the progress value (optional)
    * @return UserAchievementGroupResource
    */
-  def incrementAchievementProgress(userId: Integer, achievementName: String, progress: Option[Integer] = None): Option[UserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/achievements/{achievement_name}/progress".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "achievement_name" + "\\}",apiInvoker.escape(achievementName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->incrementAchievementProgress")
-
-    
-
-    var postBody: AnyRef = progress.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserAchievementGroupResource]).asInstanceOf[UserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def incrementAchievementProgress(userId: Integer, achievementName: String, progress: Option[IntWrapper] = None): Option[UserAchievementGroupResource] = {
+    val await = Try(Await.result(incrementAchievementProgressAsync(userId, achievementName, progress), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Increment an achievement progress record for a user asynchronously
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and the provided value added to the existing progress. May be negative. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * @param userId The user&#39;s id 
+   * @param achievementName The achievement&#39;s name 
+   * @param progress The amount to add to the progress value (optional)
+   * @return Future(UserAchievementGroupResource)
+  */
+  def incrementAchievementProgressAsync(userId: Integer, achievementName: String, progress: Option[IntWrapper] = None): Future[UserAchievementGroupResource] = {
+      helper.incrementAchievementProgress(userId, achievementName, progress)
+  }
+
 
   /**
    * Set an achievement progress record for a user
@@ -698,40 +504,26 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @param progress The new progress value (optional)
    * @return UserAchievementGroupResource
    */
-  def setAchievementProgress(userId: Integer, achievementName: String, progress: Option[Integer] = None): Option[UserAchievementGroupResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/achievements/{achievement_name}/progress".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "achievement_name" + "\\}",apiInvoker.escape(achievementName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->setAchievementProgress")
-
-    
-
-    var postBody: AnyRef = progress.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[UserAchievementGroupResource]).asInstanceOf[UserAchievementGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setAchievementProgress(userId: Integer, achievementName: String, progress: Option[IntWrapper] = None): Option[UserAchievementGroupResource] = {
+    val await = Try(Await.result(setAchievementProgressAsync(userId, achievementName, progress), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set an achievement progress record for a user asynchronously
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and progress set to the provided value. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * @param userId The user&#39;s id 
+   * @param achievementName The achievement&#39;s name 
+   * @param progress The new progress value (optional)
+   * @return Future(UserAchievementGroupResource)
+  */
+  def setAchievementProgressAsync(userId: Integer, achievementName: String, progress: Option[IntWrapper] = None): Future[UserAchievementGroupResource] = {
+      helper.setAchievementProgress(userId, achievementName, progress)
+  }
+
 
   /**
    * Update an achievement definition
@@ -741,39 +533,24 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return AchievementDefinitionResource
    */
   def updateAchievement(name: String, achievement: Option[AchievementDefinitionResource] = None): Option[AchievementDefinitionResource] = {
-    // create path and map variables
-    val path = "/achievements/{name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "name" + "\\}",apiInvoker.escape(name))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->updateAchievement")
-
-    
-
-    var postBody: AnyRef = achievement.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[AchievementDefinitionResource]).asInstanceOf[AchievementDefinitionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateAchievementAsync(name, achievement), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an achievement definition asynchronously
+   * The existing generated rule, if any, will be deleted. A new rule will be created if a trigger event name is specified in the new version.
+   * @param name The name of the achievement 
+   * @param achievement The achievement definition (optional)
+   * @return Future(AchievementDefinitionResource)
+  */
+  def updateAchievementAsync(name: String, achievement: Option[AchievementDefinitionResource] = None): Future[AchievementDefinitionResource] = {
+      helper.updateAchievement(name, achievement)
+  }
+
 
   /**
    * Update an achievement template
@@ -783,38 +560,481 @@ class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.kne
    * @return TemplateResource
    */
   def updateAchievementTemplate(id: String, template: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateAchievementTemplateAsync(id, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update an achievement template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param template The updated template (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateAchievementTemplateAsync(id: String, template: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateAchievementTemplate(id, template)
+  }
+
+
+}
+
+class GamificationAchievementsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createAchievement(achievement: Option[AchievementDefinitionResource] = None
+    )(implicit reader: ClientResponseReader[AchievementDefinitionResource], writer: RequestWriter[AchievementDefinitionResource]): Future[AchievementDefinitionResource] = {
     // create path and map variables
-    val path = "/achievements/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
+    val path = (addFmt("/achievements"))
 
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(achievement))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createAchievementTemplate(template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteAchievement(name: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->deleteAchievement")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteAchievementTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationAchievementsApi->deleteAchievementTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getAchievement(name: String)(implicit reader: ClientResponseReader[AchievementDefinitionResource]): Future[AchievementDefinitionResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->getAchievement")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getAchievementTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationAchievementsApi->getAchievementTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getAchievementTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getAchievementTriggers()(implicit reader: ClientResponseReader[List[BreTriggerResource]]): Future[List[BreTriggerResource]] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/triggers"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getAchievements(filterTagset: Option[String] = None,
+    filterName: Option[String] = None,
+    filterHidden: Option[Boolean] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(name:ASC),
+    filterDerived: Option[Boolean] = Some(false)
+    )(implicit reader: ClientResponseReader[PageResourceAchievementDefinitionResource]): Future[PageResourceAchievementDefinitionResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    filterHidden match {
+      case Some(param) => queryParams += "filter_hidden" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+    filterDerived match {
+      case Some(param) => queryParams += "filter_derived" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getDerivedAchievements(name: String)(implicit reader: ClientResponseReader[List[AchievementDefinitionResource]]): Future[List[AchievementDefinitionResource]] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/derived/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->getDerivedAchievements")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserAchievementProgress(userId: Integer,
+    achievementName: String)(implicit reader: ClientResponseReader[UserAchievementGroupResource]): Future[UserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/achievements/{achievement_name}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "achievement_name" + "\\}",achievementName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->getUserAchievementProgress")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserAchievementsProgress(userId: Integer,
+    filterAchievementDerived: Option[Boolean] = None,
+    filterAchievementTagset: Option[String] = None,
+    filterAchievementName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUserAchievementGroupResource]): Future[PageResourceUserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/achievements")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterAchievementDerived match {
+      case Some(param) => queryParams += "filter_achievement_derived" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementTagset match {
+      case Some(param) => queryParams += "filter_achievement_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementName match {
+      case Some(param) => queryParams += "filter_achievement_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsersAchievementProgress(achievementName: String,
+    filterAchievementDerived: Option[Boolean] = None,
+    filterAchievementTagset: Option[String] = None,
+    filterAchievementName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUserAchievementGroupResource]): Future[PageResourceUserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/achievements/{achievement_name}")
+      replaceAll ("\\{" + "achievement_name" + "\\}",achievementName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->getUsersAchievementProgress")
+
+    filterAchievementDerived match {
+      case Some(param) => queryParams += "filter_achievement_derived" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementTagset match {
+      case Some(param) => queryParams += "filter_achievement_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementName match {
+      case Some(param) => queryParams += "filter_achievement_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsersAchievementsProgress(filterAchievementDerived: Option[Boolean] = None,
+    filterAchievementTagset: Option[String] = None,
+    filterAchievementName: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceUserAchievementGroupResource]): Future[PageResourceUserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/achievements"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterAchievementDerived match {
+      case Some(param) => queryParams += "filter_achievement_derived" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementTagset match {
+      case Some(param) => queryParams += "filter_achievement_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterAchievementName match {
+      case Some(param) => queryParams += "filter_achievement_name" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def incrementAchievementProgress(userId: Integer,
+    achievementName: String,
+    progress: Option[IntWrapper] = None
+    )(implicit reader: ClientResponseReader[UserAchievementGroupResource], writer: RequestWriter[IntWrapper]): Future[UserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/achievements/{achievement_name}/progress")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "achievement_name" + "\\}",achievementName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->incrementAchievementProgress")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(progress))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setAchievementProgress(userId: Integer,
+    achievementName: String,
+    progress: Option[IntWrapper] = None
+    )(implicit reader: ClientResponseReader[UserAchievementGroupResource], writer: RequestWriter[IntWrapper]): Future[UserAchievementGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/achievements/{achievement_name}/progress")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "achievement_name" + "\\}",achievementName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (achievementName == null) throw new Exception("Missing required parameter 'achievementName' when calling GamificationAchievementsApi->setAchievementProgress")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(progress))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateAchievement(name: String,
+    achievement: Option[AchievementDefinitionResource] = None
+    )(implicit reader: ClientResponseReader[AchievementDefinitionResource], writer: RequestWriter[AchievementDefinitionResource]): Future[AchievementDefinitionResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/{name}")
+      replaceAll ("\\{" + "name" + "\\}",name.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (name == null) throw new Exception("Missing required parameter 'name' when calling GamificationAchievementsApi->updateAchievement")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(achievement))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateAchievementTemplate(id: String,
+    template: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/achievements/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (id == null) throw new Exception("Missing required parameter 'id' when calling GamificationAchievementsApi->updateAchievementTemplate")
 
-    
 
-    var postBody: AnyRef = template.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(template))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

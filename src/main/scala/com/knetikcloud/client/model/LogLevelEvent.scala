@@ -13,12 +13,18 @@
 package com.knetikcloud.client.model
 
 
-case class Order (
-  ascending: Option[Boolean],
-  descending: Option[Boolean],
-  direction: Option[String],
-  ignoreCase: Option[Boolean],
-  nullHandling: Option[String],
-  property: Option[String]
+case class LogLevelEvent (
+  client: Option[String],
+  customer: Option[String],
+  doNotBroadcast: Option[Boolean],
+  section: Option[String],
+  source: Option[Any],
+  specifics: Option[String],
+  synchronous: Option[Boolean],
+  timestamp: Option[Long],
+  /* The type of the event. Used for polymorphic type recognition and thus must match an expected type */
+  _type: String,
+  level: Option[String],
+  name: Option[String]
 )
 

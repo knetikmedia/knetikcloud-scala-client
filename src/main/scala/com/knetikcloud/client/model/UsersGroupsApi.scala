@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.GroupMemberResource
 import com.knetikcloud.client.model.GroupResource
 import com.knetikcloud.client.model.PageResourceGroupMemberResource
@@ -19,8 +21,7 @@ import com.knetikcloud.client.model.PageResourceGroupResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -32,12 +33,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new UsersGroupsApiAsyncHelper(client, config)
 
   /**
    * Adds a new member to the group
@@ -47,41 +77,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return GroupMemberResource
    */
   def addMemberToGroup(uniqueName: String, user: GroupMemberResource): Option[GroupMemberResource] = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->addMemberToGroup")
-
-    if (user == null) throw new Exception("Missing required parameter 'user' when calling UsersGroupsApi->addMemberToGroup")
-
-    
-
-    var postBody: AnyRef = user
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[GroupMemberResource]).asInstanceOf[GroupMemberResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addMemberToGroupAsync(uniqueName, user), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds a new member to the group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param user The id and status for a user to add to the group 
+   * @return Future(GroupMemberResource)
+  */
+  def addMemberToGroupAsync(uniqueName: String, user: GroupMemberResource): Future[GroupMemberResource] = {
+      helper.addMemberToGroup(uniqueName, user)
+  }
+
 
   /**
    * Adds multiple members to the group
@@ -91,41 +104,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return List[GroupMemberResource]
    */
   def addMembersToGroup(uniqueName: String, users: List[GroupMemberResource]): Option[List[GroupMemberResource]] = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members/batch-add".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->addMembersToGroup")
-
-    if (users == null) throw new Exception("Missing required parameter 'users' when calling UsersGroupsApi->addMembersToGroup")
-
-    
-
-    var postBody: AnyRef = users
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[GroupMemberResource]).asInstanceOf[List[GroupMemberResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addMembersToGroupAsync(uniqueName, users), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds multiple members to the group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param users The id and status for a list of users to add to the group 
+   * @return Future(List[GroupMemberResource])
+  */
+  def addMembersToGroupAsync(uniqueName: String, users: List[GroupMemberResource]): Future[List[GroupMemberResource]] = {
+      helper.addMembersToGroup(uniqueName, users)
+  }
+
 
   /**
    * Create a group
@@ -134,37 +130,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return GroupResource
    */
   def createGroup(groupResource: Option[GroupResource] = None): Option[GroupResource] = {
-    // create path and map variables
-    val path = "/users/groups".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = groupResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[GroupResource]).asInstanceOf[GroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createGroupAsync(groupResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a group asynchronously
+   * 
+   * @param groupResource The new group (optional)
+   * @return Future(GroupResource)
+  */
+  def createGroupAsync(groupResource: Option[GroupResource] = None): Future[GroupResource] = {
+      helper.createGroup(groupResource)
+  }
+
 
   /**
    * Create a group template
@@ -173,37 +155,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return TemplateResource
    */
   def createGroupTemplate(groupTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/users/groups/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = groupTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createGroupTemplateAsync(groupTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a group template asynchronously
+   * Group Templates define a type of group and the properties they have
+   * @param groupTemplateResource The group template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createGroupTemplateAsync(groupTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createGroupTemplate(groupTemplateResource)
+  }
+
 
   /**
    * Removes a group from the system IF no resources are attached to it
@@ -212,38 +180,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteGroup(uniqueName: String) = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->deleteGroup")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteGroupAsync(uniqueName), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Removes a group from the system IF no resources are attached to it asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @return Future(void)
+  */
+  def deleteGroupAsync(uniqueName: String) = {
+      helper.deleteGroup(uniqueName)
+  }
+
 
   /**
    * Delete a group template
@@ -253,39 +206,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteGroupTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/users/groups/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->deleteGroupTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteGroupTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a group template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteGroupTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteGroupTemplate(id, cascade)
+  }
+
 
   /**
    * Loads a specific group&#39;s details
@@ -294,39 +232,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return GroupResource
    */
   def getGroup(uniqueName: String): Option[GroupResource] = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroup")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[GroupResource]).asInstanceOf[GroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupAsync(uniqueName), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Loads a specific group&#39;s details asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @return Future(GroupResource)
+  */
+  def getGroupAsync(uniqueName: String): Future[GroupResource] = {
+      helper.getGroup(uniqueName)
+  }
+
 
   /**
    * Get a user from a group
@@ -336,39 +258,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return GroupMemberResource
    */
   def getGroupMember(uniqueName: String, userId: Integer): Option[GroupMemberResource] = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members/{user_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName)).replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupMember")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[GroupMemberResource]).asInstanceOf[GroupMemberResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupMemberAsync(uniqueName, userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a user from a group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param userId The id of the user 
+   * @return Future(GroupMemberResource)
+  */
+  def getGroupMemberAsync(uniqueName: String, userId: Integer): Future[GroupMemberResource] = {
+      helper.getGroupMember(uniqueName, userId)
+  }
+
 
   /**
    * Lists members of the group
@@ -380,42 +287,26 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceGroupMemberResource
    */
   def getGroupMembers(uniqueName: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceGroupMemberResource] = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupMembers")
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceGroupMemberResource]).asInstanceOf[PageResourceGroupMemberResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupMembersAsync(uniqueName, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Lists members of the group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceGroupMemberResource)
+  */
+  def getGroupMembersAsync(uniqueName: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceGroupMemberResource] = {
+      helper.getGroupMembers(uniqueName, size, page, order)
+  }
+
 
   /**
    * Get a single group template
@@ -424,39 +315,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return TemplateResource
    */
   def getGroupTemplate(id: String): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/users/groups/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->getGroupTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single group template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getGroupTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getGroupTemplate(id)
+  }
+
 
   /**
    * List and search group templates
@@ -467,40 +342,25 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceTemplateResource
    */
   def getGroupTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
-    // create path and map variables
-    val path = "/users/groups/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceTemplateResource]).asInstanceOf[PageResourceTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search group templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getGroupTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getGroupTemplates(size, page, order)
+  }
+
 
   /**
    * List groups a user is in
@@ -509,37 +369,23 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return List[String]
    */
   def getGroupsForUser(userId: Integer): Option[List[String]] = {
-    // create path and map variables
-    val path = "/users/{user_id}/groups".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getGroupsForUserAsync(userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List groups a user is in asynchronously
+   * 
+   * @param userId The id of the user 
+   * @return Future(List[String])
+  */
+  def getGroupsForUserAsync(userId: Integer): Future[List[String]] = {
+      helper.getGroupsForUser(userId)
+  }
+
 
   /**
    * Removes a user from a group
@@ -549,38 +395,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def removeGroupMember(uniqueName: String, userId: Integer) = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members/{user_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName)).replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->removeGroupMember")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeGroupMemberAsync(uniqueName, userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Removes a user from a group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param userId The id of the user to remove 
+   * @return Future(void)
+  */
+  def removeGroupMemberAsync(uniqueName: String, userId: Integer) = {
+      helper.removeGroupMember(uniqueName, userId)
+  }
+
 
   /**
    * Update a group
@@ -590,38 +422,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def updateGroup(uniqueName: String, groupResource: Option[GroupResource] = None) = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->updateGroup")
-
-    
-
-    var postBody: AnyRef = groupResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateGroupAsync(uniqueName, groupResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a group asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param groupResource The updated group (optional)
+   * @return Future(void)
+  */
+  def updateGroupAsync(uniqueName: String, groupResource: Option[GroupResource] = None) = {
+      helper.updateGroup(uniqueName, groupResource)
+  }
+
 
   /**
    * Change a user&#39;s status
@@ -632,40 +450,25 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def updateGroupMemberStatus(uniqueName: String, userId: Integer, status: String) = {
-    // create path and map variables
-    val path = "/users/groups/{unique_name}/members/{user_id}/status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "unique_name" + "\\}",apiInvoker.escape(uniqueName)).replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->updateGroupMemberStatus")
-
-    if (status == null) throw new Exception("Missing required parameter 'status' when calling UsersGroupsApi->updateGroupMemberStatus")
-
-    
-
-    var postBody: AnyRef = status
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateGroupMemberStatusAsync(uniqueName, userId, status), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Change a user&#39;s status asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param userId The user id of the member to modify 
+   * @param status The new status for the user 
+   * @return Future(void)
+  */
+  def updateGroupMemberStatusAsync(uniqueName: String, userId: Integer, status: String) = {
+      helper.updateGroupMemberStatus(uniqueName, userId, status)
+  }
+
 
   /**
    * Update a group template
@@ -675,39 +478,24 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return TemplateResource
    */
   def updateGroupTemplate(id: String, groupTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
-    // create path and map variables
-    val path = "/users/groups/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->updateGroupTemplate")
-
-    
-
-    var postBody: AnyRef = groupTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[TemplateResource]).asInstanceOf[TemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateGroupTemplateAsync(id, groupTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a group template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param groupTemplateResource The group template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateGroupTemplateAsync(id: String, groupTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateGroupTemplate(id, groupTemplateResource)
+  }
+
 
   /**
    * List and search groups
@@ -724,45 +512,428 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceGroupResource
    */
   def updateGroups(filterTemplate: Option[String] = None, filterMemberCount: Option[String] = None, filterName: Option[String] = None, filterUniqueName: Option[String] = None, filterParent: Option[String] = None, filterStatus: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Option[PageResourceGroupResource] = {
-    // create path and map variables
-    val path = "/users/groups".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterTemplate.map(paramVal => queryParams += "filter_template" -> paramVal.toString)
-    filterMemberCount.map(paramVal => queryParams += "filter_member_count" -> paramVal.toString)
-    filterName.map(paramVal => queryParams += "filter_name" -> paramVal.toString)
-    filterUniqueName.map(paramVal => queryParams += "filter_unique_name" -> paramVal.toString)
-    filterParent.map(paramVal => queryParams += "filter_parent" -> paramVal.toString)
-    filterStatus.map(paramVal => queryParams += "filter_status" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceGroupResource]).asInstanceOf[PageResourceGroupResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateGroupsAsync(filterTemplate, filterMemberCount, filterName, filterUniqueName, filterParent, filterStatus, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search groups asynchronously
+   * 
+   * @param filterTemplate Filter for groups using a specific template, by id (optional)
+   * @param filterMemberCount Filters groups by member count. Multiple values possible for range search. Format: filter_member_count&#x3D;OP,ts&amp;... where OP in (GT, LT, GOE, LOE, EQ). Ex: filter_member_count&#x3D;GT,14,LT,17 (optional)
+   * @param filterName Filter for groups with names starting with the given string (optional)
+   * @param filterUniqueName Filter for groups whose unique_name starts with provided string (optional)
+   * @param filterParent Filter for groups with a specific parent, by unique name (optional)
+   * @param filterStatus Filter for groups with a certain status (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
+   * @return Future(PageResourceGroupResource)
+  */
+  def updateGroupsAsync(filterTemplate: Option[String] = None, filterMemberCount: Option[String] = None, filterName: Option[String] = None, filterUniqueName: Option[String] = None, filterParent: Option[String] = None, filterStatus: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Future[PageResourceGroupResource] = {
+      helper.updateGroups(filterTemplate, filterMemberCount, filterName, filterUniqueName, filterParent, filterStatus, size, page, order)
+  }
+
+
+}
+
+class UsersGroupsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addMemberToGroup(uniqueName: String,
+    user: GroupMemberResource)(implicit reader: ClientResponseReader[GroupMemberResource], writer: RequestWriter[GroupMemberResource]): Future[GroupMemberResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->addMemberToGroup")
+
+    if (user == null) throw new Exception("Missing required parameter 'user' when calling UsersGroupsApi->addMemberToGroup")
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(user))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addMembersToGroup(uniqueName: String,
+    users: List[GroupMemberResource])(implicit reader: ClientResponseReader[List[GroupMemberResource]], writer: RequestWriter[List[GroupMemberResource]]): Future[List[GroupMemberResource]] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members/batch-add")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->addMembersToGroup")
+
+    if (users == null) throw new Exception("Missing required parameter 'users' when calling UsersGroupsApi->addMembersToGroup")
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(users))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createGroup(groupResource: Option[GroupResource] = None
+    )(implicit reader: ClientResponseReader[GroupResource], writer: RequestWriter[GroupResource]): Future[GroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(groupResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createGroupTemplate(groupTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(groupTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteGroup(uniqueName: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->deleteGroup")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteGroupTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->deleteGroupTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroup(uniqueName: String)(implicit reader: ClientResponseReader[GroupResource]): Future[GroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroup")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupMember(uniqueName: String,
+    userId: Integer)(implicit reader: ClientResponseReader[GroupMemberResource]): Future[GroupMemberResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members/{user_id}")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupMember")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupMembers(uniqueName: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceGroupMemberResource]): Future[PageResourceGroupMemberResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupMembers")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->getGroupTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupsForUser(userId: Integer)(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/groups")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeGroupMember(uniqueName: String,
+    userId: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members/{user_id}")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->removeGroupMember")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateGroup(uniqueName: String,
+    groupResource: Option[GroupResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[GroupResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->updateGroup")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(groupResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateGroupMemberStatus(uniqueName: String,
+    userId: Integer,
+    status: String)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[String]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members/{user_id}/status")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->updateGroupMemberStatus")
+
+    if (status == null) throw new Exception("Missing required parameter 'status' when calling UsersGroupsApi->updateGroupMemberStatus")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(status))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateGroupTemplate(id: String,
+    groupTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling UsersGroupsApi->updateGroupTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(groupTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateGroups(filterTemplate: Option[String] = None,
+    filterMemberCount: Option[String] = None,
+    filterName: Option[String] = None,
+    filterUniqueName: Option[String] = None,
+    filterParent: Option[String] = None,
+    filterStatus: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(name:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceGroupResource]): Future[PageResourceGroupResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterTemplate match {
+      case Some(param) => queryParams += "filter_template" -> param.toString
+      case _ => queryParams
+    }
+    filterMemberCount match {
+      case Some(param) => queryParams += "filter_member_count" -> param.toString
+      case _ => queryParams
+    }
+    filterName match {
+      case Some(param) => queryParams += "filter_name" -> param.toString
+      case _ => queryParams
+    }
+    filterUniqueName match {
+      case Some(param) => queryParams += "filter_unique_name" -> param.toString
+      case _ => queryParams
+    }
+    filterParent match {
+      case Some(param) => queryParams += "filter_parent" -> param.toString
+      case _ => queryParams
+    }
+    filterStatus match {
+      case Some(param) => queryParams += "filter_status" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

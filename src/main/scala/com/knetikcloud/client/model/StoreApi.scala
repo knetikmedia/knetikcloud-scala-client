@@ -12,14 +12,17 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.BehaviorDefinitionResource
+import com.knetikcloud.client.model.InvoiceResource
 import com.knetikcloud.client.model.PageResourceStoreItem
 import com.knetikcloud.client.model.PageResourceStoreItemTemplateResource
+import com.knetikcloud.client.model.QuickBuyRequest
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.StoreItem
 import com.knetikcloud.client.model.StoreItemTemplateResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -31,12 +34,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new StoreApiAsyncHelper(client, config)
 
   /**
    * Create an item template
@@ -45,37 +77,23 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItemTemplateResource
    */
   def createItemTemplate(itemTemplateResource: Option[StoreItemTemplateResource] = None): Option[StoreItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/items/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = itemTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItemTemplateResource]).asInstanceOf[StoreItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createItemTemplateAsync(itemTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create an item template asynchronously
+   * Item Templates define a type of item and the properties they have.
+   * @param itemTemplateResource The new item template (optional)
+   * @return Future(StoreItemTemplateResource)
+  */
+  def createItemTemplateAsync(itemTemplateResource: Option[StoreItemTemplateResource] = None): Future[StoreItemTemplateResource] = {
+      helper.createItemTemplate(itemTemplateResource)
+  }
+
 
   /**
    * Create a store item
@@ -85,38 +103,24 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItem
    */
   def createStoreItem(cascade: Option[Boolean] /* = false*/, storeItem: Option[StoreItem] = None): Option[StoreItem] = {
-    // create path and map variables
-    val path = "/store/items".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = storeItem.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItem]).asInstanceOf[StoreItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createStoreItemAsync(cascade, storeItem), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a store item asynchronously
+   * SKUs have to be unique in the entire store. If a duplicate SKU is found, a 400 error is generated and the response will have a \&quot;parameters\&quot; field that is a list of duplicates. A duplicate is an object like {item_id, offending_sku_list}. Ex:&lt;br /&gt; {..., parameters: [[{item: 1, skus: [\&quot;SKU-1\&quot;]}]]}&lt;br /&gt; If an item is brand new and has duplicate SKUs within itself, the item ID will be 0.  Item subclasses are not allowed here, you will have to use their respective endpoints.
+   * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
+   * @param storeItem The store item object (optional)
+   * @return Future(StoreItem)
+  */
+  def createStoreItemAsync(cascade: Option[Boolean] /* = false*/, storeItem: Option[StoreItem] = None): Future[StoreItem] = {
+      helper.createStoreItem(cascade, storeItem)
+  }
+
 
   /**
    * Delete an item template
@@ -126,39 +130,24 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteItemTemplate(id: String, cascade: Option[String] = None) = {
-    // create path and map variables
-    val path = "/store/items/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->deleteItemTemplate")
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteItemTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete an item template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
+   * @return Future(void)
+  */
+  def deleteItemTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteItemTemplate(id, cascade)
+  }
+
 
   /**
    * Delete a store item
@@ -167,36 +156,23 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def deleteStoreItem(id: Integer) = {
-    // create path and map variables
-    val path = "/store/items/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteStoreItemAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a store item asynchronously
+   * 
+   * @param id The id of the item 
+   * @return Future(void)
+  */
+  def deleteStoreItemAsync(id: Integer) = {
+      helper.deleteStoreItem(id)
+  }
+
 
   /**
    * List available item behaviors
@@ -204,37 +180,22 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[BehaviorDefinitionResource]
    */
   def getBehaviors(): Option[List[BehaviorDefinitionResource]] = {
-    // create path and map variables
-    val path = "/store/items/behaviors".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[BehaviorDefinitionResource]).asInstanceOf[List[BehaviorDefinitionResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBehaviorsAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List available item behaviors asynchronously
+   * 
+   * @return Future(List[BehaviorDefinitionResource])
+  */
+  def getBehaviorsAsync(): Future[List[BehaviorDefinitionResource]] = {
+      helper.getBehaviors()
+  }
+
 
   /**
    * Get a single item template
@@ -243,39 +204,23 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItemTemplateResource
    */
   def getItemTemplate(id: String): Option[StoreItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/items/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->getItemTemplate")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItemTemplateResource]).asInstanceOf[StoreItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getItemTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single item template asynchronously
+   * Item Templates define a type of item and the properties they have.
+   * @param id The id of the template 
+   * @return Future(StoreItemTemplateResource)
+  */
+  def getItemTemplateAsync(id: String): Future[StoreItemTemplateResource] = {
+      helper.getItemTemplate(id)
+  }
+
 
   /**
    * List and search item templates
@@ -286,40 +231,25 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceStoreItemTemplateResource
    */
   def getItemTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceStoreItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/items/templates".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceStoreItemTemplateResource]).asInstanceOf[PageResourceStoreItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getItemTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search item templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceStoreItemTemplateResource)
+  */
+  def getItemTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceStoreItemTemplateResource] = {
+      helper.getItemTemplates(size, page, order)
+  }
+
 
   /**
    * Get a listing of store items
@@ -332,42 +262,27 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceStoreItem
    */
   def getStore(limit: Option[Integer] = None, page: Option[Integer] = None, useCatalog: Option[Boolean] = None, ignoreLocation: Option[Boolean] = None, inStockOnly: Option[Boolean] /* = false*/): Option[PageResourceStoreItem] = {
-    // create path and map variables
-    val path = "/store".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    limit.map(paramVal => queryParams += "limit" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    useCatalog.map(paramVal => queryParams += "use_catalog" -> paramVal.toString)
-    ignoreLocation.map(paramVal => queryParams += "ignore_location" -> paramVal.toString)
-    inStockOnly.map(paramVal => queryParams += "in_stock_only" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceStoreItem]).asInstanceOf[PageResourceStoreItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStoreAsync(limit, page, useCatalog, ignoreLocation, inStockOnly), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a listing of store items asynchronously
+   * The exact structure of each items may differ to include fields specific to the type. The same is true for behaviors.
+   * @param limit The amount of items returned (optional)
+   * @param page The page of the request (optional)
+   * @param useCatalog Whether to remove items that are not intended for display or not in date (optional)
+   * @param ignoreLocation Whether to ignore country restrictions based on the caller&#39;s location (optional)
+   * @param inStockOnly Whether only in-stock items should be returned.  Default value is false (optional, default to false)
+   * @return Future(PageResourceStoreItem)
+  */
+  def getStoreAsync(limit: Option[Integer] = None, page: Option[Integer] = None, useCatalog: Option[Boolean] = None, ignoreLocation: Option[Boolean] = None, inStockOnly: Option[Boolean] /* = false*/): Future[PageResourceStoreItem] = {
+      helper.getStore(limit, page, useCatalog, ignoreLocation, inStockOnly)
+  }
+
 
   /**
    * Get a single store item
@@ -376,37 +291,23 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItem
    */
   def getStoreItem(id: Integer): Option[StoreItem] = {
-    // create path and map variables
-    val path = "/store/items/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItem]).asInstanceOf[StoreItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStoreItemAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get a single store item asynchronously
+   * 
+   * @param id The id of the item 
+   * @return Future(StoreItem)
+  */
+  def getStoreItemAsync(id: Integer): Future[StoreItem] = {
+      helper.getStoreItem(id)
+  }
+
 
   /**
    * List and search store items
@@ -431,54 +332,64 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceStoreItem
    */
   def getStoreItems(filterNameSearch: Option[String] = None, filterUniqueKey: Option[String] = None, filterPublished: Option[Boolean] = None, filterDisplayable: Option[Boolean] = None, filterStart: Option[String] = None, filterEnd: Option[String] = None, filterStartDate: Option[String] = None, filterStopDate: Option[String] = None, filterSku: Option[String] = None, filterPrice: Option[String] = None, filterTag: Option[String] = None, filterItemsByType: Option[String] = None, filterBundledSkus: Option[String] = None, filterVendor: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceStoreItem] = {
-    // create path and map variables
-    val path = "/store/items".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterNameSearch.map(paramVal => queryParams += "filter_name_search" -> paramVal.toString)
-    filterUniqueKey.map(paramVal => queryParams += "filter_unique_key" -> paramVal.toString)
-    filterPublished.map(paramVal => queryParams += "filter_published" -> paramVal.toString)
-    filterDisplayable.map(paramVal => queryParams += "filter_displayable" -> paramVal.toString)
-    filterStart.map(paramVal => queryParams += "filter_start" -> paramVal.toString)
-    filterEnd.map(paramVal => queryParams += "filter_end" -> paramVal.toString)
-    filterStartDate.map(paramVal => queryParams += "filter_start_date" -> paramVal.toString)
-    filterStopDate.map(paramVal => queryParams += "filter_stop_date" -> paramVal.toString)
-    filterSku.map(paramVal => queryParams += "filter_sku" -> paramVal.toString)
-    filterPrice.map(paramVal => queryParams += "filter_price" -> paramVal.toString)
-    filterTag.map(paramVal => queryParams += "filter_tag" -> paramVal.toString)
-    filterItemsByType.map(paramVal => queryParams += "filter_items_by_type" -> paramVal.toString)
-    filterBundledSkus.map(paramVal => queryParams += "filter_bundled_skus" -> paramVal.toString)
-    filterVendor.map(paramVal => queryParams += "filter_vendor" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceStoreItem]).asInstanceOf[PageResourceStoreItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getStoreItemsAsync(filterNameSearch, filterUniqueKey, filterPublished, filterDisplayable, filterStart, filterEnd, filterStartDate, filterStopDate, filterSku, filterPrice, filterTag, filterItemsByType, filterBundledSkus, filterVendor, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List and search store items asynchronously
+   * 
+   * @param filterNameSearch Filter for items whose name starts with a given string. (optional)
+   * @param filterUniqueKey Filter for items whose unique_key is a given string. (optional)
+   * @param filterPublished Filter for skus that have been published. (optional)
+   * @param filterDisplayable Filter for items that are displayable. (optional)
+   * @param filterStart A comma separated string without spaces.  First value is the operator to search on, second value is the store start date, a unix timestamp in seconds.  Allowed operators: (LT, GT, LTE, GTE, EQ). (optional)
+   * @param filterEnd A comma separated string without spaces.  First value is the operator to search on, second value is the store end date, a unix timestamp in seconds.  Allowed operators: (LT, GT, LTE, GTE, EQ). (optional)
+   * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the sku start date, a unix timestamp in seconds.  Allowed operators: (LT, GT, LTE, GTE, EQ). (optional)
+   * @param filterStopDate A comma separated string without spaces.  First value is the operator to search on, second value is the sku end date, a unix timestamp in seconds.  Allowed operators: (LT, GT, LTE, GTE, EQ). (optional)
+   * @param filterSku Filter for skus whose name starts with a given string. (optional)
+   * @param filterPrice A colon separated string without spaces.  First value is the operator to search on, second value is the price of a sku.  Allowed operators: (LT, GT, LTE, GTE, EQ). (optional)
+   * @param filterTag A comma separated list without spaces of the names of tags. Will only return items with at least one of the tags. (optional)
+   * @param filterItemsByType Filter for item type based on its type hint. (optional)
+   * @param filterBundledSkus Filter for skus inside bundles whose name starts with a given string.  Used only when type hint is &#39;bundle_item&#39; (optional)
+   * @param filterVendor Filter for items from a given vendor, by id. (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceStoreItem)
+  */
+  def getStoreItemsAsync(filterNameSearch: Option[String] = None, filterUniqueKey: Option[String] = None, filterPublished: Option[Boolean] = None, filterDisplayable: Option[Boolean] = None, filterStart: Option[String] = None, filterEnd: Option[String] = None, filterStartDate: Option[String] = None, filterStopDate: Option[String] = None, filterSku: Option[String] = None, filterPrice: Option[String] = None, filterTag: Option[String] = None, filterItemsByType: Option[String] = None, filterBundledSkus: Option[String] = None, filterVendor: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceStoreItem] = {
+      helper.getStoreItems(filterNameSearch, filterUniqueKey, filterPublished, filterDisplayable, filterStart, filterEnd, filterStartDate, filterStopDate, filterSku, filterPrice, filterTag, filterItemsByType, filterBundledSkus, filterVendor, size, page, order)
+  }
+
+
+  /**
+   * One-step purchase and pay for a single SKU item from a user&#39;s wallet
+   * Used to create and automatically pay an invoice for a single unit of a single SKU from a user&#39;s wallet. SKU must be priced in virtual currency and must not be an item that requires shipping. PAYMENTS_ADMIN permission is required if user ID is specified and is not the ID of the currently logged in user. If invoice price does not match expected price, purchase is aborted
+   * @param quickBuyRequest Quick buy details (optional)
+   * @return InvoiceResource
+   */
+  def quickBuy(quickBuyRequest: Option[QuickBuyRequest] = None): Option[InvoiceResource] = {
+    val await = Try(Await.result(quickBuyAsync(quickBuyRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * One-step purchase and pay for a single SKU item from a user&#39;s wallet asynchronously
+   * Used to create and automatically pay an invoice for a single unit of a single SKU from a user&#39;s wallet. SKU must be priced in virtual currency and must not be an item that requires shipping. PAYMENTS_ADMIN permission is required if user ID is specified and is not the ID of the currently logged in user. If invoice price does not match expected price, purchase is aborted
+   * @param quickBuyRequest Quick buy details (optional)
+   * @return Future(InvoiceResource)
+  */
+  def quickBuyAsync(quickBuyRequest: Option[QuickBuyRequest] = None): Future[InvoiceResource] = {
+      helper.quickBuy(quickBuyRequest)
+  }
+
 
   /**
    * Update an item template
@@ -488,39 +399,24 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItemTemplateResource
    */
   def updateItemTemplate(id: String, itemTemplateResource: Option[StoreItemTemplateResource] = None): Option[StoreItemTemplateResource] = {
-    // create path and map variables
-    val path = "/store/items/templates/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->updateItemTemplate")
-
-    
-
-    var postBody: AnyRef = itemTemplateResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItemTemplateResource]).asInstanceOf[StoreItemTemplateResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateItemTemplateAsync(id, itemTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update an item template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param itemTemplateResource The item template resource object (optional)
+   * @return Future(StoreItemTemplateResource)
+  */
+  def updateItemTemplateAsync(id: String, itemTemplateResource: Option[StoreItemTemplateResource] = None): Future[StoreItemTemplateResource] = {
+      helper.updateItemTemplate(id, itemTemplateResource)
+  }
+
 
   /**
    * Update a store item
@@ -531,37 +427,384 @@ class StoreApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return StoreItem
    */
   def updateStoreItem(id: Integer, cascade: Option[Boolean] /* = false*/, storeItem: Option[StoreItem] = None): Option[StoreItem] = {
-    // create path and map variables
-    val path = "/store/items/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    cascade.map(paramVal => queryParams += "cascade" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = storeItem.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[StoreItem]).asInstanceOf[StoreItem])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateStoreItemAsync(id, cascade, storeItem), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a store item asynchronously
+   * 
+   * @param id The id of the item 
+   * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
+   * @param storeItem The store item object (optional)
+   * @return Future(StoreItem)
+  */
+  def updateStoreItemAsync(id: Integer, cascade: Option[Boolean] /* = false*/, storeItem: Option[StoreItem] = None): Future[StoreItem] = {
+      helper.updateStoreItem(id, cascade, storeItem)
+  }
+
+
+}
+
+class StoreApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createItemTemplate(itemTemplateResource: Option[StoreItemTemplateResource] = None
+    )(implicit reader: ClientResponseReader[StoreItemTemplateResource], writer: RequestWriter[StoreItemTemplateResource]): Future[StoreItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(itemTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createStoreItem(cascade: Option[Boolean] = Some(false),
+    storeItem: Option[StoreItem] = None
+    )(implicit reader: ClientResponseReader[StoreItem], writer: RequestWriter[StoreItem]): Future[StoreItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/items"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(storeItem))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteItemTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->deleteItemTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteStoreItem(id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getBehaviors()(implicit reader: ClientResponseReader[List[BehaviorDefinitionResource]]): Future[List[BehaviorDefinitionResource]] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/behaviors"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getItemTemplate(id: String)(implicit reader: ClientResponseReader[StoreItemTemplateResource]): Future[StoreItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->getItemTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getItemTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceStoreItemTemplateResource]): Future[PageResourceStoreItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStore(limit: Option[Integer] = None,
+    page: Option[Integer] = None,
+    useCatalog: Option[Boolean] = None,
+    ignoreLocation: Option[Boolean] = None,
+    inStockOnly: Option[Boolean] = Some(false)
+    )(implicit reader: ClientResponseReader[PageResourceStoreItem]): Future[PageResourceStoreItem] = {
+    // create path and map variables
+    val path = (addFmt("/store"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    limit match {
+      case Some(param) => queryParams += "limit" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    useCatalog match {
+      case Some(param) => queryParams += "use_catalog" -> param.toString
+      case _ => queryParams
+    }
+    ignoreLocation match {
+      case Some(param) => queryParams += "ignore_location" -> param.toString
+      case _ => queryParams
+    }
+    inStockOnly match {
+      case Some(param) => queryParams += "in_stock_only" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStoreItem(id: Integer)(implicit reader: ClientResponseReader[StoreItem]): Future[StoreItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getStoreItems(filterNameSearch: Option[String] = None,
+    filterUniqueKey: Option[String] = None,
+    filterPublished: Option[Boolean] = None,
+    filterDisplayable: Option[Boolean] = None,
+    filterStart: Option[String] = None,
+    filterEnd: Option[String] = None,
+    filterStartDate: Option[String] = None,
+    filterStopDate: Option[String] = None,
+    filterSku: Option[String] = None,
+    filterPrice: Option[String] = None,
+    filterTag: Option[String] = None,
+    filterItemsByType: Option[String] = None,
+    filterBundledSkus: Option[String] = None,
+    filterVendor: Option[Integer] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceStoreItem]): Future[PageResourceStoreItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/items"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterNameSearch match {
+      case Some(param) => queryParams += "filter_name_search" -> param.toString
+      case _ => queryParams
+    }
+    filterUniqueKey match {
+      case Some(param) => queryParams += "filter_unique_key" -> param.toString
+      case _ => queryParams
+    }
+    filterPublished match {
+      case Some(param) => queryParams += "filter_published" -> param.toString
+      case _ => queryParams
+    }
+    filterDisplayable match {
+      case Some(param) => queryParams += "filter_displayable" -> param.toString
+      case _ => queryParams
+    }
+    filterStart match {
+      case Some(param) => queryParams += "filter_start" -> param.toString
+      case _ => queryParams
+    }
+    filterEnd match {
+      case Some(param) => queryParams += "filter_end" -> param.toString
+      case _ => queryParams
+    }
+    filterStartDate match {
+      case Some(param) => queryParams += "filter_start_date" -> param.toString
+      case _ => queryParams
+    }
+    filterStopDate match {
+      case Some(param) => queryParams += "filter_stop_date" -> param.toString
+      case _ => queryParams
+    }
+    filterSku match {
+      case Some(param) => queryParams += "filter_sku" -> param.toString
+      case _ => queryParams
+    }
+    filterPrice match {
+      case Some(param) => queryParams += "filter_price" -> param.toString
+      case _ => queryParams
+    }
+    filterTag match {
+      case Some(param) => queryParams += "filter_tag" -> param.toString
+      case _ => queryParams
+    }
+    filterItemsByType match {
+      case Some(param) => queryParams += "filter_items_by_type" -> param.toString
+      case _ => queryParams
+    }
+    filterBundledSkus match {
+      case Some(param) => queryParams += "filter_bundled_skus" -> param.toString
+      case _ => queryParams
+    }
+    filterVendor match {
+      case Some(param) => queryParams += "filter_vendor" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def quickBuy(quickBuyRequest: Option[QuickBuyRequest] = None
+    )(implicit reader: ClientResponseReader[InvoiceResource], writer: RequestWriter[QuickBuyRequest]): Future[InvoiceResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/quick-buy"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(quickBuyRequest))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateItemTemplate(id: String,
+    itemTemplateResource: Option[StoreItemTemplateResource] = None
+    )(implicit reader: ClientResponseReader[StoreItemTemplateResource], writer: RequestWriter[StoreItemTemplateResource]): Future[StoreItemTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling StoreApi->updateItemTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(itemTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateStoreItem(id: Integer,
+    cascade: Option[Boolean] = Some(false),
+    storeItem: Option[StoreItem] = None
+    )(implicit reader: ClientResponseReader[StoreItem], writer: RequestWriter[StoreItem]): Future[StoreItem] = {
+    // create path and map variables
+    val path = (addFmt("/store/items/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(storeItem))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

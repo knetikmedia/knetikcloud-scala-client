@@ -12,13 +12,16 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
+import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.InventorySubscriptionResource
 import com.knetikcloud.client.model.InvoiceResource
 import com.knetikcloud.client.model.ReactivateSubscriptionRequest
 import com.knetikcloud.client.model.Result
+import com.knetikcloud.client.model.StringWrapper
 import com.knetikcloud.client.model.SubscriptionPriceOverrideRequest
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -30,12 +33,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new UsersSubscriptionsApiAsyncHelper(client, config)
 
   /**
    * Get details about a user&#39;s subscription
@@ -45,37 +77,24 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return InventorySubscriptionResource
    */
   def getUserSubscriptionDetails(userId: Integer, inventoryId: Integer): Option[InventorySubscriptionResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[InventorySubscriptionResource]).asInstanceOf[InventorySubscriptionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserSubscriptionDetailsAsync(userId, inventoryId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get details about a user&#39;s subscription asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @return Future(InventorySubscriptionResource)
+  */
+  def getUserSubscriptionDetailsAsync(userId: Integer, inventoryId: Integer): Future[InventorySubscriptionResource] = {
+      helper.getUserSubscriptionDetails(userId, inventoryId)
+  }
+
 
   /**
    * Get details about a user&#39;s subscriptions
@@ -84,37 +103,23 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return List[InventorySubscriptionResource]
    */
   def getUsersSubscriptionDetails(userId: Integer): Option[List[InventorySubscriptionResource]] = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[InventorySubscriptionResource]).asInstanceOf[List[InventorySubscriptionResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUsersSubscriptionDetailsAsync(userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get details about a user&#39;s subscriptions asynchronously
+   * 
+   * @param userId The id of the user 
+   * @return Future(List[InventorySubscriptionResource])
+  */
+  def getUsersSubscriptionDetailsAsync(userId: Integer): Future[List[InventorySubscriptionResource]] = {
+      helper.getUsersSubscriptionDetails(userId)
+  }
+
 
   /**
    * Reactivate a subscription and charge fee
@@ -125,37 +130,25 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return InvoiceResource
    */
   def reactivateUserSubscription(userId: Integer, inventoryId: Integer, reactivateSubscriptionRequest: Option[ReactivateSubscriptionRequest] = None): Option[InvoiceResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/reactivate".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = reactivateSubscriptionRequest.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[InvoiceResource]).asInstanceOf[InvoiceResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(reactivateUserSubscriptionAsync(userId, inventoryId, reactivateSubscriptionRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Reactivate a subscription and charge fee asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param reactivateSubscriptionRequest The reactivate subscription request object inventory (optional)
+   * @return Future(InvoiceResource)
+  */
+  def reactivateUserSubscriptionAsync(userId: Integer, inventoryId: Integer, reactivateSubscriptionRequest: Option[ReactivateSubscriptionRequest] = None): Future[InvoiceResource] = {
+      helper.reactivateUserSubscription(userId, inventoryId, reactivateSubscriptionRequest)
+  }
+
 
   /**
    * Set a new date to bill a subscription on
@@ -166,36 +159,25 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def setSubscriptionBillDate(userId: Integer, inventoryId: Integer, billDate: Long) = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/bill-date".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = billDate
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(setSubscriptionBillDateAsync(userId, inventoryId, billDate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set a new date to bill a subscription on asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param billDate The new bill date. Unix timestamp in seconds 
+   * @return Future(void)
+  */
+  def setSubscriptionBillDateAsync(userId: Integer, inventoryId: Integer, billDate: Long) = {
+      helper.setSubscriptionBillDate(userId, inventoryId, billDate)
+  }
+
 
   /**
    * Set the payment method to use for a subscription
@@ -205,79 +187,55 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @param paymentMethodId The id of the payment method (optional)
    * @return void
    */
-  def setSubscriptionPaymentMethod(userId: Integer, inventoryId: Integer, paymentMethodId: Option[Integer] = None) = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/payment-method".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = paymentMethodId.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setSubscriptionPaymentMethod(userId: Integer, inventoryId: Integer, paymentMethodId: Option[IntWrapper] = None) = {
+    val await = Try(Await.result(setSubscriptionPaymentMethodAsync(userId, inventoryId, paymentMethodId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
 
   /**
+   * Set the payment method to use for a subscription asynchronously
+   * May send null to use floating default
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param paymentMethodId The id of the payment method (optional)
+   * @return Future(void)
+  */
+  def setSubscriptionPaymentMethodAsync(userId: Integer, inventoryId: Integer, paymentMethodId: Option[IntWrapper] = None) = {
+      helper.setSubscriptionPaymentMethod(userId, inventoryId, paymentMethodId)
+  }
+
+
+  /**
    * Set the status of a subscription
-   * The body is a json string (put in quotes) that should match a desired invoice status type. Note that the new status may be blocked if the system is not configured to allow the current status to be changed to the new, to enforce proper flow. The default options for statuses are shown below but may be altered for special use cases
+   * Note that the new status may be blocked if the system is not configured to allow the current status to be changed to the new, to enforce proper flow. The default options for statuses are shown below but may be altered for special use cases
    * @param userId The id of the user 
    * @param inventoryId The id of the user&#39;s inventory 
    * @param status The new status for the subscription. Actual options may differ from the indicated set if the invoice status type data has been altered.  Allowable values: (&#39;current&#39;, &#39;canceled&#39;, &#39;stopped&#39;, &#39;payment_failed&#39;, &#39;suspended&#39;) 
    * @return void
    */
-  def setSubscriptionStatus(userId: Integer, inventoryId: Integer, status: String) = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (status == null) throw new Exception("Missing required parameter 'status' when calling UsersSubscriptionsApi->setSubscriptionStatus")
-
-    
-
-    var postBody: AnyRef = status
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setSubscriptionStatus(userId: Integer, inventoryId: Integer, status: StringWrapper) = {
+    val await = Try(Await.result(setSubscriptionStatusAsync(userId, inventoryId, status), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the status of a subscription asynchronously
+   * Note that the new status may be blocked if the system is not configured to allow the current status to be changed to the new, to enforce proper flow. The default options for statuses are shown below but may be altered for special use cases
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param status The new status for the subscription. Actual options may differ from the indicated set if the invoice status type data has been altered.  Allowable values: (&#39;current&#39;, &#39;canceled&#39;, &#39;stopped&#39;, &#39;payment_failed&#39;, &#39;suspended&#39;) 
+   * @return Future(void)
+  */
+  def setSubscriptionStatusAsync(userId: Integer, inventoryId: Integer, status: StringWrapper) = {
+      helper.setSubscriptionStatus(userId, inventoryId, status)
+  }
+
 
   /**
    * Set a new subscription plan for a user
@@ -287,37 +245,26 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @param planId The id of the new plan. Must be from the same subscription (optional)
    * @return void
    */
-  def setUserSubscriptionPlan(userId: Integer, inventoryId: Integer, planId: Option[String] = None) = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/plan".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = planId.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setUserSubscriptionPlan(userId: Integer, inventoryId: Integer, planId: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(setUserSubscriptionPlanAsync(userId, inventoryId, planId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set a new subscription plan for a user asynchronously
+   * 
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param planId The id of the new plan. Must be from the same subscription (optional)
+   * @return Future(void)
+  */
+  def setUserSubscriptionPlanAsync(userId: Integer, inventoryId: Integer, planId: Option[StringWrapper] = None) = {
+      helper.setUserSubscriptionPlan(userId, inventoryId, planId)
+  }
+
 
   /**
    * Set a new subscription price for a user
@@ -328,35 +275,182 @@ class UsersSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikclo
    * @return void
    */
   def setUserSubscriptionPrice(userId: Integer, inventoryId: Integer, theOverrideDetails: Option[SubscriptionPriceOverrideRequest] = None) = {
-    // create path and map variables
-    val path = "/users/{user_id}/subscriptions/{inventory_id}/price-override".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId)).replaceAll("\\{" + "inventory_id" + "\\}",apiInvoker.escape(inventoryId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = theOverrideDetails.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(setUserSubscriptionPriceAsync(userId, inventoryId, theOverrideDetails), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set a new subscription price for a user asynchronously
+   * This new price will be what the user is charged at the begining of each new period. This override is specific to the current subscription and will not carry over if they end and later re-subscribe. It will persist if the plan is changed using the setUserSubscriptionPlan endpoint.
+   * @param userId The id of the user 
+   * @param inventoryId The id of the user&#39;s inventory 
+   * @param theOverrideDetails override (optional)
+   * @return Future(void)
+  */
+  def setUserSubscriptionPriceAsync(userId: Integer, inventoryId: Integer, theOverrideDetails: Option[SubscriptionPriceOverrideRequest] = None) = {
+      helper.setUserSubscriptionPrice(userId, inventoryId, theOverrideDetails)
+  }
+
+
+}
+
+class UsersSubscriptionsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getUserSubscriptionDetails(userId: Integer,
+    inventoryId: Integer)(implicit reader: ClientResponseReader[InventorySubscriptionResource]): Future[InventorySubscriptionResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUsersSubscriptionDetails(userId: Integer)(implicit reader: ClientResponseReader[List[InventorySubscriptionResource]]): Future[List[InventorySubscriptionResource]] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def reactivateUserSubscription(userId: Integer,
+    inventoryId: Integer,
+    reactivateSubscriptionRequest: Option[ReactivateSubscriptionRequest] = None
+    )(implicit reader: ClientResponseReader[InvoiceResource], writer: RequestWriter[ReactivateSubscriptionRequest]): Future[InvoiceResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/reactivate")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(reactivateSubscriptionRequest))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setSubscriptionBillDate(userId: Integer,
+    inventoryId: Integer,
+    billDate: Long)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[Long]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/bill-date")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(billDate))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setSubscriptionPaymentMethod(userId: Integer,
+    inventoryId: Integer,
+    paymentMethodId: Option[IntWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[IntWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/payment-method")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(paymentMethodId))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setSubscriptionStatus(userId: Integer,
+    inventoryId: Integer,
+    status: StringWrapper)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/status")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (status == null) throw new Exception("Missing required parameter 'status' when calling UsersSubscriptionsApi->setSubscriptionStatus")
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(status))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setUserSubscriptionPlan(userId: Integer,
+    inventoryId: Integer,
+    planId: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/plan")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(planId))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setUserSubscriptionPrice(userId: Integer,
+    inventoryId: Integer,
+    theOverrideDetails: Option[SubscriptionPriceOverrideRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[SubscriptionPriceOverrideRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/subscriptions/{inventory_id}/price-override")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString)
+      replaceAll ("\\{" + "inventory_id" + "\\}",inventoryId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(theOverrideDetails))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

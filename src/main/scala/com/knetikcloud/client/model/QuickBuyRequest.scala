@@ -13,12 +13,10 @@
 package com.knetikcloud.client.model
 
 
-case class Order (
-  ascending: Option[Boolean],
-  descending: Option[Boolean],
-  direction: Option[String],
-  ignoreCase: Option[Boolean],
-  nullHandling: Option[String],
-  property: Option[String]
+case class QuickBuyRequest (
+  /* SKU of item being purchased */
+  sku: String,
+  /* ID of the user making the purchase. If null, currently logged in user will be used. */
+  userId: Option[Integer]
 )
 

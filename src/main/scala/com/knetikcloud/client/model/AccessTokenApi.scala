@@ -12,9 +12,10 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.OAuth2Resource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -26,12 +27,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class AccessTokenApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new AccessTokenApiAsyncHelper(client, config)
 
   /**
    * Get access token
@@ -44,50 +74,55 @@ class AccessTokenApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return OAuth2Resource
    */
   def getOAuthToken(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None): Option[OAuth2Resource] = {
+    val await = Try(Await.result(getOAuthTokenAsync(grantType, clientId, clientSecret, username, password), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get access token asynchronously
+   * 
+   * @param grantType Grant type 
+   * @param clientId The id of the client 
+   * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials (optional)
+   * @param username The username of the client.  Used only with a grant_type of password (optional)
+   * @param password The password of the client.  Used only with a grant_type of password (optional)
+   * @return Future(OAuth2Resource)
+  */
+  def getOAuthTokenAsync(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None): Future[OAuth2Resource] = {
+      helper.getOAuthToken(grantType, clientId, clientSecret, username, password)
+  }
+
+
+}
+
+class AccessTokenApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getOAuthToken(grantType: String = client_credentials,
+    clientId: String = knetik,
+    clientSecret: Option[String] = None,
+    username: Option[String] = None,
+    password: Option[String] = None
+    )(implicit reader: ClientResponseReader[OAuth2Resource]): Future[OAuth2Resource] = {
     // create path and map variables
-    val path = "/oauth/token".replaceAll("\\{format\\}", "json")
+    val path = (addFmt("/oauth/token"))
 
-    val contentTypes = List("application/x-www-form-urlencoded")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
 
     if (grantType == null) throw new Exception("Missing required parameter 'grantType' when calling AccessTokenApi->getOAuthToken")
 
     if (clientId == null) throw new Exception("Missing required parameter 'clientId' when calling AccessTokenApi->getOAuthToken")
 
-    
 
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      mp.field("grant_type", grantType.toString, MediaType.MULTIPART_FORM_DATA_TYPE)
-      mp.field("client_id", clientId.toString, MediaType.MULTIPART_FORM_DATA_TYPE)
-      clientSecret.map(paramVal => mp.field("client_secret", paramVal.toString, MediaType.MULTIPART_FORM_DATA_TYPE))
-      username.map(paramVal => mp.field("username", paramVal.toString, MediaType.MULTIPART_FORM_DATA_TYPE))
-      password.map(paramVal => mp.field("password", paramVal.toString, MediaType.MULTIPART_FORM_DATA_TYPE))
-      postBody = mp
-    } else {
-      formParams += "grant_type" -> grantType.toString
-      formParams += "client_id" -> clientId.toString
-      clientSecret.map(paramVal => formParams += "client_secret" -> paramVal.toString)
-      username.map(paramVal => formParams += "username" -> paramVal.toString)
-      password.map(paramVal => formParams += "password" -> paramVal.toString)
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[OAuth2Resource]).asInstanceOf[OAuth2Resource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
   }
+
 
 }

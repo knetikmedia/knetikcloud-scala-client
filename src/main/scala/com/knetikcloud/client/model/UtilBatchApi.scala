@@ -12,12 +12,13 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.Batch
 import com.knetikcloud.client.model.BatchResult
 import com.knetikcloud.client.model.BatchReturn
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -29,12 +30,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class UtilBatchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new UtilBatchApiAsyncHelper(client, config)
 
   /**
    * Get batch result with token
@@ -43,39 +73,23 @@ class UtilBatchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[BatchReturn]
    */
   def getBatch(token: String): Option[List[BatchReturn]] = {
-    // create path and map variables
-    val path = "/batch/{token}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "token" + "\\}",apiInvoker.escape(token))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (token == null) throw new Exception("Missing required parameter 'token' when calling UtilBatchApi->getBatch")
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[BatchReturn]).asInstanceOf[List[BatchReturn]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getBatchAsync(token), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get batch result with token asynchronously
+   * Tokens expire in 24 hours
+   * @param token token 
+   * @return Future(List[BatchReturn])
+  */
+  def getBatchAsync(token: String): Future[List[BatchReturn]] = {
+      helper.getBatch(token)
+  }
+
 
   /**
    * Request to run API call given the method, content type, path url, and body of request
@@ -84,36 +98,61 @@ class UtilBatchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[BatchReturn]
    */
   def sendBatch(batch: Option[Batch] = None): Option[List[BatchReturn]] = {
-    // create path and map variables
-    val path = "/batch".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = batch.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[BatchReturn]).asInstanceOf[List[BatchReturn]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(sendBatchAsync(batch), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Request to run API call given the method, content type, path url, and body of request asynchronously
+   * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service
+   * @param batch The batch object (optional)
+   * @return Future(List[BatchReturn])
+  */
+  def sendBatchAsync(batch: Option[Batch] = None): Future[List[BatchReturn]] = {
+      helper.sendBatch(batch)
+  }
+
+
+}
+
+class UtilBatchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getBatch(token: String)(implicit reader: ClientResponseReader[List[BatchReturn]]): Future[List[BatchReturn]] = {
+    // create path and map variables
+    val path = (addFmt("/batch/{token}")
+      replaceAll ("\\{" + "token" + "\\}",token.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (token == null) throw new Exception("Missing required parameter 'token' when calling UtilBatchApi->getBatch")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendBatch(batch: Option[Batch] = None
+    )(implicit reader: ClientResponseReader[List[BatchReturn]], writer: RequestWriter[Batch]): Future[List[BatchReturn]] = {
+    // create path and map variables
+    val path = (addFmt("/batch"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(batch))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

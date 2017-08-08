@@ -12,6 +12,8 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.AddressResource
 import com.knetikcloud.client.model.InvoiceCreateRequest
 import com.knetikcloud.client.model.InvoicePaymentStatusRequest
@@ -20,8 +22,8 @@ import com.knetikcloud.client.model.PageResourceInvoiceLogEntry
 import com.knetikcloud.client.model.PageResourceInvoiceResource
 import com.knetikcloud.client.model.PayBySavedMethodRequest
 import com.knetikcloud.client.model.Result
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import com.knetikcloud.client.model.StringWrapper
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -33,12 +35,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new InvoicesApiAsyncHelper(client, config)
 
   /**
    * Create an invoice
@@ -47,37 +78,23 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[InvoiceResource]
    */
   def createInvoice(req: Option[InvoiceCreateRequest] = None): Option[List[InvoiceResource]] = {
-    // create path and map variables
-    val path = "/invoices".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = req.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[InvoiceResource]).asInstanceOf[List[InvoiceResource]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createInvoiceAsync(req), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create an invoice asynchronously
+   * Create an invoice(s) by providing a cart GUID. Note that there may be multiple invoices created, one per vendor.
+   * @param req Invoice to be created (optional)
+   * @return Future(List[InvoiceResource])
+  */
+  def createInvoiceAsync(req: Option[InvoiceCreateRequest] = None): Future[List[InvoiceResource]] = {
+      helper.createInvoice(req)
+  }
+
 
   /**
    * Lists available fulfillment statuses
@@ -85,37 +102,22 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[String]
    */
   def getFulFillmentStatuses(): Option[List[String]] = {
-    // create path and map variables
-    val path = "/invoices/fulfillment-statuses".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getFulFillmentStatusesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Lists available fulfillment statuses asynchronously
+   * 
+   * @return Future(List[String])
+  */
+  def getFulFillmentStatusesAsync(): Future[List[String]] = {
+      helper.getFulFillmentStatuses()
+  }
+
 
   /**
    * Retrieve an invoice
@@ -124,37 +126,23 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return InvoiceResource
    */
   def getInvoice(id: Integer): Option[InvoiceResource] = {
-    // create path and map variables
-    val path = "/invoices/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[InvoiceResource]).asInstanceOf[InvoiceResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getInvoiceAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve an invoice asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @return Future(InvoiceResource)
+  */
+  def getInvoiceAsync(id: Integer): Future[InvoiceResource] = {
+      helper.getInvoice(id)
+  }
+
 
   /**
    * List invoice logs
@@ -165,39 +153,25 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceInvoiceLogEntry
    */
   def getInvoiceLogs(id: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceInvoiceLogEntry] = {
-    // create path and map variables
-    val path = "/invoices/{id}/logs".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceInvoiceLogEntry]).asInstanceOf[PageResourceInvoiceLogEntry])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getInvoiceLogsAsync(id, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * List invoice logs asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceInvoiceLogEntry)
+  */
+  def getInvoiceLogsAsync(id: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceInvoiceLogEntry] = {
+      helper.getInvoiceLogs(id, size, page)
+  }
+
 
   /**
    * Retrieve invoices
@@ -222,54 +196,39 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return PageResourceInvoiceResource
    */
   def getInvoices(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceInvoiceResource] = {
-    // create path and map variables
-    val path = "/invoices".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    filterUser.map(paramVal => queryParams += "filter_user" -> paramVal.toString)
-    filterEmail.map(paramVal => queryParams += "filter_email" -> paramVal.toString)
-    filterFulfillmentStatus.map(paramVal => queryParams += "filter_fulfillment_status" -> paramVal.toString)
-    filterPaymentStatus.map(paramVal => queryParams += "filter_payment_status" -> paramVal.toString)
-    filterItemName.map(paramVal => queryParams += "filter_item_name" -> paramVal.toString)
-    filterExternalRef.map(paramVal => queryParams += "filter_external_ref" -> paramVal.toString)
-    filterCreatedDate.map(paramVal => queryParams += "filter_created_date" -> paramVal.toString)
-    filterVendorIds.map(paramVal => queryParams += "filter_vendor_ids" -> paramVal.toString)
-    filterCurrency.map(paramVal => queryParams += "filter_currency" -> paramVal.toString)
-    filterShippingStateName.map(paramVal => queryParams += "filter_shipping_state_name" -> paramVal.toString)
-    filterShippingCountryName.map(paramVal => queryParams += "filter_shipping_country_name" -> paramVal.toString)
-    filterShipping.map(paramVal => queryParams += "filter_shipping" -> paramVal.toString)
-    filterVendorName.map(paramVal => queryParams += "filter_vendor_name" -> paramVal.toString)
-    filterSku.map(paramVal => queryParams += "filter_sku" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceInvoiceResource]).asInstanceOf[PageResourceInvoiceResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getInvoicesAsync(filterUser, filterEmail, filterFulfillmentStatus, filterPaymentStatus, filterItemName, filterExternalRef, filterCreatedDate, filterVendorIds, filterCurrency, filterShippingStateName, filterShippingCountryName, filterShipping, filterVendorName, filterSku, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Retrieve invoices asynchronously
+   * Without INVOICES_ADMIN permission the results are automatically filtered for only the logged in user&#39;s invoices. It is recomended however that filter_user be added to avoid issues for admin users accidentally getting additional invoices.
+   * @param filterUser The id of a user to get invoices for. Automtically added if not being called with admin permissions. (optional)
+   * @param filterEmail Filters invoices by customer&#39;s email. Admins only. (optional)
+   * @param filterFulfillmentStatus Filters invoices by fulfillment status type. Can be a comma separated list of statuses (optional)
+   * @param filterPaymentStatus Filters invoices by payment status type. Can be a comma separated list of statuses (optional)
+   * @param filterItemName Filters invoices by item name containing the given string (optional)
+   * @param filterExternalRef Filters invoices by external reference. (optional)
+   * @param filterCreatedDate Filters invoices by creation date. Multiple values possible for range search. Format: filter_created_date&#x3D;OP,ts&amp;... where OP in (GT, LT, GOE, LOE, EQ) and ts is a unix timestamp in seconds. Ex: filter_created_date&#x3D;GT,1452154258,LT,1554254874 (optional)
+   * @param filterVendorIds Filters invoices for ones from one of the vendors whose id is in the given comma separated list (optional)
+   * @param filterCurrency Filters invoices by currency. ISO3 currency code (optional)
+   * @param filterShippingStateName Filters invoices by shipping address: Exact match state name (optional)
+   * @param filterShippingCountryName Filters invoices by shipping address: Exact match country name (optional)
+   * @param filterShipping Filters invoices by shipping price. Multiple values possible for range search. Format: filter_shipping&#x3D;OP,ts&amp;... where OP in (GT, LT, GOE, LOE, EQ). Ex: filter_shipping&#x3D;GT,14.58,LT,15.54 (optional)
+   * @param filterVendorName Filters invoices by vendor name starting with given string (optional)
+   * @param filterSku Filters invoices by item sku (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @return Future(PageResourceInvoiceResource)
+  */
+  def getInvoicesAsync(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Future[PageResourceInvoiceResource] = {
+      helper.getInvoices(filterUser, filterEmail, filterFulfillmentStatus, filterPaymentStatus, filterItemName, filterExternalRef, filterCreatedDate, filterVendorIds, filterCurrency, filterShippingStateName, filterShippingCountryName, filterShipping, filterVendorName, filterSku, size, page, order)
+  }
+
 
   /**
    * Lists available payment statuses
@@ -277,76 +236,49 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return List[String]
    */
   def getPaymentStatuses(): Option[List[String]] = {
-    // create path and map variables
-    val path = "/invoices/payment-statuses".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "array", classOf[String]).asInstanceOf[List[String]])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getPaymentStatusesAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
 
   /**
-   * Trigger payment of an invoice
+   * Lists available payment statuses asynchronously
+   * 
+   * @return Future(List[String])
+  */
+  def getPaymentStatusesAsync(): Future[List[String]] = {
+      helper.getPaymentStatuses()
+  }
+
+
+  /**
+   * Pay an invoice using a saved payment method
    * 
    * @param id The id of the invoice 
-   * @param request Payment info (optional)
+   * @param request The payment method details. Will default to the appropriate user&#39;s wallet in the invoice currency if ommited. (optional)
    * @return void
    */
   def payInvoice(id: Integer, request: Option[PayBySavedMethodRequest] = None) = {
-    // create path and map variables
-    val path = "/invoices/{id}/payments".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(payInvoiceAsync(id, request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Pay an invoice using a saved payment method asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @param request The payment method details. Will default to the appropriate user&#39;s wallet in the invoice currency if ommited. (optional)
+   * @return Future(void)
+  */
+  def payInvoiceAsync(id: Integer, request: Option[PayBySavedMethodRequest] = None) = {
+      helper.payInvoice(id, request)
+  }
+
 
   /**
    * Set the fulfillment status of a bundled invoice item
@@ -357,43 +289,27 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
    * @return void
    */
-  def setBundledInvoiceItemFulfillmentStatus(id: Integer, bundleSku: String, sku: String, status: String) = {
-    // create path and map variables
-    val path = "/invoices/{id}/items/{bundleSku}/bundled-skus/{sku}/fulfillment-status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "bundleSku" + "\\}",apiInvoker.escape(bundleSku)).replaceAll("\\{" + "sku" + "\\}",apiInvoker.escape(sku))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (bundleSku == null) throw new Exception("Missing required parameter 'bundleSku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
-
-    if (sku == null) throw new Exception("Missing required parameter 'sku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
-
-    if (status == null) throw new Exception("Missing required parameter 'status' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
-
-    
-
-    var postBody: AnyRef = status
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setBundledInvoiceItemFulfillmentStatus(id: Integer, bundleSku: String, sku: String, status: StringWrapper) = {
+    val await = Try(Await.result(setBundledInvoiceItemFulfillmentStatusAsync(id, bundleSku, sku, status), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the fulfillment status of a bundled invoice item asynchronously
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * @param id The id of the invoice 
+   * @param bundleSku The sku of the bundle in the invoice that contains the given target 
+   * @param sku The sku of an item in the bundle in the invoice 
+   * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
+   * @return Future(void)
+  */
+  def setBundledInvoiceItemFulfillmentStatusAsync(id: Integer, bundleSku: String, sku: String, status: StringWrapper) = {
+      helper.setBundledInvoiceItemFulfillmentStatus(id, bundleSku, sku, status)
+  }
+
 
   /**
    * Set the external reference of an invoice
@@ -402,37 +318,25 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param externalRef External reference info (optional)
    * @return void
    */
-  def setExternalRef(id: Integer, externalRef: Option[String] = None) = {
-    // create path and map variables
-    val path = "/invoices/{id}/external-ref".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = externalRef.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setExternalRef(id: Integer, externalRef: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(setExternalRefAsync(id, externalRef), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the external reference of an invoice asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @param externalRef External reference info (optional)
+   * @return Future(void)
+  */
+  def setExternalRefAsync(id: Integer, externalRef: Option[StringWrapper] = None) = {
+      helper.setExternalRef(id, externalRef)
+  }
+
 
   /**
    * Set the fulfillment status of an invoice item
@@ -442,41 +346,26 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
    * @return void
    */
-  def setInvoiceItemFulfillmentStatus(id: Integer, sku: String, status: String) = {
-    // create path and map variables
-    val path = "/invoices/{id}/items/{sku}/fulfillment-status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id)).replaceAll("\\{" + "sku" + "\\}",apiInvoker.escape(sku))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    if (sku == null) throw new Exception("Missing required parameter 'sku' when calling InvoicesApi->setInvoiceItemFulfillmentStatus")
-
-    if (status == null) throw new Exception("Missing required parameter 'status' when calling InvoicesApi->setInvoiceItemFulfillmentStatus")
-
-    
-
-    var postBody: AnyRef = status
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setInvoiceItemFulfillmentStatus(id: Integer, sku: String, status: StringWrapper) = {
+    val await = Try(Await.result(setInvoiceItemFulfillmentStatusAsync(id, sku, status), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the fulfillment status of an invoice item asynchronously
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * @param id The id of the invoice 
+   * @param sku The sku of an item in the invoice 
+   * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
+   * @return Future(void)
+  */
+  def setInvoiceItemFulfillmentStatusAsync(id: Integer, sku: String, status: StringWrapper) = {
+      helper.setInvoiceItemFulfillmentStatus(id, sku, status)
+  }
+
 
   /**
    * Set the order notes of an invoice
@@ -485,37 +374,25 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param orderNotes Payment status info (optional)
    * @return void
    */
-  def setOrderNotes(id: Integer, orderNotes: Option[String] = None) = {
-    // create path and map variables
-    val path = "/invoices/{id}/order-notes".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = orderNotes.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def setOrderNotes(id: Integer, orderNotes: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(setOrderNotesAsync(id, orderNotes), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the order notes of an invoice asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @param orderNotes Payment status info (optional)
+   * @return Future(void)
+  */
+  def setOrderNotesAsync(id: Integer, orderNotes: Option[StringWrapper] = None) = {
+      helper.setOrderNotes(id, orderNotes)
+  }
+
 
   /**
    * Set the payment status of an invoice
@@ -525,36 +402,24 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def setPaymentStatus(id: Integer, request: Option[InvoicePaymentStatusRequest] = None) = {
-    // create path and map variables
-    val path = "/invoices/{id}/payment-status".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = request.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(setPaymentStatusAsync(id, request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set the payment status of an invoice asynchronously
+   * This may trigger fulfillment if setting the status to &#39;paid&#39;. This is mainly intended to support external payment systems that cannot be incorporated into the payment method system. Payment status changes are restricted by a specific flow determining which status can lead to which.
+   * @param id The id of the invoice 
+   * @param request Payment status info (optional)
+   * @return Future(void)
+  */
+  def setPaymentStatusAsync(id: Integer, request: Option[InvoicePaymentStatusRequest] = None) = {
+      helper.setPaymentStatus(id, request)
+  }
+
 
   /**
    * Set or update billing info
@@ -564,35 +429,355 @@ class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @return void
    */
   def updateBillingInfo(id: Integer, billingInfoRequest: Option[AddressResource] = None) = {
-    // create path and map variables
-    val path = "/invoices/{id}/billing-address".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = billingInfoRequest.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateBillingInfoAsync(id, billingInfoRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Set or update billing info asynchronously
+   * 
+   * @param id The id of the invoice 
+   * @param billingInfoRequest Address info (optional)
+   * @return Future(void)
+  */
+  def updateBillingInfoAsync(id: Integer, billingInfoRequest: Option[AddressResource] = None) = {
+      helper.updateBillingInfo(id, billingInfoRequest)
+  }
+
+
+}
+
+class InvoicesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def createInvoice(req: Option[InvoiceCreateRequest] = None
+    )(implicit reader: ClientResponseReader[List[InvoiceResource]], writer: RequestWriter[InvoiceCreateRequest]): Future[List[InvoiceResource]] = {
+    // create path and map variables
+    val path = (addFmt("/invoices"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(req))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getFulFillmentStatuses()(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/fulfillment-statuses"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getInvoice(id: Integer)(implicit reader: ClientResponseReader[InvoiceResource]): Future[InvoiceResource] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getInvoiceLogs(id: Integer,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceInvoiceLogEntry]): Future[PageResourceInvoiceLogEntry] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/logs")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getInvoices(filterUser: Option[Integer] = None,
+    filterEmail: Option[String] = None,
+    filterFulfillmentStatus: Option[String] = None,
+    filterPaymentStatus: Option[String] = None,
+    filterItemName: Option[String] = None,
+    filterExternalRef: Option[String] = None,
+    filterCreatedDate: Option[String] = None,
+    filterVendorIds: Option[String] = None,
+    filterCurrency: Option[String] = None,
+    filterShippingStateName: Option[String] = None,
+    filterShippingCountryName: Option[String] = None,
+    filterShipping: Option[String] = None,
+    filterVendorName: Option[String] = None,
+    filterSku: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceInvoiceResource]): Future[PageResourceInvoiceResource] = {
+    // create path and map variables
+    val path = (addFmt("/invoices"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterUser match {
+      case Some(param) => queryParams += "filter_user" -> param.toString
+      case _ => queryParams
+    }
+    filterEmail match {
+      case Some(param) => queryParams += "filter_email" -> param.toString
+      case _ => queryParams
+    }
+    filterFulfillmentStatus match {
+      case Some(param) => queryParams += "filter_fulfillment_status" -> param.toString
+      case _ => queryParams
+    }
+    filterPaymentStatus match {
+      case Some(param) => queryParams += "filter_payment_status" -> param.toString
+      case _ => queryParams
+    }
+    filterItemName match {
+      case Some(param) => queryParams += "filter_item_name" -> param.toString
+      case _ => queryParams
+    }
+    filterExternalRef match {
+      case Some(param) => queryParams += "filter_external_ref" -> param.toString
+      case _ => queryParams
+    }
+    filterCreatedDate match {
+      case Some(param) => queryParams += "filter_created_date" -> param.toString
+      case _ => queryParams
+    }
+    filterVendorIds match {
+      case Some(param) => queryParams += "filter_vendor_ids" -> param.toString
+      case _ => queryParams
+    }
+    filterCurrency match {
+      case Some(param) => queryParams += "filter_currency" -> param.toString
+      case _ => queryParams
+    }
+    filterShippingStateName match {
+      case Some(param) => queryParams += "filter_shipping_state_name" -> param.toString
+      case _ => queryParams
+    }
+    filterShippingCountryName match {
+      case Some(param) => queryParams += "filter_shipping_country_name" -> param.toString
+      case _ => queryParams
+    }
+    filterShipping match {
+      case Some(param) => queryParams += "filter_shipping" -> param.toString
+      case _ => queryParams
+    }
+    filterVendorName match {
+      case Some(param) => queryParams += "filter_vendor_name" -> param.toString
+      case _ => queryParams
+    }
+    filterSku match {
+      case Some(param) => queryParams += "filter_sku" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getPaymentStatuses()(implicit reader: ClientResponseReader[List[String]]): Future[List[String]] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/payment-statuses"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def payInvoice(id: Integer,
+    request: Option[PayBySavedMethodRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[PayBySavedMethodRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/payments")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setBundledInvoiceItemFulfillmentStatus(id: Integer,
+    bundleSku: String,
+    sku: String,
+    status: StringWrapper)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/items/{bundleSku}/bundled-skus/{sku}/fulfillment-status")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "bundleSku" + "\\}",bundleSku.toString)
+      replaceAll ("\\{" + "sku" + "\\}",sku.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (bundleSku == null) throw new Exception("Missing required parameter 'bundleSku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    if (sku == null) throw new Exception("Missing required parameter 'sku' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    if (status == null) throw new Exception("Missing required parameter 'status' when calling InvoicesApi->setBundledInvoiceItemFulfillmentStatus")
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(status))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setExternalRef(id: Integer,
+    externalRef: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/external-ref")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(externalRef))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setInvoiceItemFulfillmentStatus(id: Integer,
+    sku: String,
+    status: StringWrapper)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/items/{sku}/fulfillment-status")
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "sku" + "\\}",sku.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (sku == null) throw new Exception("Missing required parameter 'sku' when calling InvoicesApi->setInvoiceItemFulfillmentStatus")
+
+    if (status == null) throw new Exception("Missing required parameter 'status' when calling InvoicesApi->setInvoiceItemFulfillmentStatus")
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(status))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setOrderNotes(id: Integer,
+    orderNotes: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/order-notes")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(orderNotes))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setPaymentStatus(id: Integer,
+    request: Option[InvoicePaymentStatusRequest] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[InvoicePaymentStatusRequest]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/payment-status")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateBillingInfo(id: Integer,
+    billingInfoRequest: Option[AddressResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[AddressResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/invoices/{id}/billing-address")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(billingInfoRequest))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }

@@ -12,19 +12,22 @@
 
 package com.knetikcloud.client.model
 
+import java.text.SimpleDateFormat
+
 import com.knetikcloud.client.model.CommentResource
 import com.knetikcloud.client.model.ContributionResource
 import com.knetikcloud.client.model.DispositionResource
 import com.knetikcloud.client.model.FlagResource
+import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.PageResourceCommentResource
 import com.knetikcloud.client.model.PageResourceDispositionResource
 import com.knetikcloud.client.model.PageResourceVideoRelationshipResource
 import com.knetikcloud.client.model.PageResourceVideoResource
 import com.knetikcloud.client.model.Result
+import com.knetikcloud.client.model.StringWrapper
 import com.knetikcloud.client.model.VideoRelationshipResource
 import com.knetikcloud.client.model.VideoResource
-import io.swagger.client.ApiInvoker
-import io.swagger.client.ApiException
+import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
 import com.sun.jersey.multipart.file.FileDataBodyPart
@@ -36,12 +39,41 @@ import java.util.Date
 
 import scala.collection.mutable.HashMap
 
+import com.wordnik.swagger.client._
+import scala.concurrent.Future
+import collection.mutable
+
+import java.net.URI
+
+import com.wordnik.swagger.client.ClientResponseReaders.Json4sFormatsReader._
+import com.wordnik.swagger.client.RequestWriters.Json4sFormatsWriter._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
 class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
+
+  implicit val formats = new org.json4s.DefaultFormats {
+    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+0000")
+  }
+  implicit val stringReader = ClientResponseReaders.StringReader
+  implicit val unitReader = ClientResponseReaders.UnitReader
+  implicit val jvalueReader = ClientResponseReaders.JValueReader
+  implicit val jsonReader = JsonFormatsReader
+  implicit val stringWriter = RequestWriters.StringWriter
+  implicit val jsonWriter = JsonFormatsWriter
+
   var basePath = defBasePath
   var apiInvoker = defApiInvoker
 
-  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value 
+  def addHeader(key: String, value: String) = apiInvoker.defaultHeaders += key -> value
+
+  val config = SwaggerConfig.forUrl(new URI(defBasePath))
+  val client = new RestClient(config)
+  val helper = new MediaVideosApiAsyncHelper(client, config)
 
   /**
    * Adds a user to a video&#39;s whitelist
@@ -50,37 +82,25 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param userId The user id (optional)
    * @return void
    */
-  def addUserToVideoWhitelist(id: Long, userId: Option[Integer] = None) = {
-    // create path and map variables
-    val path = "/media/videos/{id}/whitelist".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = userId.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def addUserToVideoWhitelist(id: Long, userId: Option[IntWrapper] = None) = {
+    val await = Try(Await.result(addUserToVideoWhitelistAsync(id, userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds a user to a video&#39;s whitelist asynchronously
+   * Whitelisted users can view video regardless of privacy setting.
+   * @param id The video id 
+   * @param userId The user id (optional)
+   * @return Future(void)
+  */
+  def addUserToVideoWhitelistAsync(id: Long, userId: Option[IntWrapper] = None) = {
+      helper.addUserToVideoWhitelist(id, userId)
+  }
+
 
   /**
    * Adds a new video in the system
@@ -89,37 +109,23 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return VideoResource
    */
   def addVideo(videoResource: Option[VideoResource] = None): Option[VideoResource] = {
-    // create path and map variables
-    val path = "/media/videos".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = videoResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[VideoResource]).asInstanceOf[VideoResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addVideoAsync(videoResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds a new video in the system asynchronously
+   * 
+   * @param videoResource The video object (optional)
+   * @return Future(VideoResource)
+  */
+  def addVideoAsync(videoResource: Option[VideoResource] = None): Future[VideoResource] = {
+      helper.addVideo(videoResource)
+  }
+
 
   /**
    * Add a new video comment
@@ -129,37 +135,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return CommentResource
    */
   def addVideoComment(videoId: Integer, commentResource: Option[CommentResource] = None): Option[CommentResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/comments".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = commentResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[CommentResource]).asInstanceOf[CommentResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addVideoCommentAsync(videoId, commentResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a new video comment asynchronously
+   * 
+   * @param videoId The video id  
+   * @param commentResource The comment object (optional)
+   * @return Future(CommentResource)
+  */
+  def addVideoCommentAsync(videoId: Integer, commentResource: Option[CommentResource] = None): Future[CommentResource] = {
+      helper.addVideoComment(videoId, commentResource)
+  }
+
 
   /**
    * Adds a contributor to a video
@@ -169,36 +162,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def addVideoContributor(videoId: Long, contributionResource: Option[ContributionResource] = None) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/contributors".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = contributionResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addVideoContributorAsync(videoId, contributionResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds a contributor to a video asynchronously
+   * 
+   * @param videoId The video id 
+   * @param contributionResource The contribution object (optional)
+   * @return Future(void)
+  */
+  def addVideoContributorAsync(videoId: Long, contributionResource: Option[ContributionResource] = None) = {
+      helper.addVideoContributor(videoId, contributionResource)
+  }
+
 
   /**
    * Add a new flag
@@ -207,38 +188,25 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param reason The flag reason (optional)
    * @return FlagResource
    */
-  def addVideoFlag(videoId: Long, reason: Option[String] = None): Option[FlagResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/moderation".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = reason.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[FlagResource]).asInstanceOf[FlagResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def addVideoFlag(videoId: Long, reason: Option[StringWrapper] = None): Option[FlagResource] = {
+    val await = Try(Await.result(addVideoFlagAsync(videoId, reason), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Add a new flag asynchronously
+   * 
+   * @param videoId The video id 
+   * @param reason The flag reason (optional)
+   * @return Future(FlagResource)
+  */
+  def addVideoFlagAsync(videoId: Long, reason: Option[StringWrapper] = None): Future[FlagResource] = {
+      helper.addVideoFlag(videoId, reason)
+  }
+
 
   /**
    * Adds one or more existing videos as related to this one
@@ -248,37 +216,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return VideoRelationshipResource
    */
   def addVideoRelationships(videoId: Long, videoRelationshipResource: Option[VideoRelationshipResource] = None): Option[VideoRelationshipResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/related".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = videoRelationshipResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[VideoRelationshipResource]).asInstanceOf[VideoRelationshipResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(addVideoRelationshipsAsync(videoId, videoRelationshipResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Adds one or more existing videos as related to this one asynchronously
+   * 
+   * @param videoId The video id 
+   * @param videoRelationshipResource The video relationship object  (optional)
+   * @return Future(VideoRelationshipResource)
+  */
+  def addVideoRelationshipsAsync(videoId: Long, videoRelationshipResource: Option[VideoRelationshipResource] = None): Future[VideoRelationshipResource] = {
+      helper.addVideoRelationships(videoId, videoRelationshipResource)
+  }
+
 
   /**
    * Create a video disposition
@@ -288,37 +243,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return DispositionResource
    */
   def createVideoDisposition(videoId: Integer, dispositionResource: Option[DispositionResource] = None): Option[DispositionResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/dispositions".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = dispositionResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[DispositionResource]).asInstanceOf[DispositionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(createVideoDispositionAsync(videoId, dispositionResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Create a video disposition asynchronously
+   * 
+   * @param videoId The video id 
+   * @param dispositionResource The disposition object (optional)
+   * @return Future(DispositionResource)
+  */
+  def createVideoDispositionAsync(videoId: Integer, dispositionResource: Option[DispositionResource] = None): Future[DispositionResource] = {
+      helper.createVideoDisposition(videoId, dispositionResource)
+  }
+
 
   /**
    * Deletes a video from the system if no resources are attached to it
@@ -327,36 +269,23 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteVideo(id: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteVideoAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Deletes a video from the system if no resources are attached to it asynchronously
+   * 
+   * @param id The video id 
+   * @return Future(void)
+  */
+  def deleteVideoAsync(id: Long) = {
+      helper.deleteVideo(id)
+  }
+
 
   /**
    * Delete a video comment
@@ -366,36 +295,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteVideoComment(videoId: Long, id: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/comments/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteVideoCommentAsync(videoId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a video comment asynchronously
+   * 
+   * @param videoId The video id 
+   * @param id The comment id 
+   * @return Future(void)
+  */
+  def deleteVideoCommentAsync(videoId: Long, id: Long) = {
+      helper.deleteVideoComment(videoId, id)
+  }
+
 
   /**
    * Delete a video disposition
@@ -404,36 +321,23 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteVideoDisposition(dispositionId: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/dispositions/{disposition_id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "disposition_id" + "\\}",apiInvoker.escape(dispositionId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteVideoDispositionAsync(dispositionId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a video disposition asynchronously
+   * 
+   * @param dispositionId The disposition id 
+   * @return Future(void)
+  */
+  def deleteVideoDispositionAsync(dispositionId: Long) = {
+      helper.deleteVideoDisposition(dispositionId)
+  }
+
 
   /**
    * Delete a flag
@@ -442,36 +346,23 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteVideoFlag(videoId: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/moderation".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteVideoFlagAsync(videoId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a flag asynchronously
+   * 
+   * @param videoId The video id 
+   * @return Future(void)
+  */
+  def deleteVideoFlagAsync(videoId: Long) = {
+      helper.deleteVideoFlag(videoId)
+  }
+
 
   /**
    * Delete a video&#39;s relationship
@@ -481,36 +372,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def deleteVideoRelationship(videoId: Long, id: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/related/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(deleteVideoRelationshipAsync(videoId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Delete a video&#39;s relationship asynchronously
+   * 
+   * @param videoId The video id 
+   * @param id The relationship id 
+   * @return Future(void)
+  */
+  def deleteVideoRelationshipAsync(videoId: Long, id: Long) = {
+      helper.deleteVideoRelationship(videoId, id)
+  }
+
 
   /**
    * Get user videos
@@ -522,40 +401,26 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceVideoResource
    */
   def getUserVideos(userId: Integer, excludeFlagged: Option[Boolean] /* = true*/, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceVideoResource] = {
-    // create path and map variables
-    val path = "/users/{user_id}/videos".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "user_id" + "\\}",apiInvoker.escape(userId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    excludeFlagged.map(paramVal => queryParams += "exclude_flagged" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceVideoResource]).asInstanceOf[PageResourceVideoResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getUserVideosAsync(userId, excludeFlagged, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Get user videos asynchronously
+   * 
+   * @param userId The user id 
+   * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceVideoResource)
+  */
+  def getUserVideosAsync(userId: Integer, excludeFlagged: Option[Boolean] /* = true*/, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceVideoResource] = {
+      helper.getUserVideos(userId, excludeFlagged, size, page)
+  }
+
 
   /**
    * Loads a specific video details
@@ -564,37 +429,23 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return VideoResource
    */
   def getVideo(id: Long): Option[VideoResource] = {
-    // create path and map variables
-    val path = "/media/videos/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[VideoResource]).asInstanceOf[VideoResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getVideoAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Loads a specific video details asynchronously
+   * 
+   * @param id The video id 
+   * @return Future(VideoResource)
+  */
+  def getVideoAsync(id: Long): Future[VideoResource] = {
+      helper.getVideo(id)
+  }
+
 
   /**
    * Returns a page of comments for a video
@@ -605,39 +456,25 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceCommentResource
    */
   def getVideoComments(videoId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceCommentResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/comments".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceCommentResource]).asInstanceOf[PageResourceCommentResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getVideoCommentsAsync(videoId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a page of comments for a video asynchronously
+   * 
+   * @param videoId The video id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceCommentResource)
+  */
+  def getVideoCommentsAsync(videoId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceCommentResource] = {
+      helper.getVideoComments(videoId, size, page)
+  }
+
 
   /**
    * Returns a page of dispositions for a video
@@ -648,39 +485,25 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceDispositionResource
    */
   def getVideoDispositions(videoId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceDispositionResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/dispositions".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceDispositionResource]).asInstanceOf[PageResourceDispositionResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getVideoDispositionsAsync(videoId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a page of dispositions for a video asynchronously
+   * 
+   * @param videoId The video id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceDispositionResource)
+  */
+  def getVideoDispositionsAsync(videoId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceDispositionResource] = {
+      helper.getVideoDispositions(videoId, size, page)
+  }
+
 
   /**
    * Returns a page of video relationships
@@ -691,39 +514,25 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceVideoRelationshipResource
    */
   def getVideoRelationships(videoId: Long, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceVideoRelationshipResource] = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/related".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceVideoRelationshipResource]).asInstanceOf[PageResourceVideoRelationshipResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getVideoRelationshipsAsync(videoId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Returns a page of video relationships asynchronously
+   * 
+   * @param videoId The video id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceVideoRelationshipResource)
+  */
+  def getVideoRelationshipsAsync(videoId: Long, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceVideoRelationshipResource] = {
+      helper.getVideoRelationships(videoId, size, page)
+  }
+
 
   /**
    * Search videos using the documented filters
@@ -746,52 +555,37 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return PageResourceVideoResource
    */
   def getVideos(excludeFlagged: Option[Boolean] /* = true*/, filterVideosByUploader: Option[Integer] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterVideosByName: Option[String] = None, filterVideosByContributor: Option[Integer] = None, filterVideosByAuthor: Option[Integer] = None, filterHasAuthor: Option[Boolean] = None, filterHasUploader: Option[Boolean] = None, filterRelatedTo: Option[String] = None, filterFriends: Option[Boolean] = None, filterDisposition: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = author:ASC*/): Option[PageResourceVideoResource] = {
-    // create path and map variables
-    val path = "/media/videos".replaceAll("\\{format\\}", "json")
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    excludeFlagged.map(paramVal => queryParams += "exclude_flagged" -> paramVal.toString)
-    filterVideosByUploader.map(paramVal => queryParams += "filter_videos_by_uploader" -> paramVal.toString)
-    filterCategory.map(paramVal => queryParams += "filter_category" -> paramVal.toString)
-    filterTagset.map(paramVal => queryParams += "filter_tagset" -> paramVal.toString)
-    filterVideosByName.map(paramVal => queryParams += "filter_videos_by_name" -> paramVal.toString)
-    filterVideosByContributor.map(paramVal => queryParams += "filter_videos_by_contributor" -> paramVal.toString)
-    filterVideosByAuthor.map(paramVal => queryParams += "filter_videos_by_author" -> paramVal.toString)
-    filterHasAuthor.map(paramVal => queryParams += "filter_has_author" -> paramVal.toString)
-    filterHasUploader.map(paramVal => queryParams += "filter_has_uploader" -> paramVal.toString)
-    filterRelatedTo.map(paramVal => queryParams += "filter_related_to" -> paramVal.toString)
-    filterFriends.map(paramVal => queryParams += "filter_friends" -> paramVal.toString)
-    filterDisposition.map(paramVal => queryParams += "filter_disposition" -> paramVal.toString)
-    size.map(paramVal => queryParams += "size" -> paramVal.toString)
-    page.map(paramVal => queryParams += "page" -> paramVal.toString)
-    order.map(paramVal => queryParams += "order" -> paramVal.toString)
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "GET", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-           Some(apiInvoker.deserialize(s, "", classOf[PageResourceVideoResource]).asInstanceOf[PageResourceVideoResource])
-        case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(getVideosAsync(excludeFlagged, filterVideosByUploader, filterCategory, filterTagset, filterVideosByName, filterVideosByContributor, filterVideosByAuthor, filterHasAuthor, filterHasUploader, filterRelatedTo, filterFriends, filterDisposition, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Search videos using the documented filters asynchronously
+   * 
+   * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
+   * @param filterVideosByUploader Filter for videos by uploader id (optional)
+   * @param filterCategory Filter for videos from a specific category by id (optional)
+   * @param filterTagset Filter for videos with specified tags (separated by comma) (optional)
+   * @param filterVideosByName Filter for videos which name *STARTS* with the given string (optional)
+   * @param filterVideosByContributor Filter for videos with contribution from the artist specified by ID (optional)
+   * @param filterVideosByAuthor Filter for videos with an artist as author specified by ID (optional)
+   * @param filterHasAuthor Filter for videos that have an author set if true, or that have no author if false (optional)
+   * @param filterHasUploader Filter for videos that have an uploader set if true, or that have no uploader if false (optional)
+   * @param filterRelatedTo Filter for videos that have designated a particular video as the TO of a relationship. Pattern should match VIDEO_ID or VIDEO_ID:DETAILS to match with a specific details string as well (optional)
+   * @param filterFriends Filter for videos uploaded by friends. &#39;true&#39; for friends of the caller (requires user token) or a user id for a specific user&#39;s friends (requires VIDEOS_ADMIN permission) (optional)
+   * @param filterDisposition Filter for videos a given user has a given disposition towards. USER_ID:DISPOSITION where USER_ID is the id of the user who has this disposition or &#39;me&#39; for the caller (requires user token for &#39;me&#39;) and DISPOSITION is the name of the disposition. E.G. filter_disposition&#x3D;123:like or filter_disposition&#x3D;me:favorite (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to author:ASC)
+   * @return Future(PageResourceVideoResource)
+  */
+  def getVideosAsync(excludeFlagged: Option[Boolean] /* = true*/, filterVideosByUploader: Option[Integer] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterVideosByName: Option[String] = None, filterVideosByContributor: Option[Integer] = None, filterVideosByAuthor: Option[Integer] = None, filterHasAuthor: Option[Boolean] = None, filterHasUploader: Option[Boolean] = None, filterRelatedTo: Option[String] = None, filterFriends: Option[Boolean] = None, filterDisposition: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = author:ASC*/): Future[PageResourceVideoResource] = {
+      helper.getVideos(excludeFlagged, filterVideosByUploader, filterCategory, filterTagset, filterVideosByName, filterVideosByContributor, filterVideosByAuthor, filterHasAuthor, filterHasUploader, filterRelatedTo, filterFriends, filterDisposition, size, page, order)
+  }
+
 
   /**
    * Removes a user from a video&#39;s whitelist
@@ -801,36 +595,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def removeUserFromVideoWhitelist(videoId: Long, id: Integer) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/whitelist/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeUserFromVideoWhitelistAsync(videoId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Removes a user from a video&#39;s whitelist asynchronously
+   * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting.
+   * @param videoId The video id 
+   * @param id The user id 
+   * @return Future(void)
+  */
+  def removeUserFromVideoWhitelistAsync(videoId: Long, id: Integer) = {
+      helper.removeUserFromVideoWhitelist(videoId, id)
+  }
+
 
   /**
    * Removes a contributor from a video
@@ -840,36 +622,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def removeVideoContributor(videoId: Long, id: Integer) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/contributors/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "DELETE", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(removeVideoContributorAsync(videoId, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Removes a contributor from a video asynchronously
+   * 
+   * @param videoId The video id 
+   * @param id The contributor id 
+   * @return Future(void)
+  */
+  def removeVideoContributorAsync(videoId: Long, id: Integer) = {
+      helper.removeVideoContributor(videoId, id)
+  }
+
 
   /**
    * Modifies a video&#39;s details
@@ -879,36 +649,24 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def updateVideo(id: Long, videoResource: Option[VideoResource] = None) = {
-    // create path and map variables
-    val path = "/media/videos/{id}".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = videoResource.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(updateVideoAsync(id, videoResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Modifies a video&#39;s details asynchronously
+   * 
+   * @param id The video id 
+   * @param videoResource The video object (optional)
+   * @return Future(void)
+  */
+  def updateVideoAsync(id: Long, videoResource: Option[VideoResource] = None) = {
+      helper.updateVideo(id, videoResource)
+  }
+
 
   /**
    * Update a video comment
@@ -918,37 +676,26 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param content The comment content (optional)
    * @return void
    */
-  def updateVideoComment(videoId: Long, id: Long, content: Option[String] = None) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/comments/{id}/content".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = content.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def updateVideoComment(videoId: Long, id: Long, content: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(updateVideoCommentAsync(videoId, id, content), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a video comment asynchronously
+   * 
+   * @param videoId The video id 
+   * @param id The comment id 
+   * @param content The comment content (optional)
+   * @return Future(void)
+  */
+  def updateVideoCommentAsync(videoId: Long, id: Long, content: Option[StringWrapper] = None) = {
+      helper.updateVideoComment(videoId, id, content)
+  }
+
 
   /**
    * Update a video&#39;s relationship details
@@ -958,37 +705,26 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param details The video relationship details (optional)
    * @return void
    */
-  def updateVideoRelationship(videoId: Long, relationshipId: Long, details: Option[String] = None) = {
-    // create path and map variables
-    val path = "/media/videos/{video_id}/related/{id}/relationship_details".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "video_id" + "\\}",apiInvoker.escape(videoId)).replaceAll("\\{" + "relationship_id" + "\\}",apiInvoker.escape(relationshipId))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = details.map(paramVal => paramVal)
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "PUT", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+  def updateVideoRelationship(videoId: Long, relationshipId: Long, details: Option[StringWrapper] = None) = {
+    val await = Try(Await.result(updateVideoRelationshipAsync(videoId, relationshipId, details), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Update a video&#39;s relationship details asynchronously
+   * 
+   * @param videoId The video id 
+   * @param relationshipId The relationship id 
+   * @param details The video relationship details (optional)
+   * @return Future(void)
+  */
+  def updateVideoRelationshipAsync(videoId: Long, relationshipId: Long, details: Option[StringWrapper] = None) = {
+      helper.updateVideoRelationship(videoId, relationshipId, details)
+  }
+
 
   /**
    * Increment a video&#39;s view count
@@ -997,35 +733,564 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @return void
    */
   def viewVideo(id: Long) = {
-    // create path and map variables
-    val path = "/media/videos/{id}/views".replaceAll("\\{format\\}", "json").replaceAll("\\{" + "id" + "\\}",apiInvoker.escape(id))
-
-    val contentTypes = List("application/json")
-    val contentType = contentTypes(0)
-
-    val queryParams = new HashMap[String, String]
-    val headerParams = new HashMap[String, String]
-    val formParams = new HashMap[String, String]
-
-    
-
-    var postBody: AnyRef = null
-
-    if (contentType.startsWith("multipart/form-data")) {
-      val mp = new FormDataMultiPart
-      postBody = mp
-    } else {
-    }
-
-    try {
-      apiInvoker.invokeApi(basePath, path, "POST", queryParams.toMap, formParams.toMap, postBody, headerParams.toMap, contentType) match {
-        case s: String =>
-                  case _ => None
-      }
-    } catch {
-      case ex: ApiException if ex.code == 404 => None
-      case ex: ApiException => throw ex
+    val await = Try(Await.result(viewVideoAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
     }
   }
+
+  /**
+   * Increment a video&#39;s view count asynchronously
+   * 
+   * @param id The video id 
+   * @return Future(void)
+  */
+  def viewVideoAsync(id: Long) = {
+      helper.viewVideo(id)
+  }
+
+
+}
+
+class MediaVideosApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addUserToVideoWhitelist(id: Long,
+    userId: Option[IntWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[IntWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{id}/whitelist")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(userId))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addVideo(videoResource: Option[VideoResource] = None
+    )(implicit reader: ClientResponseReader[VideoResource], writer: RequestWriter[VideoResource]): Future[VideoResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(videoResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addVideoComment(videoId: Integer,
+    commentResource: Option[CommentResource] = None
+    )(implicit reader: ClientResponseReader[CommentResource], writer: RequestWriter[CommentResource]): Future[CommentResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/comments")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(commentResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addVideoContributor(videoId: Long,
+    contributionResource: Option[ContributionResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ContributionResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/contributors")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(contributionResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addVideoFlag(videoId: Long,
+    reason: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[FlagResource], writer: RequestWriter[StringWrapper]): Future[FlagResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/moderation")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(reason))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def addVideoRelationships(videoId: Long,
+    videoRelationshipResource: Option[VideoRelationshipResource] = None
+    )(implicit reader: ClientResponseReader[VideoRelationshipResource], writer: RequestWriter[VideoRelationshipResource]): Future[VideoRelationshipResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/related")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(videoRelationshipResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createVideoDisposition(videoId: Integer,
+    dispositionResource: Option[DispositionResource] = None
+    )(implicit reader: ClientResponseReader[DispositionResource], writer: RequestWriter[DispositionResource]): Future[DispositionResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/dispositions")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(dispositionResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideo(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideoComment(videoId: Long,
+    id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/comments/{id}")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideoDisposition(dispositionId: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/dispositions/{disposition_id}")
+      replaceAll ("\\{" + "disposition_id" + "\\}",dispositionId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideoFlag(videoId: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/moderation")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideoRelationship(videoId: Long,
+    id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/related/{id}")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getUserVideos(userId: Integer,
+    excludeFlagged: Option[Boolean] = Some(true),
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceVideoResource]): Future[PageResourceVideoResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{user_id}/videos")
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    excludeFlagged match {
+      case Some(param) => queryParams += "exclude_flagged" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideo(id: Long)(implicit reader: ClientResponseReader[VideoResource]): Future[VideoResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideoComments(videoId: Integer,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceCommentResource]): Future[PageResourceCommentResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/comments")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideoDispositions(videoId: Integer,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceDispositionResource]): Future[PageResourceDispositionResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/dispositions")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideoRelationships(videoId: Long,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceVideoRelationshipResource]): Future[PageResourceVideoRelationshipResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/related")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideos(excludeFlagged: Option[Boolean] = Some(true),
+    filterVideosByUploader: Option[Integer] = None,
+    filterCategory: Option[String] = None,
+    filterTagset: Option[String] = None,
+    filterVideosByName: Option[String] = None,
+    filterVideosByContributor: Option[Integer] = None,
+    filterVideosByAuthor: Option[Integer] = None,
+    filterHasAuthor: Option[Boolean] = None,
+    filterHasUploader: Option[Boolean] = None,
+    filterRelatedTo: Option[String] = None,
+    filterFriends: Option[Boolean] = None,
+    filterDisposition: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(author:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceVideoResource]): Future[PageResourceVideoResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    excludeFlagged match {
+      case Some(param) => queryParams += "exclude_flagged" -> param.toString
+      case _ => queryParams
+    }
+    filterVideosByUploader match {
+      case Some(param) => queryParams += "filter_videos_by_uploader" -> param.toString
+      case _ => queryParams
+    }
+    filterCategory match {
+      case Some(param) => queryParams += "filter_category" -> param.toString
+      case _ => queryParams
+    }
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterVideosByName match {
+      case Some(param) => queryParams += "filter_videos_by_name" -> param.toString
+      case _ => queryParams
+    }
+    filterVideosByContributor match {
+      case Some(param) => queryParams += "filter_videos_by_contributor" -> param.toString
+      case _ => queryParams
+    }
+    filterVideosByAuthor match {
+      case Some(param) => queryParams += "filter_videos_by_author" -> param.toString
+      case _ => queryParams
+    }
+    filterHasAuthor match {
+      case Some(param) => queryParams += "filter_has_author" -> param.toString
+      case _ => queryParams
+    }
+    filterHasUploader match {
+      case Some(param) => queryParams += "filter_has_uploader" -> param.toString
+      case _ => queryParams
+    }
+    filterRelatedTo match {
+      case Some(param) => queryParams += "filter_related_to" -> param.toString
+      case _ => queryParams
+    }
+    filterFriends match {
+      case Some(param) => queryParams += "filter_friends" -> param.toString
+      case _ => queryParams
+    }
+    filterDisposition match {
+      case Some(param) => queryParams += "filter_disposition" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeUserFromVideoWhitelist(videoId: Long,
+    id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/whitelist/{id}")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def removeVideoContributor(videoId: Long,
+    id: Integer)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/contributors/{id}")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateVideo(id: Long,
+    videoResource: Option[VideoResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[VideoResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(videoResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateVideoComment(videoId: Long,
+    id: Long,
+    content: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/comments/{id}/content")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(content))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateVideoRelationship(videoId: Long,
+    relationshipId: Long,
+    details: Option[StringWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[StringWrapper]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{video_id}/related/{id}/relationship_details")
+      replaceAll ("\\{" + "video_id" + "\\}",videoId.toString)
+      replaceAll ("\\{" + "relationship_id" + "\\}",relationshipId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(details))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def viewVideo(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/{id}/views")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
 
 }
