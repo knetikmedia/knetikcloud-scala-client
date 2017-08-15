@@ -65,8 +65,37 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://sandbox.knetikcl
   val helper = new AmazonWebServicesS3ApiAsyncHelper(client, config)
 
   /**
-   * Get a signed S3 URL
-   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;)
+   * Get a temporary signed S3 URL for download
+   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details.
+   * @param bucket S3 bucket name (optional)
+   * @param _path The path to the file relative the bucket (the s3 object key) (optional)
+   * @param expiration The number of seconds this URL will be valid. Default to 60 (optional, default to 60)
+   * @return String
+   */
+  def getDownloadURL(bucket: Option[String] = None, _path: Option[String] = None, expiration: Option[Integer] /* = 60*/): Option[String] = {
+    val await = Try(Await.result(getDownloadURLAsync(bucket, _path, expiration), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get a temporary signed S3 URL for download asynchronously
+   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details.
+   * @param bucket S3 bucket name (optional)
+   * @param _path The path to the file relative the bucket (the s3 object key) (optional)
+   * @param expiration The number of seconds this URL will be valid. Default to 60 (optional, default to 60)
+   * @return Future(String)
+  */
+  def getDownloadURLAsync(bucket: Option[String] = None, _path: Option[String] = None, expiration: Option[Integer] /* = 60*/): Future[String] = {
+      helper.getDownloadURL(bucket, _path, expiration)
+  }
+
+
+  /**
+   * Get a signed S3 URL for upload
+   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after.
    * @param filename The file name (optional)
    * @param _contentType The content type (optional)
    * @return AmazonS3Activity
@@ -80,8 +109,8 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://sandbox.knetikcl
   }
 
   /**
-   * Get a signed S3 URL asynchronously
-   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;)
+   * Get a signed S3 URL for upload asynchronously
+   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after.
    * @param filename The file name (optional)
    * @param _contentType The content type (optional)
    * @return Future(AmazonS3Activity)
@@ -94,6 +123,36 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://sandbox.knetikcl
 }
 
 class AmazonWebServicesS3ApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def getDownloadURL(bucket: Option[String] = None,
+    _path: Option[String] = None,
+    expiration: Option[Integer] = Some(60)
+    )(implicit reader: ClientResponseReader[String]): Future[String] = {
+    // create path and map variables
+    val path = (addFmt("/amazon/s3/downloadurl"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    bucket match {
+      case Some(param) => queryParams += "bucket" -> param.toString
+      case _ => queryParams
+    }
+    _path match {
+      case Some(param) => queryParams += "path" -> param.toString
+      case _ => queryParams
+    }
+    expiration match {
+      case Some(param) => queryParams += "expiration" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
 
   def getSignedS3URL(filename: Option[String] = None,
     _contentType: Option[String] = None

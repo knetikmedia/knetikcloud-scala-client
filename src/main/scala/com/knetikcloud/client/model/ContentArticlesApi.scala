@@ -251,6 +251,7 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
   /**
    * List and search articles
    * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed.
+   * @param filterActiveOnly Filter for articles that are active (true) or inactive (false) (optional)
    * @param filterCategory Filter for articles from a specific category by id (optional)
    * @param filterTagset Filter for articles with at least one of a specified set of tags (separated by comma) (optional)
    * @param filterTagIntersection Filter for articles with all of a specified set of tags (separated by comma) (optional)
@@ -261,8 +262,8 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
    * @return PageResourceArticleResource
    */
-  def getArticles(filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceArticleResource] = {
-    val await = Try(Await.result(getArticlesAsync(filterCategory, filterTagset, filterTagIntersection, filterTagExclusion, filterTitle, size, page, order), Duration.Inf))
+  def getArticles(filterActiveOnly: Option[Boolean] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceArticleResource] = {
+    val await = Try(Await.result(getArticlesAsync(filterActiveOnly, filterCategory, filterTagset, filterTagIntersection, filterTagExclusion, filterTitle, size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -272,6 +273,7 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
   /**
    * List and search articles asynchronously
    * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed.
+   * @param filterActiveOnly Filter for articles that are active (true) or inactive (false) (optional)
    * @param filterCategory Filter for articles from a specific category by id (optional)
    * @param filterTagset Filter for articles with at least one of a specified set of tags (separated by comma) (optional)
    * @param filterTagIntersection Filter for articles with all of a specified set of tags (separated by comma) (optional)
@@ -282,8 +284,8 @@ class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
    * @return Future(PageResourceArticleResource)
   */
-  def getArticlesAsync(filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceArticleResource] = {
-      helper.getArticles(filterCategory, filterTagset, filterTagIntersection, filterTagExclusion, filterTitle, size, page, order)
+  def getArticlesAsync(filterActiveOnly: Option[Boolean] = None, filterCategory: Option[String] = None, filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, filterTitle: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceArticleResource] = {
+      helper.getArticles(filterActiveOnly, filterCategory, filterTagset, filterTagIntersection, filterTagExclusion, filterTitle, size, page, order)
   }
 
 
@@ -485,7 +487,8 @@ class ContentArticlesApiAsyncHelper(client: TransportClient, config: SwaggerConf
     }
   }
 
-  def getArticles(filterCategory: Option[String] = None,
+  def getArticles(filterActiveOnly: Option[Boolean] = None,
+    filterCategory: Option[String] = None,
     filterTagset: Option[String] = None,
     filterTagIntersection: Option[String] = None,
     filterTagExclusion: Option[String] = None,
@@ -501,6 +504,10 @@ class ContentArticlesApiAsyncHelper(client: TransportClient, config: SwaggerConf
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
+    filterActiveOnly match {
+      case Some(param) => queryParams += "filter_active_only" -> param.toString
+      case _ => queryParams
+    }
     filterCategory match {
       case Some(param) => queryParams += "filter_category" -> param.toString
       case _ => queryParams

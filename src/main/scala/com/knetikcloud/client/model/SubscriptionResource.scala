@@ -18,6 +18,8 @@ case class SubscriptionResource (
   additionalProperties: Option[Map[String, Property]],
   /* Who can purchase this subscription */
   availability: Option[String],
+  /* The behaviors linked to the item, describing various options and interactions. May not be included in item lists */
+  behaviors: Option[List[Behavior]],
   /* A category for filtering items */
   category: Option[String],
   /* The day of the month 1..31 this subscription will renew */
