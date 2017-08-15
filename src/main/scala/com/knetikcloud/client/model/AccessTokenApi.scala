@@ -69,12 +69,14 @@ class AccessTokenApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param grantType Grant type 
    * @param clientId The id of the client 
    * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials (optional)
-   * @param username The username of the client.  Used only with a grant_type of password (optional)
-   * @param password The password of the client.  Used only with a grant_type of password (optional)
+   * @param username The username of the client. Used only with a grant_type of password (optional)
+   * @param password The password of the client. Used only with a grant_type of password (optional)
+   * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins) (optional)
+   * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token (optional)
    * @return OAuth2Resource
    */
-  def getOAuthToken(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None): Option[OAuth2Resource] = {
-    val await = Try(Await.result(getOAuthTokenAsync(grantType, clientId, clientSecret, username, password), Duration.Inf))
+  def getOAuthToken(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None, token: Option[String] = None, refreshToken: Option[String] = None): Option[OAuth2Resource] = {
+    val await = Try(Await.result(getOAuthTokenAsync(grantType, clientId, clientSecret, username, password, token, refreshToken), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -87,12 +89,14 @@ class AccessTokenApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
    * @param grantType Grant type 
    * @param clientId The id of the client 
    * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials (optional)
-   * @param username The username of the client.  Used only with a grant_type of password (optional)
-   * @param password The password of the client.  Used only with a grant_type of password (optional)
+   * @param username The username of the client. Used only with a grant_type of password (optional)
+   * @param password The password of the client. Used only with a grant_type of password (optional)
+   * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins) (optional)
+   * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token (optional)
    * @return Future(OAuth2Resource)
   */
-  def getOAuthTokenAsync(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None): Future[OAuth2Resource] = {
-      helper.getOAuthToken(grantType, clientId, clientSecret, username, password)
+  def getOAuthTokenAsync(grantType: String /* = client_credentials*/, clientId: String /* = knetik*/, clientSecret: Option[String] = None, username: Option[String] = None, password: Option[String] = None, token: Option[String] = None, refreshToken: Option[String] = None): Future[OAuth2Resource] = {
+      helper.getOAuthToken(grantType, clientId, clientSecret, username, password, token, refreshToken)
   }
 
 
@@ -104,7 +108,9 @@ class AccessTokenApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     clientId: String = knetik,
     clientSecret: Option[String] = None,
     username: Option[String] = None,
-    password: Option[String] = None
+    password: Option[String] = None,
+    token: Option[String] = None,
+    refreshToken: Option[String] = None
     )(implicit reader: ClientResponseReader[OAuth2Resource]): Future[OAuth2Resource] = {
     // create path and map variables
     val path = (addFmt("/oauth/token"))
