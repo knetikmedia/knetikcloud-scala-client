@@ -627,10 +627,11 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
+   * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity. (optional, default to false)
    * @return ChallengeActivityResource
    */
-  def updateChallengeActivity(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Option[ChallengeActivityResource] = {
-    val await = Try(Await.result(updateChallengeActivityAsync(id, challengeId, challengeActivityResource), Duration.Inf))
+  def updateChallengeActivity(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None, validateSettings: Option[Boolean] /* = false*/): Option[ChallengeActivityResource] = {
+    val await = Try(Await.result(updateChallengeActivityAsync(id, challengeId, challengeActivityResource, validateSettings), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -643,10 +644,11 @@ class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcl
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
+   * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity. (optional, default to false)
    * @return Future(ChallengeActivityResource)
   */
-  def updateChallengeActivityAsync(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None): Future[ChallengeActivityResource] = {
-      helper.updateChallengeActivity(id, challengeId, challengeActivityResource)
+  def updateChallengeActivityAsync(id: Long, challengeId: Long, challengeActivityResource: Option[ChallengeActivityResource] = None, validateSettings: Option[Boolean] /* = false*/): Future[ChallengeActivityResource] = {
+      helper.updateChallengeActivity(id, challengeId, challengeActivityResource, validateSettings)
   }
 
 
@@ -737,7 +739,7 @@ class CampaignsChallengesApiAsyncHelper(client: TransportClient, config: Swagger
     val headerParams = new mutable.HashMap[String, String]
 
     validateSettings match {
-      case Some(param) => queryParams += "validateSettings" -> param.toString
+      case Some(param) => queryParams += "validate_settings" -> param.toString
       case _ => queryParams
     }
 
@@ -1170,7 +1172,8 @@ class CampaignsChallengesApiAsyncHelper(client: TransportClient, config: Swagger
 
   def updateChallengeActivity(id: Long,
     challengeId: Long,
-    challengeActivityResource: Option[ChallengeActivityResource] = None
+    challengeActivityResource: Option[ChallengeActivityResource] = None,
+    validateSettings: Option[Boolean] = Some(false)
     )(implicit reader: ClientResponseReader[ChallengeActivityResource], writer: RequestWriter[ChallengeActivityResource]): Future[ChallengeActivityResource] = {
     // create path and map variables
     val path = (addFmt("/challenges/{challenge_id}/activities/{id}")
@@ -1181,6 +1184,10 @@ class CampaignsChallengesApiAsyncHelper(client: TransportClient, config: Swagger
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
+    validateSettings match {
+      case Some(param) => queryParams += "validateSettings" -> param.toString
+      case _ => queryParams
+    }
 
     val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(challengeActivityResource))
     resFuture flatMap { resp =>
