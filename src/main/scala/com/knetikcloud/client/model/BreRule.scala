@@ -26,12 +26,16 @@ case class BreRule (
   enabled: Option[Boolean],
   /* The date the rule ceases to take effect, or null if never. Unix timestamp in seconds */
   endDate: Option[Long],
+  /* How many times the rule has been evaluated (it's conditions checked, whether it then runs or not) */
+  evaluationCount: Option[Long],
   /* The event name of the trigger this rule runs for. Affects which parameters are available */
   eventName: String,
   /* The id of the rule for later references. If left null a random guid will be generated. Must be unique. Cannot be changed */
   id: Option[String],
   /* The human readable name of the rule */
   name: String,
+  /* How many times the rule has run */
+  runCount: Option[Long],
   /* Used to sort rules to control the order they run in. Larger numbered sort values run first.  Default 500 */
   sort: Option[Integer],
   /* The date the rule begins to take effect, or null if always. Unix timestamp in seconds */

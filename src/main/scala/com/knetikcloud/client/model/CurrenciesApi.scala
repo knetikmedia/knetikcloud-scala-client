@@ -118,6 +118,7 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   /**
    * List and search currencies
    * 
+   * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false) (optional)
    * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config (optional)
    * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;) (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -125,8 +126,8 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
    * @return PageResourceCurrencyResource
    */
-  def getCurrencies(filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Option[PageResourceCurrencyResource] = {
-    val await = Try(Await.result(getCurrenciesAsync(filterEnabledCurrencies, filterType, size, page, order), Duration.Inf))
+  def getCurrencies(filterDefault: Option[Boolean] = None, filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Option[PageResourceCurrencyResource] = {
+    val await = Try(Await.result(getCurrenciesAsync(filterDefault, filterEnabledCurrencies, filterType, size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -136,6 +137,7 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   /**
    * List and search currencies asynchronously
    * 
+   * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false) (optional)
    * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config (optional)
    * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;) (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -143,8 +145,8 @@ class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
    * @return Future(PageResourceCurrencyResource)
   */
-  def getCurrenciesAsync(filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Future[PageResourceCurrencyResource] = {
-      helper.getCurrencies(filterEnabledCurrencies, filterType, size, page, order)
+  def getCurrenciesAsync(filterDefault: Option[Boolean] = None, filterEnabledCurrencies: Option[Boolean] = None, filterType: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = name:ASC*/): Future[PageResourceCurrencyResource] = {
+      helper.getCurrencies(filterDefault, filterEnabledCurrencies, filterType, size, page, order)
   }
 
 
@@ -238,7 +240,8 @@ class CurrenciesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
     }
   }
 
-  def getCurrencies(filterEnabledCurrencies: Option[Boolean] = None,
+  def getCurrencies(filterDefault: Option[Boolean] = None,
+    filterEnabledCurrencies: Option[Boolean] = None,
     filterType: Option[String] = None,
     size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
@@ -251,6 +254,10 @@ class CurrenciesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
+    filterDefault match {
+      case Some(param) => queryParams += "filter_default" -> param.toString
+      case _ => queryParams
+    }
     filterEnabledCurrencies match {
       case Some(param) => queryParams += "filter_enabled_currencies" -> param.toString
       case _ => queryParams

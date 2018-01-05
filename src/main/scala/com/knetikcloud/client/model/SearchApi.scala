@@ -65,7 +65,7 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   val helper = new SearchApiAsyncHelper(client, config)
 
   /**
-   * Search an index
+   * Search an index with no template
    * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
    * @param _type The index type 
    * @param query The query to be used for the search (optional)
@@ -82,7 +82,7 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   }
 
   /**
-   * Search an index asynchronously
+   * Search an index with no template asynchronously
    * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
    * @param _type The index type 
    * @param query The query to be used for the search (optional)
@@ -92,6 +92,39 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   */
   def searchIndexAsync(_type: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceMapstringobject] = {
       helper.searchIndex(_type, query, size, page)
+  }
+
+
+  /**
+   * Search an index with a template
+   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @param size The number of documents returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return PageResourceMapstringobject
+   */
+  def searchIndexWithTemplate(_type: String, template: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceMapstringobject] = {
+    val await = Try(Await.result(searchIndexWithTemplateAsync(_type, template, query, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Search an index with a template asynchronously
+   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @param size The number of documents returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceMapstringobject)
+  */
+  def searchIndexWithTemplateAsync(_type: String, template: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceMapstringobject] = {
+      helper.searchIndexWithTemplate(_type, template, query, size, page)
   }
 
 
@@ -113,6 +146,40 @@ class SearchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exten
     val headerParams = new mutable.HashMap[String, String]
 
     if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndex")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchIndexWithTemplate(_type: String,
+    template: String,
+    query: Option[Any] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceMapstringobject], writer: RequestWriter[Any]): Future[PageResourceMapstringobject] = {
+    // create path and map variables
+    val path = (addFmt("/search/index/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndexWithTemplate")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchIndexWithTemplate")
 
     size match {
       case Some(param) => queryParams += "size" -> param.toString

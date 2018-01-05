@@ -16,19 +16,19 @@ package com.knetikcloud.client.model
 case class GroupMemberResource (
   /* A map of additional properties, keyed on the property name (private). Must match the names and types defined in the template for this type, or be an extra not from the template */
   additionalProperties: Option[Map[String, Property]],
-  /* The url of the user's avatar image */
-  avatarUrl: Option[String],
-  /* The public username of the user */
-  displayName: Option[String],
-  /* The id of the user */
-  id: Integer,
+  /* The group. Id is the unique name */
+  group: Option[SimpleGroupResource],
+  /* Whether this membership is explicit (the user was added directly to the group) or implicit (the user was added only to one or more child groups) */
+  _implicit: Option[Boolean],
+  /* The id of the membership entry */
+  membershipId: Option[Long],
   /* The position of the member in the group if applicable. Read notes for details */
   order: Option[String],
   /* The member's access level. Default: member */
   status: Option[String],
   /* A template this member additional properties are validated against (private). May be null and no validation of properties will be done */
   template: Option[String],
-  /* The username of the user */
-  username: Option[String]
+  /* The user */
+  user: SimpleUserResource
 )
 

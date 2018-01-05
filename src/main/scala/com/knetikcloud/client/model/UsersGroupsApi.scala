@@ -200,8 +200,8 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
 
 
   /**
-   * Removes a group from the system IF no resources are attached to it
-   * 
+   * Removes a group from the system
+   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well.
    * @param uniqueName The group unique name 
    * @return void
    */
@@ -214,8 +214,8 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   }
 
   /**
-   * Removes a group from the system IF no resources are attached to it asynchronously
-   * 
+   * Removes a group from the system asynchronously
+   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well.
    * @param uniqueName The group unique name 
    * @return Future(void)
   */
@@ -300,6 +300,31 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   */
   def getGroupAsync(uniqueName: String): Future[GroupResource] = {
       helper.getGroup(uniqueName)
+  }
+
+
+  /**
+   * Get group ancestors
+   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+   * @param uniqueName The group unique name 
+   * @return List[GroupResource]
+   */
+  def getGroupAncestors(uniqueName: String): Option[List[GroupResource]] = {
+    val await = Try(Await.result(getGroupAncestorsAsync(uniqueName), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get group ancestors asynchronously
+   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+   * @param uniqueName The group unique name 
+   * @return Future(List[GroupResource])
+  */
+  def getGroupAncestorsAsync(uniqueName: String): Future[List[GroupResource]] = {
+      helper.getGroupAncestors(uniqueName)
   }
 
 
@@ -566,7 +591,7 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
 
   /**
    * Update a group
-   * 
+   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
    * @param uniqueName The group unique name 
    * @param groupResource The updated group (optional)
    * @return void
@@ -581,7 +606,7 @@ class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
 
   /**
    * Update a group asynchronously
-   * 
+   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
    * @param uniqueName The group unique name 
    * @param groupResource The updated group (optional)
    * @return Future(void)
@@ -900,6 +925,24 @@ class UsersGroupsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     val headerParams = new mutable.HashMap[String, String]
 
     if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroup")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getGroupAncestors(uniqueName: String)(implicit reader: ClientResponseReader[List[GroupResource]]): Future[List[GroupResource]] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/ancestors")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupAncestors")
 
 
     val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")

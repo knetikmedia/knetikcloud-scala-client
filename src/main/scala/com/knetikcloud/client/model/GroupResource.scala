@@ -30,9 +30,11 @@ case class GroupResource (
   status: String,
   /* The number of users in child groups */
   subMemberCount: Option[Integer],
+  /* Tags for search */
+  tags: Option[List[String]],
   /* A group template this group is validated against. May be null and no validation of additional_properties will be done */
   template: Option[String],
-  /* Unique name used in url and references. Uppercase, lowercase, numbers and hyphens only. Max 50 characters. Cannot be altered once created */
-  uniqueName: String
+  /* Unique name used in url and references. Uppercase, lowercase, numbers and hyphens only. Max 50 characters. Cannot be altered once created. Default: random UUID */
+  uniqueName: Option[String]
 )
 

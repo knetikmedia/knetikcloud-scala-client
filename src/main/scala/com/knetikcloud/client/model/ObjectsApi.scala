@@ -14,7 +14,6 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
-import com.knetikcloud.client.model.EntitlementItem
 import com.knetikcloud.client.model.ItemTemplateResource
 import com.knetikcloud.client.model.ObjectResource
 import com.knetikcloud.client.model.PageResourceItemTemplateResource
@@ -292,13 +291,13 @@ class ObjectsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Update an object
    * 
    * @param templateId The id of the template this object is part of 
-   * @param entitlementId The id of the entitlement 
+   * @param objectId The id of the object 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param objectItem The object item object (optional)
    * @return void
    */
-  def updateObjectItem(templateId: String, entitlementId: Integer, cascade: Option[Boolean] /* = false*/, objectItem: Option[EntitlementItem] = None) = {
-    val await = Try(Await.result(updateObjectItemAsync(templateId, entitlementId, cascade, objectItem), Duration.Inf))
+  def updateObjectItem(templateId: String, objectId: Integer, cascade: Option[Boolean] /* = false*/, objectItem: Option[ObjectResource] = None) = {
+    val await = Try(Await.result(updateObjectItemAsync(templateId, objectId, cascade, objectItem), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -309,13 +308,13 @@ class ObjectsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * Update an object asynchronously
    * 
    * @param templateId The id of the template this object is part of 
-   * @param entitlementId The id of the entitlement 
+   * @param objectId The id of the object 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param objectItem The object item object (optional)
    * @return Future(void)
   */
-  def updateObjectItemAsync(templateId: String, entitlementId: Integer, cascade: Option[Boolean] /* = false*/, objectItem: Option[EntitlementItem] = None) = {
-      helper.updateObjectItem(templateId, entitlementId, cascade, objectItem)
+  def updateObjectItemAsync(templateId: String, objectId: Integer, cascade: Option[Boolean] /* = false*/, objectItem: Option[ObjectResource] = None) = {
+      helper.updateObjectItem(templateId, objectId, cascade, objectItem)
   }
 
 
@@ -538,14 +537,14 @@ class ObjectsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exte
   }
 
   def updateObjectItem(templateId: String,
-    entitlementId: Integer,
+    objectId: Integer,
     cascade: Option[Boolean] = Some(false),
-    objectItem: Option[EntitlementItem] = None
-    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[EntitlementItem]): Future[Unit] = {
+    objectItem: Option[ObjectResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ObjectResource]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/objects/{template_id}/{object_id}")
       replaceAll ("\\{" + "template_id" + "\\}",templateId.toString)
-      replaceAll ("\\{" + "entitlement_id" + "\\}",entitlementId.toString))
+      replaceAll ("\\{" + "object_id" + "\\}",objectId.toString))
 
     // query params
     val queryParams = new mutable.HashMap[String, String]
