@@ -16,6 +16,8 @@ package com.knetikcloud.client.model
 case class VideoResource (
   /* Whether the video is available, based on various factors */
   active: Option[Boolean],
+  /* A map of additional properties, keyed on the property name.  Must match the names and types defined in the template for this item type */
+  additionalProperties: Option[Map[String, Property]],
   /* The original artist of the media */
   author: Option[SimpleReferenceResourcelong],
   /* The date the media was created as a unix timestamp in seconds */
@@ -60,6 +62,8 @@ case class VideoResource (
   size: Option[Long],
   /* The tags for the video */
   tags: Option[List[String]],
+  /* A video template this video is validated against (private). May be null and no validation of additional_properties will be done */
+  template: Option[String],
   /* The country of a thumbnail version. Typically a url */
   thumbnail: Option[String],
   /* The date/time this resource was last updated in seconds since unix epoch */

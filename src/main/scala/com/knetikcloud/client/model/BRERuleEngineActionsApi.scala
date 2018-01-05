@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineActionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class BRERuleEngineActionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {

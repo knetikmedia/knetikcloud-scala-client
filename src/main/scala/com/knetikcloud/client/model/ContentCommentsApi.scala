@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -173,35 +173,6 @@ class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.
 
 
   /**
-   * Search the comment index
-   * The body is an ElasticSearch query json. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options
-   * @param query The search query (optional)
-   * @param size The number of objects returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return PageResourceCommentResource
-   */
-  def searchComments(query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceCommentResource] = {
-    val await = Try(Await.result(searchCommentsAsync(query, size, page), Duration.Inf))
-    await match {
-      case Success(i) => Some(await.get)
-      case Failure(t) => None
-    }
-  }
-
-  /**
-   * Search the comment index asynchronously
-   * The body is an ElasticSearch query json. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options
-   * @param query The search query (optional)
-   * @param size The number of objects returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return Future(PageResourceCommentResource)
-  */
-  def searchCommentsAsync(query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceCommentResource] = {
-      helper.searchComments(query, size, page)
-  }
-
-
-  /**
    * Update a comment
    * 
    * @param id The comment id 
@@ -306,32 +277,6 @@ class ContentCommentsApiAsyncHelper(client: TransportClient, config: SwaggerConf
     }
 
     val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
-    resFuture flatMap { resp =>
-      process(reader.read(resp))
-    }
-  }
-
-  def searchComments(query: Option[Any] = None,
-    size: Option[Integer] = Some(25),
-    page: Option[Integer] = Some(1)
-    )(implicit reader: ClientResponseReader[PageResourceCommentResource], writer: RequestWriter[Any]): Future[PageResourceCommentResource] = {
-    // create path and map variables
-    val path = (addFmt("/comments/search"))
-
-    // query params
-    val queryParams = new mutable.HashMap[String, String]
-    val headerParams = new mutable.HashMap[String, String]
-
-    size match {
-      case Some(param) => queryParams += "size" -> param.toString
-      case _ => queryParams
-    }
-    page match {
-      case Some(param) => queryParams += "page" -> param.toString
-      case _ => queryParams
-    }
-
-    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }

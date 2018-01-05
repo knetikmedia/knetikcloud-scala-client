@@ -14,7 +14,6 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
-import com.knetikcloud.client.model.PageResourceMapstringobject
 import com.knetikcloud.client.model.Result
 import io.swagger.client.{ApiInvoker, ApiException}
 
@@ -42,7 +41,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class SearchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -65,16 +64,294 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
   val helper = new SearchApiAsyncHelper(client, config)
 
   /**
-   * Search an index with no template
-   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * Count matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Any
+   */
+  def searchCountGET(_type: String): Option[Any] = {
+    val await = Try(Await.result(searchCountGETAsync(_type), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Count matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Future(Any)
+  */
+  def searchCountGETAsync(_type: String): Future[Any] = {
+      helper.searchCountGET(_type)
+  }
+
+
+  /**
+   * Count matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
    * @param _type The index type 
    * @param query The query to be used for the search (optional)
-   * @param size The number of documents returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return PageResourceMapstringobject
+   * @return Any
    */
-  def searchIndex(_type: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceMapstringobject] = {
-    val await = Try(Await.result(searchIndexAsync(_type, query, size, page), Duration.Inf))
+  def searchCountPOST(_type: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchCountPOSTAsync(_type, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Count matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchCountPOSTAsync(_type: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchCountPOST(_type, query)
+  }
+
+
+  /**
+   * Count matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Any
+   */
+  def searchCountWithTemplateGET(_type: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchCountWithTemplateGETAsync(_type, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Count matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchCountWithTemplateGETAsync(_type: String, template: String): Future[Any] = {
+      helper.searchCountWithTemplateGET(_type, template)
+  }
+
+
+  /**
+   * Count matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchCountWithTemplatePOST(_type: String, template: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchCountWithTemplatePOSTAsync(_type, template, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Count matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchCountWithTemplatePOSTAsync(_type: String, template: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchCountWithTemplatePOST(_type, template, query)
+  }
+
+
+  /**
+   * Get document with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @return Any
+   */
+  def searchDocumentGET(_type: String, id: String): Option[Any] = {
+    val await = Try(Await.result(searchDocumentGETAsync(_type, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get document with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @return Future(Any)
+  */
+  def searchDocumentGETAsync(_type: String, id: String): Future[Any] = {
+      helper.searchDocumentGET(_type, id)
+  }
+
+
+  /**
+   * Get document with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @return Any
+   */
+  def searchDocumentWithTemplateGET(_type: String, id: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchDocumentWithTemplateGETAsync(_type, id, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get document with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchDocumentWithTemplateGETAsync(_type: String, id: String, template: String): Future[Any] = {
+      helper.searchDocumentWithTemplateGET(_type, id, template)
+  }
+
+
+  /**
+   * Explain matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @return Any
+   */
+  def searchExplainGET(_type: String, id: String): Option[Any] = {
+    val await = Try(Await.result(searchExplainGETAsync(_type, id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Explain matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @return Future(Any)
+  */
+  def searchExplainGETAsync(_type: String, id: String): Future[Any] = {
+      helper.searchExplainGET(_type, id)
+  }
+
+
+  /**
+   * Explain matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchExplainPOST(_type: String, id: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchExplainPOSTAsync(_type, id, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Explain matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchExplainPOSTAsync(_type: String, id: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchExplainPOST(_type, id, query)
+  }
+
+
+  /**
+   * Explain matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @return Any
+   */
+  def searchExplainWithTemplateGET(_type: String, id: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchExplainWithTemplateGETAsync(_type, id, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Explain matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchExplainWithTemplateGETAsync(_type: String, id: String, template: String): Future[Any] = {
+      helper.searchExplainWithTemplateGET(_type, id, template)
+  }
+
+
+  /**
+   * Explain matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchExplainWithTemplatePOST(_type: String, id: String, template: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchExplainWithTemplatePOSTAsync(_type, id, template, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Explain matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param id The index id 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchExplainWithTemplatePOSTAsync(_type: String, id: String, template: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchExplainWithTemplatePOST(_type, id, template, query)
+  }
+
+
+  /**
+   * Search an index with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchIndex(_type: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchIndexAsync(_type, query), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -83,30 +360,50 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Search an index with no template asynchronously
-   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
    * @param _type The index type 
    * @param query The query to be used for the search (optional)
-   * @param size The number of documents returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return Future(PageResourceMapstringobject)
+   * @return Future(Any)
   */
-  def searchIndexAsync(_type: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceMapstringobject] = {
-      helper.searchIndex(_type, query, size, page)
+  def searchIndexAsync(_type: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchIndex(_type, query)
+  }
+
+
+  /**
+   * Search an index with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Any
+   */
+  def searchIndexGET(_type: String): Option[Any] = {
+    val await = Try(Await.result(searchIndexGETAsync(_type), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Search an index with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Future(Any)
+  */
+  def searchIndexGETAsync(_type: String): Future[Any] = {
+      helper.searchIndexGET(_type)
   }
 
 
   /**
    * Search an index with a template
-   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
    * @param _type The index type 
    * @param template The index template 
-   * @param query The query to be used for the search (optional)
-   * @param size The number of documents returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return PageResourceMapstringobject
+   * @return Any
    */
-  def searchIndexWithTemplate(_type: String, template: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceMapstringobject] = {
-    val await = Try(Await.result(searchIndexWithTemplateAsync(_type, template, query, size, page), Duration.Inf))
+  def searchIndexWithTemplateGET(_type: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchIndexWithTemplateGETAsync(_type, template), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -115,16 +412,225 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Search an index with a template asynchronously
-   * The body is an ElasticSearch query in JSON format. Please see their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html&#39;&gt;documentation&lt;/a&gt; for details on the format and search options. The searchable object&#39;s format depends on on the type but mostly matches the resource from it&#39;s main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchIndexWithTemplateGETAsync(_type: String, template: String): Future[Any] = {
+      helper.searchIndexWithTemplateGET(_type, template)
+  }
+
+
+  /**
+   * Search an index with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
    * @param _type The index type 
    * @param template The index template 
    * @param query The query to be used for the search (optional)
-   * @param size The number of documents returned per page (optional, default to 25)
-   * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @return Future(PageResourceMapstringobject)
+   * @return Any
+   */
+  def searchIndexWithTemplatePOST(_type: String, template: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchIndexWithTemplatePOSTAsync(_type, template, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Search an index with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
   */
-  def searchIndexWithTemplateAsync(_type: String, template: String, query: Option[Any] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceMapstringobject] = {
-      helper.searchIndexWithTemplate(_type, template, query, size, page)
+  def searchIndexWithTemplatePOSTAsync(_type: String, template: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchIndexWithTemplatePOST(_type, template, query)
+  }
+
+
+  /**
+   * Get indices
+   * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @return Any
+   */
+  def searchIndicesGET(): Option[Any] = {
+    val await = Try(Await.result(searchIndicesGETAsync(), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get indices asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @return Future(Any)
+  */
+  def searchIndicesGETAsync(): Future[Any] = {
+      helper.searchIndicesGET()
+  }
+
+
+  /**
+   * Get mapping with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Any
+   */
+  def searchMappingsGET(_type: String): Option[Any] = {
+    val await = Try(Await.result(searchMappingsGETAsync(_type), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get mapping with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Future(Any)
+  */
+  def searchMappingsGETAsync(_type: String): Future[Any] = {
+      helper.searchMappingsGET(_type)
+  }
+
+
+  /**
+   * Get mapping with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Any
+   */
+  def searchMappingsWithTemplateGET(_type: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchMappingsWithTemplateGETAsync(_type, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get mapping with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchMappingsWithTemplateGETAsync(_type: String, template: String): Future[Any] = {
+      helper.searchMappingsWithTemplateGET(_type, template)
+  }
+
+
+  /**
+   * Validate matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Any
+   */
+  def searchValidateGET(_type: String): Option[Any] = {
+    val await = Try(Await.result(searchValidateGETAsync(_type), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Validate matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @return Future(Any)
+  */
+  def searchValidateGETAsync(_type: String): Future[Any] = {
+      helper.searchValidateGET(_type)
+  }
+
+
+  /**
+   * Validate matches with no template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchValidatePOST(_type: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchValidatePOSTAsync(_type, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Validate matches with no template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchValidatePOSTAsync(_type: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchValidatePOST(_type, query)
+  }
+
+
+  /**
+   * Validate matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Any
+   */
+  def searchValidateWithTemplateGET(_type: String, template: String): Option[Any] = {
+    val await = Try(Await.result(searchValidateWithTemplateGETAsync(_type, template), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Validate matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @return Future(Any)
+  */
+  def searchValidateWithTemplateGETAsync(_type: String, template: String): Future[Any] = {
+      helper.searchValidateWithTemplateGET(_type, template)
+  }
+
+
+  /**
+   * Validate matches with a template
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Any
+   */
+  def searchValidateWithTemplatePOST(_type: String, template: String, query: Option[Any] = None): Option[Any] = {
+    val await = Try(Await.result(searchValidateWithTemplatePOSTAsync(_type, template, query), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Validate matches with a template asynchronously
+   * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their &lt;a href&#x3D;&#39;https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html&#39;&gt;API guide&lt;/a&gt;
+   * @param _type The index type 
+   * @param template The index template 
+   * @param query The query to be used for the search (optional)
+   * @return Future(Any)
+  */
+  def searchValidateWithTemplatePOSTAsync(_type: String, template: String, query: Option[Any] = None): Future[Any] = {
+      helper.searchValidateWithTemplatePOST(_type, template, query)
   }
 
 
@@ -132,11 +638,241 @@ class SearchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
 class SearchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
 
+  def searchCountGET(_type: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/count/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchCountGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchCountPOST(_type: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/count/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchCountPOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchCountWithTemplateGET(_type: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/count/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchCountWithTemplateGET")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchCountWithTemplateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchCountWithTemplatePOST(_type: String,
+    template: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/count/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchCountWithTemplatePOST")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchCountWithTemplatePOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchDocumentGET(_type: String,
+    id: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/documents/{type}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchDocumentGET")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchDocumentGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchDocumentWithTemplateGET(_type: String,
+    id: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/documents/{type}/{template}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchDocumentWithTemplateGET")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchDocumentWithTemplateGET")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchDocumentWithTemplateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchExplainGET(_type: String,
+    id: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/explain/{type}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchExplainGET")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchExplainGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchExplainPOST(_type: String,
+    id: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/explain/{type}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchExplainPOST")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchExplainPOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchExplainWithTemplateGET(_type: String,
+    id: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/explain/{type}/{template}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchExplainWithTemplateGET")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchExplainWithTemplateGET")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchExplainWithTemplateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchExplainWithTemplatePOST(_type: String,
+    id: String,
+    template: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/explain/{type}/{template}/{id}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "id" + "\\}",id.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchExplainWithTemplatePOST")
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling SearchApi->searchExplainWithTemplatePOST")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchExplainWithTemplatePOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
   def searchIndex(_type: String,
-    query: Option[Any] = None,
-    size: Option[Integer] = Some(25),
-    page: Option[Integer] = Some(1)
-    )(implicit reader: ClientResponseReader[PageResourceMapstringobject], writer: RequestWriter[Any]): Future[PageResourceMapstringobject] = {
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
     // create path and map variables
     val path = (addFmt("/search/index/{type}")
       replaceAll ("\\{" + "type" + "\\}",_type.toString))
@@ -147,14 +883,6 @@ class SearchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exten
 
     if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndex")
 
-    size match {
-      case Some(param) => queryParams += "size" -> param.toString
-      case _ => queryParams
-    }
-    page match {
-      case Some(param) => queryParams += "page" -> param.toString
-      case _ => queryParams
-    }
 
     val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
     resFuture flatMap { resp =>
@@ -162,12 +890,26 @@ class SearchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exten
     }
   }
 
-  def searchIndexWithTemplate(_type: String,
-    template: String,
-    query: Option[Any] = None,
-    size: Option[Integer] = Some(25),
-    page: Option[Integer] = Some(1)
-    )(implicit reader: ClientResponseReader[PageResourceMapstringobject], writer: RequestWriter[Any]): Future[PageResourceMapstringobject] = {
+  def searchIndexGET(_type: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/index/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndexGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchIndexWithTemplateGET(_type: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
     // create path and map variables
     val path = (addFmt("/search/index/{type}/{template}")
       replaceAll ("\\{" + "type" + "\\}",_type.toString)
@@ -177,18 +919,173 @@ class SearchApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exten
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
-    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndexWithTemplate")
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndexWithTemplateGET")
 
-    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchIndexWithTemplate")
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchIndexWithTemplateGET")
 
-    size match {
-      case Some(param) => queryParams += "size" -> param.toString
-      case _ => queryParams
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
-    page match {
-      case Some(param) => queryParams += "page" -> param.toString
-      case _ => queryParams
+  }
+
+  def searchIndexWithTemplatePOST(_type: String,
+    template: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/index/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchIndexWithTemplatePOST")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchIndexWithTemplatePOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
     }
+  }
+
+  def searchIndicesGET()(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/indices"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchMappingsGET(_type: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/mappings/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchMappingsGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchMappingsWithTemplateGET(_type: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/mappings/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchMappingsWithTemplateGET")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchMappingsWithTemplateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchValidateGET(_type: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/validate/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchValidateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchValidatePOST(_type: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/validate/{type}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchValidatePOST")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchValidateWithTemplateGET(_type: String,
+    template: String)(implicit reader: ClientResponseReader[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/validate/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchValidateWithTemplateGET")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchValidateWithTemplateGET")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def searchValidateWithTemplatePOST(_type: String,
+    template: String,
+    query: Option[Any] = None
+    )(implicit reader: ClientResponseReader[Any], writer: RequestWriter[Any]): Future[Any] = {
+    // create path and map variables
+    val path = (addFmt("/search/validate/{type}/{template}")
+      replaceAll ("\\{" + "type" + "\\}",_type.toString)
+      replaceAll ("\\{" + "template" + "\\}",template.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (_type == null) throw new Exception("Missing required parameter '_type' when calling SearchApi->searchValidateWithTemplatePOST")
+
+    if (template == null) throw new Exception("Missing required parameter 'template' when calling SearchApi->searchValidateWithTemplatePOST")
+
 
     val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(query))
     resFuture flatMap { resp =>

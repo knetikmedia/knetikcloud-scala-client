@@ -21,10 +21,12 @@ import com.knetikcloud.client.model.FlagResource
 import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.PageResourceCommentResource
 import com.knetikcloud.client.model.PageResourceDispositionResource
+import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourceVideoRelationshipResource
 import com.knetikcloud.client.model.PageResourceVideoResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.StringWrapper
+import com.knetikcloud.client.model.TemplateResource
 import com.knetikcloud.client.model.VideoRelationshipResource
 import com.knetikcloud.client.model.VideoResource
 import io.swagger.client.{ApiInvoker, ApiException}
@@ -53,7 +55,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -263,6 +265,31 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
 
 
   /**
+   * Create a video template
+   * Video Templates define a type of video and the properties they have
+   * @param videoTemplateResource The video template resource object (optional)
+   * @return TemplateResource
+   */
+  def createVideoTemplate(videoTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(createVideoTemplateAsync(videoTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Create a video template asynchronously
+   * Video Templates define a type of video and the properties they have
+   * @param videoTemplateResource The video template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def createVideoTemplateAsync(videoTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.createVideoTemplate(videoTemplateResource)
+  }
+
+
+  /**
    * Deletes a video from the system if no resources are attached to it
    * 
    * @param id The video id 
@@ -388,6 +415,33 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   */
   def deleteVideoRelationshipAsync(videoId: Long, id: Long) = {
       helper.deleteVideoRelationship(videoId, id)
+  }
+
+
+  /**
+   * Delete a video template
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return void
+   */
+  def deleteVideoTemplate(id: String, cascade: Option[String] = None) = {
+    val await = Try(Await.result(deleteVideoTemplateAsync(id, cascade), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Delete a video template asynchronously
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * @param id The id of the template 
+   * @param cascade The value needed to delete used templates (optional)
+   * @return Future(void)
+  */
+  def deleteVideoTemplateAsync(id: String, cascade: Option[String] = None) = {
+      helper.deleteVideoTemplate(id, cascade)
   }
 
 
@@ -531,6 +585,60 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   */
   def getVideoRelationshipsAsync(videoId: Long, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceVideoRelationshipResource] = {
       helper.getVideoRelationships(videoId, size, page)
+  }
+
+
+  /**
+   * Get a single video template
+   * 
+   * @param id The id of the template 
+   * @return TemplateResource
+   */
+  def getVideoTemplate(id: String): Option[TemplateResource] = {
+    val await = Try(Await.result(getVideoTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get a single video template asynchronously
+   * 
+   * @param id The id of the template 
+   * @return Future(TemplateResource)
+  */
+  def getVideoTemplateAsync(id: String): Future[TemplateResource] = {
+      helper.getVideoTemplate(id)
+  }
+
+
+  /**
+   * List and search video templates
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return PageResourceTemplateResource
+   */
+  def getVideoTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceTemplateResource] = {
+    val await = Try(Await.result(getVideoTemplatesAsync(size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * List and search video templates asynchronously
+   * 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceTemplateResource)
+  */
+  def getVideoTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceTemplateResource] = {
+      helper.getVideoTemplates(size, page, order)
   }
 
 
@@ -727,6 +835,33 @@ class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
 
 
   /**
+   * Update a video template
+   * 
+   * @param id The id of the template 
+   * @param videoTemplateResource The video template resource object (optional)
+   * @return TemplateResource
+   */
+  def updateVideoTemplate(id: String, videoTemplateResource: Option[TemplateResource] = None): Option[TemplateResource] = {
+    val await = Try(Await.result(updateVideoTemplateAsync(id, videoTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update a video template asynchronously
+   * 
+   * @param id The id of the template 
+   * @param videoTemplateResource The video template resource object (optional)
+   * @return Future(TemplateResource)
+  */
+  def updateVideoTemplateAsync(id: String, videoTemplateResource: Option[TemplateResource] = None): Future[TemplateResource] = {
+      helper.updateVideoTemplate(id, videoTemplateResource)
+  }
+
+
+  /**
    * Increment a video&#39;s view count
    * 
    * @param id The video id 
@@ -879,6 +1014,22 @@ class MediaVideosApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     }
   }
 
+  def createVideoTemplate(videoTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(videoTemplateResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
   def deleteVideo(id: Long)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/media/videos/{id}")
@@ -956,6 +1107,30 @@ class MediaVideosApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
 
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteVideoTemplate(id: String,
+    cascade: Option[String] = None
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaVideosApi->deleteVideoTemplate")
+
+    cascade match {
+      case Some(param) => queryParams += "cascade" -> param.toString
+      case _ => queryParams
+    }
 
     val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
     resFuture flatMap { resp =>
@@ -1083,6 +1258,54 @@ class MediaVideosApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     }
     page match {
       case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideoTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaVideosApi->getVideoTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getVideoTemplates(size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceTemplateResource]): Future[PageResourceTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
       case _ => queryParams
     }
 
@@ -1271,6 +1494,26 @@ class MediaVideosApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
 
 
     val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(details))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateVideoTemplate(id: String,
+    videoTemplateResource: Option[TemplateResource] = None
+    )(implicit reader: ClientResponseReader[TemplateResource], writer: RequestWriter[TemplateResource]): Future[TemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/media/videos/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MediaVideosApi->updateVideoTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(videoTemplateResource))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }
