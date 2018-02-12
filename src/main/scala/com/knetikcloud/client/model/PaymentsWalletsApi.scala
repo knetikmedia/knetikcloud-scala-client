@@ -47,7 +47,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsWalletsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -71,7 +71,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns the user&#39;s wallet for the given currency code
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallet is being retrieved 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @return SimpleWallet
@@ -86,7 +86,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns the user&#39;s wallet for the given currency code asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallet is being retrieved 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @return Future(SimpleWallet)
@@ -98,7 +98,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve a user&#39;s wallet transactions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallet transactions are being retrieved 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @param filterType Filter for transactions with specified type (optional)
@@ -120,7 +120,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve a user&#39;s wallet transactions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallet transactions are being retrieved 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @param filterType Filter for transactions with specified type (optional)
@@ -139,7 +139,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List all of a user&#39;s wallets
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallets are being retrieved 
    * @return List[SimpleWallet]
    */
@@ -153,7 +153,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List all of a user&#39;s wallets asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN or owner
    * @param userId The ID of the user for whom wallets are being retrieved 
    * @return Future(List[SimpleWallet])
   */
@@ -164,7 +164,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieves a summation of wallet balances by currency code
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @return PageResourceWalletTotalResponse
    */
   def getWalletBalances(): Option[PageResourceWalletTotalResponse] = {
@@ -177,7 +177,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieves a summation of wallet balances by currency code asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @return Future(PageResourceWalletTotalResponse)
   */
   def getWalletBalancesAsync(): Future[PageResourceWalletTotalResponse] = {
@@ -187,7 +187,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve wallet transactions across the system
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param filterInvoice Filter for transactions from a specific invoice (optional)
    * @param filterType Filter for transactions with specified type (optional)
    * @param filterDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds. Can be repeated for a range, eg: GT,123,LT,456  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -211,7 +211,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve wallet transactions across the system asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param filterInvoice Filter for transactions from a specific invoice (optional)
    * @param filterType Filter for transactions with specified type (optional)
    * @param filterDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds. Can be repeated for a range, eg: GT,123,LT,456  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -232,7 +232,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve a list of wallets across the system
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -248,7 +248,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve a list of wallets across the system asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -261,7 +261,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Updates the balance for a user&#39;s wallet
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param userId The ID of the user for whom wallet is being modified 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @param request The requested balance modification to be made to the user&#39;s wallet (optional)
@@ -277,7 +277,7 @@ class PaymentsWalletsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Updates the balance for a user&#39;s wallet asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; WALLETS_ADMIN
    * @param userId The ID of the user for whom wallet is being modified 
    * @param currencyCode Currency code of the user&#39;s wallet 
    * @param request The requested balance modification to be made to the user&#39;s wallet (optional)

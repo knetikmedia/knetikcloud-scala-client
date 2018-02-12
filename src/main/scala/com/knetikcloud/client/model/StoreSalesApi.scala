@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreSalesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a sale
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param catalogSale The catalog sale object (optional)
    * @return CatalogSale
    */
@@ -81,7 +81,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a sale asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param catalogSale The catalog sale object (optional)
    * @return Future(CatalogSale)
   */
@@ -92,7 +92,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a sale
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param id The id of the sale 
    * @return void
    */
@@ -106,7 +106,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a sale asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param id The id of the sale 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single sale
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_USER or SALES_ADMIN
    * @param id The id of the sale 
    * @return CatalogSale
    */
@@ -131,7 +131,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single sale asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_USER or SALES_ADMIN
    * @param id The id of the sale 
    * @return Future(CatalogSale)
   */
@@ -142,7 +142,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search sales
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_USER or SALES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -158,7 +158,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search sales asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_USER or SALES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -171,7 +171,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a sale
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param id The id of the sale 
    * @param catalogSale The catalog sale object (optional)
    * @return CatalogSale
@@ -186,7 +186,7 @@ class StoreSalesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a sale asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SALES_ADMIN
    * @param id The id of the sale 
    * @param catalogSale The catalog sale object (optional)
    * @return Future(CatalogSale)

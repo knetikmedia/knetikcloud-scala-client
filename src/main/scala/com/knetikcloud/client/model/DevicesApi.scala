@@ -46,7 +46,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class DevicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -70,7 +70,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add device users
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param userResources userResources 
    * @param id id 
    * @return DeviceResource
@@ -85,7 +85,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add device users asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param userResources userResources 
    * @param id id 
    * @return Future(DeviceResource)
@@ -97,7 +97,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a device
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param device device 
    * @return DeviceResource
    */
@@ -111,7 +111,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a device asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param device device 
    * @return Future(DeviceResource)
   */
@@ -122,7 +122,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a device template
-   * Device Templates define a type of device and the properties they have
+   * Device Templates define a type of device and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param deviceTemplateResource The device template resource object (optional)
    * @return TemplateResource
    */
@@ -136,7 +136,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a device template asynchronously
-   * Device Templates define a type of device and the properties they have
+   * Device Templates define a type of device and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param deviceTemplateResource The device template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -147,7 +147,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a device
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id id 
    * @return void
    */
@@ -161,7 +161,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a device asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id id 
    * @return Future(void)
   */
@@ -172,7 +172,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an device template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -187,7 +187,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an device template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -199,7 +199,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a device user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id The id of the device 
    * @param userId The user id of the device user 
    * @return void
@@ -214,7 +214,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a device user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id The id of the device 
    * @param userId The user id of the device user 
    * @return Future(void)
@@ -226,7 +226,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete all device users
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id The id of the device 
    * @param filterId Filter for device users to delete with a user id in a given comma separated list of ids (optional)
    * @return void
@@ -241,7 +241,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete all device users asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id The id of the device 
    * @param filterId Filter for device users to delete with a user id in a given comma separated list of ids (optional)
    * @return Future(void)
@@ -253,7 +253,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single device
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id id 
    * @return DeviceResource
    */
@@ -267,7 +267,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single device asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or owner
    * @param id id 
    * @return Future(DeviceResource)
   */
@@ -278,7 +278,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single device template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; description
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -292,7 +292,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single device template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; description
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -303,7 +303,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search device templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or DEVICES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -319,7 +319,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search device templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or DEVICES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -332,7 +332,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search devices
-   * Get a list of devices with optional filtering
+   * Get a list of devices with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or user
    * @param filterMake Filter for devices with specified make (optional)
    * @param filterModel Filter for devices with specified model (optional)
    * @param filterOs Filter for devices with specified OS (optional)
@@ -354,7 +354,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search devices asynchronously
-   * Get a list of devices with optional filtering
+   * Get a list of devices with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; DEVICES_ADMIN or user
    * @param filterMake Filter for devices with specified make (optional)
    * @param filterModel Filter for devices with specified model (optional)
    * @param filterOs Filter for devices with specified OS (optional)
@@ -373,7 +373,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a device
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CUSTOMERS_ADMIN
    * @param device device 
    * @param id id 
    * @return DeviceResource
@@ -388,7 +388,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a device asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CUSTOMERS_ADMIN
    * @param device device 
    * @param id id 
    * @return Future(DeviceResource)
@@ -400,7 +400,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an device template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param deviceTemplateResource The device template resource object (optional)
    * @return TemplateResource
@@ -415,7 +415,7 @@ class DevicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an device template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param deviceTemplateResource The device template resource object (optional)
    * @return Future(TemplateResource)

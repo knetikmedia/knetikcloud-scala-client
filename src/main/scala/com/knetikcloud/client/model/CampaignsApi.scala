@@ -46,7 +46,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class CampaignsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -70,7 +70,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Add a challenge to a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The id of the campaign 
    * @param challengeId The id of the challenge (optional)
    * @return void
@@ -85,7 +85,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Add a challenge to a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The id of the campaign 
    * @param challengeId The id of the challenge (optional)
    * @return Future(void)
@@ -97,7 +97,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param campaignResource The campaign resource object (optional)
    * @return CampaignResource
    */
@@ -111,7 +111,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param campaignResource The campaign resource object (optional)
    * @return Future(CampaignResource)
   */
@@ -122,7 +122,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a campaign template
-   * Campaign Templates define a type of campaign and the properties they have
+   * Campaign Templates define a type of campaign and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param campaignTemplateResource The campaign template resource object (optional)
    * @return TemplateResource
    */
@@ -136,7 +136,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a campaign template asynchronously
-   * Campaign Templates define a type of campaign and the properties they have
+   * Campaign Templates define a type of campaign and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param campaignTemplateResource The campaign template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -147,7 +147,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The campaign id 
    * @return void
    */
@@ -161,7 +161,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The campaign id 
    * @return Future(void)
   */
@@ -172,7 +172,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a campaign template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -187,7 +187,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a campaign template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -199,7 +199,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Returns a single campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The campaign id 
    * @return CampaignResource
    */
@@ -213,7 +213,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Returns a single campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The campaign id 
    * @return Future(CampaignResource)
   */
@@ -224,7 +224,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List the challenges associated with a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The campaign id 
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -243,7 +243,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List the challenges associated with a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The campaign id 
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -259,7 +259,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a single campaign template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CAMPAIGNS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -273,7 +273,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a single campaign template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CAMPAIGNS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -284,7 +284,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search campaign templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CAMPAIGNS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -300,7 +300,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search campaign templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CAMPAIGNS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -313,7 +313,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search campaigns
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActive Filter for campaigns that are active (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -330,7 +330,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search campaigns asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActive Filter for campaigns that are active (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -344,7 +344,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Remove a challenge from a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param campaignId The campaign id 
    * @param id The challenge id 
    * @return void
@@ -359,7 +359,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Remove a challenge from a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param campaignId The campaign id 
    * @param id The challenge id 
    * @return Future(void)
@@ -371,7 +371,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update a campaign
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The campaign id 
    * @param campaignResource The campaign resource object (optional)
    * @return CampaignResource
@@ -386,7 +386,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update a campaign asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CAMPAIGNS_ADMIN
    * @param id The campaign id 
    * @param campaignResource The campaign resource object (optional)
    * @return Future(CampaignResource)
@@ -398,7 +398,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update an campaign template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param campaignTemplateResource The campaign template resource object (optional)
    * @return TemplateResource
@@ -413,7 +413,7 @@ class CampaignsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update an campaign template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param campaignTemplateResource The campaign template resource object (optional)
    * @return Future(TemplateResource)

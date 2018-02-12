@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class AuthTokensApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete tokens by username, client id, or both
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param username The username of the user (optional)
    * @param clientId The id of the client (optional)
    * @return void
@@ -82,7 +82,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete tokens by username, client id, or both asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param username The username of the user (optional)
    * @param clientId The id of the client (optional)
    * @return Future(void)
@@ -94,7 +94,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single token by username and client id
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param username The username of the user 
    * @param clientId The id of the client 
    * @return OauthAccessTokenResource
@@ -109,7 +109,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single token by username and client id asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param username The username of the user 
    * @param clientId The id of the client 
    * @return Future(OauthAccessTokenResource)
@@ -121,7 +121,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List usernames and client ids
-   * Token value not shown
+   * Token value not shown. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param filterClientId Filters for token whose client id matches provided string (optional)
    * @param filterUsername Filters for token whose username matches provided string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -139,7 +139,7 @@ class AuthTokensApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List usernames and client ids asynchronously
-   * Token value not shown
+   * Token value not shown. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TOKENS_ADMIN
    * @param filterClientId Filters for token whose client id matches provided string (optional)
    * @param filterUsername Filters for token whose username matches provided string (optional)
    * @param size The number of objects returned per page (optional, default to 25)

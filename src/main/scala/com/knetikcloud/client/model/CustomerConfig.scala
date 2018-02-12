@@ -16,7 +16,6 @@ package com.knetikcloud.client.model
 case class CustomerConfig (
   aliases: Option[String],
   database: Option[DatabaseConfig],
-  io: Option[IOConfig],
   name: Option[String],
   s3Config: Option[S3Config]
 )

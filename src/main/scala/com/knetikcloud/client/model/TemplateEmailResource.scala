@@ -18,6 +18,8 @@ case class TemplateEmailResource (
   from: Option[String],
   /* A list of user ids to send the message to. */
   recipients: List[Integer],
+  /* The subject for email */
+  subject: Option[String],
   /* The key for the template */
   templateKey: String,
   /* A list of variables to fill in the template */

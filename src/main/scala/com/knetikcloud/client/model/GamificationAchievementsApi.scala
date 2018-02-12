@@ -49,7 +49,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class GamificationAchievementsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -73,7 +73,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Create a new achievement definition
-   * If the definition contains a trigger event name, a BRE rule is created, so that tracking logic is executed when the triggering event occurs. If no trigger event name is specified, the user&#39;s achievement status must manually be updated via the API.
+   * If the definition contains a trigger event name, a BRE rule is created, so that tracking logic is executed when the triggering event occurs. If no trigger event name is specified, the user&#39;s achievement status must manually be updated via the API. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param achievement The achievement definition (optional)
    * @return AchievementDefinitionResource
    */
@@ -87,7 +87,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Create a new achievement definition asynchronously
-   * If the definition contains a trigger event name, a BRE rule is created, so that tracking logic is executed when the triggering event occurs. If no trigger event name is specified, the user&#39;s achievement status must manually be updated via the API.
+   * If the definition contains a trigger event name, a BRE rule is created, so that tracking logic is executed when the triggering event occurs. If no trigger event name is specified, the user&#39;s achievement status must manually be updated via the API. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param achievement The achievement definition (optional)
    * @return Future(AchievementDefinitionResource)
   */
@@ -98,7 +98,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Create an achievement template
-   * Achievement templates define a type of achievement and the properties they have
+   * Achievement templates define a type of achievement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The achievement template to be created (optional)
    * @return TemplateResource
    */
@@ -112,7 +112,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Create an achievement template asynchronously
-   * Achievement templates define a type of achievement and the properties they have
+   * Achievement templates define a type of achievement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The achievement template to be created (optional)
    * @return Future(TemplateResource)
   */
@@ -123,7 +123,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Delete an achievement definition
-   * Will also disable the associated generated rule, if any.
+   * Will also disable the associated generated rule, if any. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the achievement 
    * @return void
    */
@@ -137,7 +137,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Delete an achievement definition asynchronously
-   * Will also disable the associated generated rule, if any.
+   * Will also disable the associated generated rule, if any. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the achievement 
    * @return Future(void)
   */
@@ -148,7 +148,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Delete an achievement template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -163,7 +163,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Delete an achievement template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -175,7 +175,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a single achievement definition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN or ACHIEVEMENTS_USER
    * @param name The name of the achievement 
    * @return AchievementDefinitionResource
    */
@@ -189,7 +189,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a single achievement definition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN or ACHIEVEMENTS_USER
    * @param name The name of the achievement 
    * @return Future(AchievementDefinitionResource)
   */
@@ -200,7 +200,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a single achievement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -214,7 +214,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a single achievement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -225,7 +225,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * List and search achievement templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -241,7 +241,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * List and search achievement templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -254,7 +254,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get the list of triggers that can be used to trigger an achievement progress update
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @return List[BreTriggerResource]
    */
   def getAchievementTriggers(): Option[List[BreTriggerResource]] = {
@@ -267,7 +267,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get the list of triggers that can be used to trigger an achievement progress update asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @return Future(List[BreTriggerResource])
   */
   def getAchievementTriggersAsync(): Future[List[BreTriggerResource]] = {
@@ -277,7 +277,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get all achievement definitions in the system
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN or ACHIEVEMENTS_USER
    * @param filterTagset Filter for achievements with specified tags (separated by comma) (optional)
    * @param filterName Filter for achievements whose name contains a string (optional)
    * @param filterHidden Filter for achievements that are hidden or not (optional)
@@ -297,7 +297,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get all achievement definitions in the system asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN or ACHIEVEMENTS_USER
    * @param filterTagset Filter for achievements with specified tags (separated by comma) (optional)
    * @param filterName Filter for achievements whose name contains a string (optional)
    * @param filterHidden Filter for achievements that are hidden or not (optional)
@@ -314,7 +314,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a list of derived achievements
-   * Used by other services that depend on achievements
+   * Used by other services that depend on achievements.  &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the derived achievement 
    * @return List[AchievementDefinitionResource]
    */
@@ -328,7 +328,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a list of derived achievements asynchronously
-   * Used by other services that depend on achievements
+   * Used by other services that depend on achievements.  &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the derived achievement 
    * @return Future(List[AchievementDefinitionResource])
   */
@@ -339,7 +339,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on a given achievement for a given user
-   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @return UserAchievementGroupResource
@@ -354,7 +354,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on a given achievement for a given user asynchronously
-   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @return Future(UserAchievementGroupResource)
@@ -366,7 +366,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on achievements for a given user
-   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
@@ -385,7 +385,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on achievements for a given user asynchronously
-   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
@@ -401,7 +401,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on a given achievement for all users
-   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param achievementName The achievement&#39;s name 
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
@@ -420,7 +420,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on a given achievement for all users asynchronously
-   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param achievementName The achievement&#39;s name 
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
@@ -436,7 +436,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on achievements for all users
-   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
    * @param filterAchievementName Filter for achievements whose name contains a string (optional)
@@ -454,7 +454,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieve progress on achievements for all users asynchronously
-   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed.
+   * Assets will not be filled in on the resources returned. Use &#39;Get single achievement progress for user&#39; to retrieve the full resource with assets for a given user as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param filterAchievementDerived Filter for achievements that are derived from other services (optional)
    * @param filterAchievementTagset Filter for achievements with specified tags (separated by comma) (optional)
    * @param filterAchievementName Filter for achievements whose name contains a string (optional)
@@ -469,7 +469,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Increment an achievement progress record for a user
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and the provided value added to the existing progress. May be negative. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and the provided value added to the existing progress. May be negative. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @param progress The amount to add to the progress value (optional)
@@ -485,7 +485,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Increment an achievement progress record for a user asynchronously
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and the provided value added to the existing progress. May be negative. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and the provided value added to the existing progress. May be negative. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @param progress The amount to add to the progress value (optional)
@@ -498,7 +498,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Set an achievement progress record for a user
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and progress set to the provided value. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and progress set to the provided value. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @param progress The new progress value (optional)
@@ -514,7 +514,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Set an achievement progress record for a user asynchronously
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and progress set to the provided value. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated and progress set to the provided value. If progress meets or exceeds the achievement&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param userId The user&#39;s id 
    * @param achievementName The achievement&#39;s name 
    * @param progress The new progress value (optional)
@@ -527,7 +527,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Update an achievement definition
-   * The existing generated rule, if any, will be deleted. A new rule will be created if a trigger event name is specified in the new version.
+   * The existing generated rule, if any, will be deleted. A new rule will be created if a trigger event name is specified in the new version. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the achievement 
    * @param achievement The achievement definition (optional)
    * @return AchievementDefinitionResource
@@ -542,7 +542,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Update an achievement definition asynchronously
-   * The existing generated rule, if any, will be deleted. A new rule will be created if a trigger event name is specified in the new version.
+   * The existing generated rule, if any, will be deleted. A new rule will be created if a trigger event name is specified in the new version. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACHIEVEMENTS_ADMIN
    * @param name The name of the achievement 
    * @param achievement The achievement definition (optional)
    * @return Future(AchievementDefinitionResource)
@@ -554,7 +554,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Update an achievement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return TemplateResource
@@ -569,7 +569,7 @@ class GamificationAchievementsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Update an achievement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return Future(TemplateResource)

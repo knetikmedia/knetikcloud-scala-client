@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class MediaArtistsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Adds a new artist in the system
-   * Adds a new artist in the system. Use specific media contributions endpoint to add contributions
+   * Adds a new artist in the system. Use specific media contributions endpoint to add contributions. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param artistResource The new artist (optional)
    * @return ArtistResource
    */
@@ -83,7 +83,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Adds a new artist in the system asynchronously
-   * Adds a new artist in the system. Use specific media contributions endpoint to add contributions
+   * Adds a new artist in the system. Use specific media contributions endpoint to add contributions. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param artistResource The new artist (optional)
    * @return Future(ArtistResource)
   */
@@ -94,7 +94,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create an artist template
-   * Artist Templates define a type of artist and the properties they have
+   * Artist Templates define a type of artist and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param artistTemplateResource The artist template resource object (optional)
    * @return TemplateResource
    */
@@ -108,7 +108,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create an artist template asynchronously
-   * Artist Templates define a type of artist and the properties they have
+   * Artist Templates define a type of artist and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param artistTemplateResource The artist template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -119,7 +119,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Removes an artist from the system IF no resources are attached to it
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTISTS_ADMIN
    * @param id The artist id 
    * @return void
    */
@@ -133,7 +133,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Removes an artist from the system IF no resources are attached to it asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTISTS_ADMIN
    * @param id The artist id 
    * @return Future(void)
   */
@@ -144,7 +144,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete an artist template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -159,7 +159,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete an artist template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -171,7 +171,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Loads a specific artist details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The artist id 
    * @param showContributions The number of contributions to show fetch (optional)
    * @return ArtistResource
@@ -186,7 +186,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Loads a specific artist details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The artist id 
    * @param showContributions The number of contributions to show fetch (optional)
    * @return Future(ArtistResource)
@@ -198,7 +198,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single artist template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTISTS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -212,7 +212,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single artist template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTISTS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -223,7 +223,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search artist templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTISTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -239,7 +239,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search artist templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTISTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -252,7 +252,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Search for artists
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterArtistsByName Filter for artists which name *STARTS* with the given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -269,7 +269,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Search for artists asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterArtistsByName Filter for artists which name *STARTS* with the given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -283,7 +283,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Modifies an artist details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTISTS_ADMIN
    * @param id The artist id 
    * @param artistResource The new artist (optional)
    * @return void
@@ -298,7 +298,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Modifies an artist details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTISTS_ADMIN
    * @param id The artist id 
    * @param artistResource The new artist (optional)
    * @return Future(void)
@@ -310,7 +310,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update an artist template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param artistTemplateResource The artist template resource object (optional)
    * @return TemplateResource
@@ -325,7 +325,7 @@ class MediaArtistsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update an artist template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param artistTemplateResource The artist template resource object (optional)
    * @return Future(TemplateResource)

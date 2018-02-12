@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class AmazonWebServicesS3Api(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class AmazonWebServicesS3Api(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a temporary signed S3 URL for download
-   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details.
+   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; S3_ADMIN
    * @param bucket S3 bucket name (optional)
    * @param _path The path to the file relative the bucket (the s3 object key) (optional)
    * @param expiration The number of seconds this URL will be valid. Default to 60 (optional, default to 60)
@@ -82,7 +82,7 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a temporary signed S3 URL for download asynchronously
-   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details.
+   * To give access to files in your own S3 account, you will need to grant KnetikcCloud access to the file by adjusting your bucket policy accordingly. See S3 documentation for details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; S3_ADMIN
    * @param bucket S3 bucket name (optional)
    * @param _path The path to the file relative the bucket (the s3 object key) (optional)
    * @param expiration The number of seconds this URL will be valid. Default to 60 (optional, default to 60)
@@ -95,7 +95,7 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a signed S3 URL for upload
-   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after.
+   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; S3_USER or S3_ADMIN
    * @param filename The file name (optional)
    * @param _contentType The content type (optional)
    * @return AmazonS3Activity
@@ -110,7 +110,7 @@ class AmazonWebServicesS3Api(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a signed S3 URL for upload asynchronously
-   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after.
+   * Requires the file name and file content type (i.e., &#39;video/mpeg&#39;). Make a PUT to the resulting url to upload the file and use the cdn_url to retrieve it after. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; S3_USER or S3_ADMIN
    * @param filename The file name (optional)
    * @param _contentType The content type (optional)
    * @return Future(AmazonS3Activity)

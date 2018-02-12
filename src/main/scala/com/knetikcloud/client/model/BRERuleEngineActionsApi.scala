@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineActionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineActionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class BRERuleEngineActionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a list of available actions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_ACTIONS_USER
    * @param filterCategory Filter for actions that are within a specific category (optional)
    * @param filterName Filter for actions that have names containing the given string (optional)
    * @param filterTags Filter for actions that have all of the given tags (comma separated list) (optional)
@@ -83,7 +83,7 @@ class BRERuleEngineActionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a list of available actions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_ACTIONS_USER
    * @param filterCategory Filter for actions that are within a specific category (optional)
    * @param filterName Filter for actions that have names containing the given string (optional)
    * @param filterTags Filter for actions that have all of the given tags (comma separated list) (optional)

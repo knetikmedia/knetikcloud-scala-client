@@ -49,7 +49,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class InvoicesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -73,7 +73,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Create an invoice
-   * Create an invoice(s) by providing a cart GUID. Note that there may be multiple invoices created, one per vendor.
+   * Create an invoice(s) by providing a cart GUID. Note that there may be multiple invoices created, one per vendor. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER or INVOICES_ADMIN
    * @param req Invoice to be created (optional)
    * @return List[InvoiceResource]
    */
@@ -87,7 +87,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Create an invoice asynchronously
-   * Create an invoice(s) by providing a cart GUID. Note that there may be multiple invoices created, one per vendor.
+   * Create an invoice(s) by providing a cart GUID. Note that there may be multiple invoices created, one per vendor. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER or INVOICES_ADMIN
    * @param req Invoice to be created (optional)
    * @return Future(List[InvoiceResource])
   */
@@ -98,7 +98,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Lists available fulfillment statuses
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return List[String]
    */
   def getFulFillmentStatuses(): Option[List[String]] = {
@@ -111,7 +111,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Lists available fulfillment statuses asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(List[String])
   */
   def getFulFillmentStatusesAsync(): Future[List[String]] = {
@@ -121,7 +121,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Retrieve an invoice
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @return InvoiceResource
    */
@@ -135,7 +135,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Retrieve an invoice asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @return Future(InvoiceResource)
   */
@@ -146,7 +146,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * List invoice logs
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -162,7 +162,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * List invoice logs asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -175,7 +175,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Retrieve invoices
-   * Without INVOICES_ADMIN permission the results are automatically filtered for only the logged in user&#39;s invoices. It is recomended however that filter_user be added to avoid issues for admin users accidentally getting additional invoices.
+   * Without INVOICES_ADMIN permission the results are automatically filtered for only the logged in user&#39;s invoices. It is recomended however that filter_user be added to avoid issues for admin users accidentally getting additional invoices. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param filterUser The id of a user to get invoices for. Automtically added if not being called with admin permissions. (optional)
    * @param filterEmail Filters invoices by customer&#39;s email. Admins only. (optional)
    * @param filterFulfillmentStatus Filters invoices by fulfillment status type. Can be a comma separated list of statuses (optional)
@@ -192,10 +192,10 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
    * @param filterSku Filters invoices by item sku (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return PageResourceInvoiceResource
    */
-  def getInvoices(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceInvoiceResource] = {
+  def getInvoices(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceInvoiceResource] = {
     val await = Try(Await.result(getInvoicesAsync(filterUser, filterEmail, filterFulfillmentStatus, filterPaymentStatus, filterItemName, filterExternalRef, filterCreatedDate, filterVendorIds, filterCurrency, filterShippingStateName, filterShippingCountryName, filterShipping, filterVendorName, filterSku, size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -205,7 +205,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Retrieve invoices asynchronously
-   * Without INVOICES_ADMIN permission the results are automatically filtered for only the logged in user&#39;s invoices. It is recomended however that filter_user be added to avoid issues for admin users accidentally getting additional invoices.
+   * Without INVOICES_ADMIN permission the results are automatically filtered for only the logged in user&#39;s invoices. It is recomended however that filter_user be added to avoid issues for admin users accidentally getting additional invoices. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param filterUser The id of a user to get invoices for. Automtically added if not being called with admin permissions. (optional)
    * @param filterEmail Filters invoices by customer&#39;s email. Admins only. (optional)
    * @param filterFulfillmentStatus Filters invoices by fulfillment status type. Can be a comma separated list of statuses (optional)
@@ -222,17 +222,17 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
    * @param filterSku Filters invoices by item sku (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return Future(PageResourceInvoiceResource)
   */
-  def getInvoicesAsync(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Future[PageResourceInvoiceResource] = {
+  def getInvoicesAsync(filterUser: Option[Integer] = None, filterEmail: Option[String] = None, filterFulfillmentStatus: Option[String] = None, filterPaymentStatus: Option[String] = None, filterItemName: Option[String] = None, filterExternalRef: Option[String] = None, filterCreatedDate: Option[String] = None, filterVendorIds: Option[String] = None, filterCurrency: Option[String] = None, filterShippingStateName: Option[String] = None, filterShippingCountryName: Option[String] = None, filterShipping: Option[String] = None, filterVendorName: Option[String] = None, filterSku: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceInvoiceResource] = {
       helper.getInvoices(filterUser, filterEmail, filterFulfillmentStatus, filterPaymentStatus, filterItemName, filterExternalRef, filterCreatedDate, filterVendorIds, filterCurrency, filterShippingStateName, filterShippingCountryName, filterShipping, filterVendorName, filterSku, size, page, order)
   }
 
 
   /**
    * Lists available payment statuses
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return List[String]
    */
   def getPaymentStatuses(): Option[List[String]] = {
@@ -245,7 +245,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Lists available payment statuses asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(List[String])
   */
   def getPaymentStatusesAsync(): Future[List[String]] = {
@@ -255,7 +255,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Pay an invoice using a saved payment method
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param request The payment method details. Will default to the appropriate user&#39;s wallet in the invoice currency if ommited. (optional)
    * @return void
@@ -270,7 +270,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Pay an invoice using a saved payment method asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param request The payment method details. Will default to the appropriate user&#39;s wallet in the invoice currency if ommited. (optional)
    * @return Future(void)
@@ -282,7 +282,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the fulfillment status of a bundled invoice item
-   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param bundleSku The sku of the bundle in the invoice that contains the given target 
    * @param sku The sku of an item in the bundle in the invoice 
@@ -299,7 +299,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the fulfillment status of a bundled invoice item asynchronously
-   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param bundleSku The sku of the bundle in the invoice that contains the given target 
    * @param sku The sku of an item in the bundle in the invoice 
@@ -313,7 +313,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the external reference of an invoice
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param externalRef External reference info (optional)
    * @return void
@@ -328,7 +328,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the external reference of an invoice asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param externalRef External reference info (optional)
    * @return Future(void)
@@ -340,7 +340,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the fulfillment status of an invoice item
-   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param sku The sku of an item in the invoice 
    * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
@@ -356,7 +356,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the fulfillment status of an invoice item asynchronously
-   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which.
+   * This allows external fulfillment systems to report success or failure. Fulfillment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param sku The sku of an item in the invoice 
    * @param status The new fulfillment status for the item. Additional options may be available based on configuration.  Allowable values:  &#39;unfulfilled&#39;, &#39;fulfilled&#39;, &#39;not fulfillable&#39;, &#39;failed&#39;, &#39;processing&#39;, &#39;failed_permanent&#39;, &#39;delayed&#39; 
@@ -369,7 +369,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the order notes of an invoice
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param orderNotes Payment status info (optional)
    * @return void
@@ -384,7 +384,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the order notes of an invoice asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param orderNotes Payment status info (optional)
    * @return Future(void)
@@ -396,7 +396,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the payment status of an invoice
-   * This may trigger fulfillment if setting the status to &#39;paid&#39;. This is mainly intended to support external payment systems that cannot be incorporated into the payment method system. Payment status changes are restricted by a specific flow determining which status can lead to which.
+   * This may trigger fulfillment if setting the status to &#39;paid&#39;. This is mainly intended to support external payment systems that cannot be incorporated into the payment method system. Payment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param request Payment status info (optional)
    * @return void
@@ -411,7 +411,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set the payment status of an invoice asynchronously
-   * This may trigger fulfillment if setting the status to &#39;paid&#39;. This is mainly intended to support external payment systems that cannot be incorporated into the payment method system. Payment status changes are restricted by a specific flow determining which status can lead to which.
+   * This may trigger fulfillment if setting the status to &#39;paid&#39;. This is mainly intended to support external payment systems that cannot be incorporated into the payment method system. Payment status changes are restricted by a specific flow determining which status can lead to which. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param request Payment status info (optional)
    * @return Future(void)
@@ -423,7 +423,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set or update billing info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param billingInfoRequest Address info (optional)
    * @return void
@@ -438,7 +438,7 @@ class InvoicesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Set or update billing info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVOICES_USER and owner, or INVOICES_ADMIN
    * @param id The id of the invoice 
    * @param billingInfoRequest Address info (optional)
    * @return Future(void)
@@ -542,7 +542,7 @@ class InvoicesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) ext
     filterSku: Option[String] = None,
     size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
-    order: Option[String] = Some(1)
+    order: Option[String] = None
     )(implicit reader: ClientResponseReader[PageResourceInvoiceResource]): Future[PageResourceInvoiceResource] = {
     // create path and map variables
     val path = (addFmt("/invoices"))

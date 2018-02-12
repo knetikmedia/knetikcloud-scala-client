@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineTriggersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a trigger
-   * Customer added triggers will not be fired automatically or have rules associated with them by default. Custom rules must be added to get use from the trigger and it must then be fired from the outside. See the Bre Event services
+   * Customer added triggers will not be fired automatically or have rules associated with them by default. Custom rules must be added to get use from the trigger and it must then be fired from the outside. See the Bre Event services. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param breTriggerResource The BRE trigger resource object (optional)
    * @return BreTriggerResource
    */
@@ -81,7 +81,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a trigger asynchronously
-   * Customer added triggers will not be fired automatically or have rules associated with them by default. Custom rules must be added to get use from the trigger and it must then be fired from the outside. See the Bre Event services
+   * Customer added triggers will not be fired automatically or have rules associated with them by default. Custom rules must be added to get use from the trigger and it must then be fired from the outside. See the Bre Event services. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param breTriggerResource The BRE trigger resource object (optional)
    * @return Future(BreTriggerResource)
   */
@@ -92,7 +92,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Delete a trigger
-   * May fail if there are existing rules against it. Cannot delete core triggers
+   * May fail if there are existing rules against it. Cannot delete core triggers. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param eventName The trigger event name 
    * @return void
    */
@@ -106,7 +106,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Delete a trigger asynchronously
-   * May fail if there are existing rules against it. Cannot delete core triggers
+   * May fail if there are existing rules against it. Cannot delete core triggers. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param eventName The trigger event name 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Get a single trigger
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_USER
    * @param eventName The trigger event name 
    * @return BreTriggerResource
    */
@@ -131,7 +131,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Get a single trigger asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_USER
    * @param eventName The trigger event name 
    * @return Future(BreTriggerResource)
   */
@@ -142,7 +142,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * List triggers
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_USER
    * @param filterSystem Filter for triggers that are system triggers when true, or not when false. Leave off for both mixed (optional)
    * @param filterCategory Filter for triggers that are within a specific category (optional)
    * @param filterTags Filter for triggers that have all of the given tags (comma separated list) (optional)
@@ -162,7 +162,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * List triggers asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_USER
    * @param filterSystem Filter for triggers that are system triggers when true, or not when false. Leave off for both mixed (optional)
    * @param filterCategory Filter for triggers that are within a specific category (optional)
    * @param filterTags Filter for triggers that have all of the given tags (comma separated list) (optional)
@@ -179,7 +179,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Update a trigger
-   * May fail if new parameters mismatch requirements of existing rules. Cannot update core triggers
+   * May fail if new parameters mismatch requirements of existing rules. Cannot update core triggers. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param eventName The trigger event name 
    * @param breTriggerResource The BRE trigger resource object (optional)
    * @return BreTriggerResource
@@ -194,7 +194,7 @@ class BRERuleEngineTriggersApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Update a trigger asynchronously
-   * May fail if new parameters mismatch requirements of existing rules. Cannot update core triggers
+   * May fail if new parameters mismatch requirements of existing rules. Cannot update core triggers. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_TRIGGERS_ADMIN
    * @param eventName The trigger event name 
    * @param breTriggerResource The BRE trigger resource object (optional)
    * @return Future(BreTriggerResource)

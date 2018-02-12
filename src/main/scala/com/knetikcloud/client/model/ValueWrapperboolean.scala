@@ -13,10 +13,7 @@
 package com.knetikcloud.client.model
 
 
-case class IOConfig (
-  customer: Option[String],
-  enabled: Option[Boolean],
-  environment: Option[String],
-  product: Option[String]
+case class ValueWrapperboolean (
+  value: Option[Boolean]
 )
 

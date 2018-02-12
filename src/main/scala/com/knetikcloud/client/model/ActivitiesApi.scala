@@ -15,16 +15,21 @@ package com.knetikcloud.client.model
 import java.text.SimpleDateFormat
 
 import com.knetikcloud.client.model.ActivityOccurrenceCreationFailure
+import com.knetikcloud.client.model.ActivityOccurrenceJoinResult
 import com.knetikcloud.client.model.ActivityOccurrenceResource
 import com.knetikcloud.client.model.ActivityOccurrenceResults
 import com.knetikcloud.client.model.ActivityOccurrenceResultsResource
+import com.knetikcloud.client.model.ActivityOccurrenceSettingsResource
 import com.knetikcloud.client.model.ActivityResource
+import com.knetikcloud.client.model.ActivityUserResource
 import com.knetikcloud.client.model.CreateActivityOccurrenceRequest
+import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.PageResourceActivityOccurrenceResource
 import com.knetikcloud.client.model.PageResourceBareActivityResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
+import com.knetikcloud.client.model.ValueWrapperstring
 import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -51,7 +56,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -74,8 +79,39 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
   val helper = new ActivitiesApiAsyncHelper(client, config)
 
   /**
+   * Add a user to an occurrence
+   * If called with no body, defaults to the user making the call.
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param test if true, indicates that the user should NOT be added. This can be used to test for eligibility (optional, default to false)
+   * @param bypassRestrictions if true, indicates that restrictions such as max player count should be ignored. Can only be used with ACTIVITIES_ADMIN (optional, default to false)
+   * @param userId The id of the user, or null for &#39;caller&#39; (optional)
+   * @return ActivityOccurrenceResource
+   */
+  def addUser(activityOccurrenceId: Long, test: Option[Boolean] /* = false*/, bypassRestrictions: Option[Boolean] /* = false*/, userId: Option[IntWrapper] = None): Option[ActivityOccurrenceResource] = {
+    val await = Try(Await.result(addUserAsync(activityOccurrenceId, test, bypassRestrictions, userId), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Add a user to an occurrence asynchronously
+   * If called with no body, defaults to the user making the call.
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param test if true, indicates that the user should NOT be added. This can be used to test for eligibility (optional, default to false)
+   * @param bypassRestrictions if true, indicates that restrictions such as max player count should be ignored. Can only be used with ACTIVITIES_ADMIN (optional, default to false)
+   * @param userId The id of the user, or null for &#39;caller&#39; (optional)
+   * @return Future(ActivityOccurrenceResource)
+  */
+  def addUserAsync(activityOccurrenceId: Long, test: Option[Boolean] /* = false*/, bypassRestrictions: Option[Boolean] /* = false*/, userId: Option[IntWrapper] = None): Future[ActivityOccurrenceResource] = {
+      helper.addUser(activityOccurrenceId, test, bypassRestrictions, userId)
+  }
+
+
+  /**
    * Create an activity
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param activityResource The activity resource object (optional)
    * @return ActivityResource
    */
@@ -89,7 +125,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create an activity asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param activityResource The activity resource object (optional)
    * @return Future(ActivityResource)
   */
@@ -100,7 +136,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a new activity occurrence. Ex: start a game
-   * Has to enforce extra rules if not used as an admin
+   * Has to enforce extra rules if not used as an admin. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param test if true, indicates that the occurrence should NOT be created. This can be used to test for eligibility and valid settings (optional, default to false)
    * @param activityOccurrenceResource The activity occurrence object (optional)
    * @return ActivityOccurrenceResource
@@ -115,7 +151,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a new activity occurrence. Ex: start a game asynchronously
-   * Has to enforce extra rules if not used as an admin
+   * Has to enforce extra rules if not used as an admin. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param test if true, indicates that the occurrence should NOT be created. This can be used to test for eligibility and valid settings (optional, default to false)
    * @param activityOccurrenceResource The activity occurrence object (optional)
    * @return Future(ActivityOccurrenceResource)
@@ -127,7 +163,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a activity template
-   * Activity Templates define a type of activity and the properties they have
+   * Activity Templates define a type of activity and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param activityTemplateResource The activity template resource object (optional)
    * @return TemplateResource
    */
@@ -141,7 +177,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a activity template asynchronously
-   * Activity Templates define a type of activity and the properties they have
+   * Activity Templates define a type of activity and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param activityTemplateResource The activity template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -152,7 +188,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete an activity
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param id The id of the activity 
    * @return void
    */
@@ -166,7 +202,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete an activity asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param id The id of the activity 
    * @return Future(void)
   */
@@ -177,7 +213,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a activity template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -192,7 +228,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a activity template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -204,7 +240,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List activity definitions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for activities that are templates, or specifically not if false (optional)
    * @param filterName Filter for activities that have a name starting with specified string (optional)
    * @param filterId Filter for activities with an id in the given comma separated list of ids (optional)
@@ -223,7 +259,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List activity definitions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for activities that are templates, or specifically not if false (optional)
    * @param filterName Filter for activities that have a name starting with specified string (optional)
    * @param filterId Filter for activities with an id in the given comma separated list of ids (optional)
@@ -239,7 +275,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single activity
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the activity 
    * @return ActivityResource
    */
@@ -253,7 +289,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single activity asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the activity 
    * @return Future(ActivityResource)
   */
@@ -264,7 +300,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Load a single activity occurrence details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @return ActivityOccurrenceResource
    */
@@ -278,7 +314,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Load a single activity occurrence details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @return Future(ActivityOccurrenceResource)
   */
@@ -289,7 +325,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single activity template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACTIVITIES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -303,7 +339,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single activity template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACTIVITIES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -314,7 +350,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search activity templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACTIVITIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -330,7 +366,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search activity templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACTIVITIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -343,9 +379,9 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List activity occurrences
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param filterActivity Filter for occurrences of the given activity ID (optional)
-   * @param filterStatus Filter for occurrences of the given activity ID (optional)
+   * @param filterStatus Filter for occurrences in the given status (optional)
    * @param filterEvent Filter for occurrences played during the given event (optional)
    * @param filterChallenge Filter for occurrences played within the given challenge (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -363,9 +399,9 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List activity occurrences asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param filterActivity Filter for occurrences of the given activity ID (optional)
-   * @param filterStatus Filter for occurrences of the given activity ID (optional)
+   * @param filterStatus Filter for occurrences in the given status (optional)
    * @param filterEvent Filter for occurrences played during the given event (optional)
    * @param filterChallenge Filter for occurrences played within the given challenge (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -379,8 +415,39 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
 
   /**
-   * Sets the status of an activity occurrence to FINISHED and logs metrics
+   * Remove a user from an occurrence
    * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param userId The id of the user, or &#39;me&#39; 
+   * @param ban if true, indicates that the user should not be allowed to re-join. Can only be set by host or admin (optional, default to false)
+   * @param bypassRestrictions if true, indicates that restrictions such as current status should be ignored. Can only be used with ACTIVITIES_ADMIN (optional, default to false)
+   * @return void
+   */
+  def removeUser(activityOccurrenceId: Long, userId: String, ban: Option[Boolean] /* = false*/, bypassRestrictions: Option[Boolean] /* = false*/) = {
+    val await = Try(Await.result(removeUserAsync(activityOccurrenceId, userId, ban, bypassRestrictions), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Remove a user from an occurrence asynchronously
+   * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param userId The id of the user, or &#39;me&#39; 
+   * @param ban if true, indicates that the user should not be allowed to re-join. Can only be set by host or admin (optional, default to false)
+   * @param bypassRestrictions if true, indicates that restrictions such as current status should be ignored. Can only be used with ACTIVITIES_ADMIN (optional, default to false)
+   * @return Future(void)
+  */
+  def removeUserAsync(activityOccurrenceId: Long, userId: String, ban: Option[Boolean] /* = false*/, bypassRestrictions: Option[Boolean] /* = false*/) = {
+      helper.removeUser(activityOccurrenceId, userId, ban, bypassRestrictions)
+  }
+
+
+  /**
+   * Sets the status of an activity occurrence to FINISHED and logs metrics
+   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting.
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceResults The activity occurrence object (optional)
    * @return ActivityOccurrenceResults
@@ -395,7 +462,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Sets the status of an activity occurrence to FINISHED and logs metrics asynchronously
-   * 
+   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting.
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceResults The activity occurrence object (optional)
    * @return Future(ActivityOccurrenceResults)
@@ -406,8 +473,64 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
 
   /**
-   * Update an activity
+   * Sets the settings of an activity occurrence
    * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param settings The new settings (optional)
+   * @return ActivityOccurrenceResource
+   */
+  def setActivityOccurrenceSettings(activityOccurrenceId: Long, settings: Option[ActivityOccurrenceSettingsResource] = None): Option[ActivityOccurrenceResource] = {
+    val await = Try(Await.result(setActivityOccurrenceSettingsAsync(activityOccurrenceId, settings), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Sets the settings of an activity occurrence asynchronously
+   * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param settings The new settings (optional)
+   * @return Future(ActivityOccurrenceResource)
+  */
+  def setActivityOccurrenceSettingsAsync(activityOccurrenceId: Long, settings: Option[ActivityOccurrenceSettingsResource] = None): Future[ActivityOccurrenceResource] = {
+      helper.setActivityOccurrenceSettings(activityOccurrenceId, settings)
+  }
+
+
+  /**
+   * Set a user&#39;s status within an occurrence
+   * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param userId The id of the user 
+   * @param status The new status (optional)
+   * @return ActivityUserResource
+   */
+  def setUserStatus(activityOccurrenceId: Long, userId: String, status: Option[String] = None): Option[ActivityUserResource] = {
+    val await = Try(Await.result(setUserStatusAsync(activityOccurrenceId, userId, status), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Set a user&#39;s status within an occurrence asynchronously
+   * 
+   * @param activityOccurrenceId The id of the activity occurrence 
+   * @param userId The id of the user 
+   * @param status The new status (optional)
+   * @return Future(ActivityUserResource)
+  */
+  def setUserStatusAsync(activityOccurrenceId: Long, userId: String, status: Option[String] = None): Future[ActivityUserResource] = {
+      helper.setUserStatus(activityOccurrenceId, userId, status)
+  }
+
+
+  /**
+   * Update an activity
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param id The id of the activity 
    * @param activityResource The activity resource object (optional)
    * @return ActivityResource
@@ -422,7 +545,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update an activity asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
    * @param id The id of the activity 
    * @param activityResource The activity resource object (optional)
    * @return Future(ActivityResource)
@@ -433,14 +556,14 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
 
   /**
-   * Updated the status of an activity occurrence
-   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Aternatively, see results endpoint to finish and record all metrics at once.
+   * Update the status of an activity occurrence
+   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceStatus The activity occurrence status object (optional)
    * @return void
    */
-  def updateActivityOccurrence(activityOccurrenceId: Long, activityOccurrenceStatus: Option[String] = None) = {
-    val await = Try(Await.result(updateActivityOccurrenceAsync(activityOccurrenceId, activityOccurrenceStatus), Duration.Inf))
+  def updateActivityOccurrenceStatus(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ValueWrapperstring] = None) = {
+    val await = Try(Await.result(updateActivityOccurrenceStatusAsync(activityOccurrenceId, activityOccurrenceStatus), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -448,20 +571,20 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
   }
 
   /**
-   * Updated the status of an activity occurrence asynchronously
-   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Aternatively, see results endpoint to finish and record all metrics at once.
+   * Update the status of an activity occurrence asynchronously
+   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceStatus The activity occurrence status object (optional)
    * @return Future(void)
   */
-  def updateActivityOccurrenceAsync(activityOccurrenceId: Long, activityOccurrenceStatus: Option[String] = None) = {
-      helper.updateActivityOccurrence(activityOccurrenceId, activityOccurrenceStatus)
+  def updateActivityOccurrenceStatusAsync(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ValueWrapperstring] = None) = {
+      helper.updateActivityOccurrenceStatus(activityOccurrenceId, activityOccurrenceStatus)
   }
 
 
   /**
    * Update an activity template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param activityTemplateResource The activity template resource object (optional)
    * @return TemplateResource
@@ -476,7 +599,7 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update an activity template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param activityTemplateResource The activity template resource object (optional)
    * @return Future(TemplateResource)
@@ -489,6 +612,34 @@ class ActivitiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 }
 
 class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def addUser(activityOccurrenceId: Long,
+    test: Option[Boolean] = Some(false),
+    bypassRestrictions: Option[Boolean] = Some(false),
+    userId: Option[IntWrapper] = None
+    )(implicit reader: ClientResponseReader[ActivityOccurrenceResource], writer: RequestWriter[IntWrapper]): Future[ActivityOccurrenceResource] = {
+    // create path and map variables
+    val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/users")
+      replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    test match {
+      case Some(param) => queryParams += "test" -> param.toString
+      case _ => queryParams
+    }
+    bypassRestrictions match {
+      case Some(param) => queryParams += "bypass_restrictions" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(userId))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
 
   def createActivity(activityResource: Option[ActivityResource] = None
     )(implicit reader: ClientResponseReader[ActivityResource], writer: RequestWriter[ActivityResource]): Future[ActivityResource] = {
@@ -758,6 +909,37 @@ class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
     }
   }
 
+  def removeUser(activityOccurrenceId: Long,
+    userId: String,
+    ban: Option[Boolean] = Some(false),
+    bypassRestrictions: Option[Boolean] = Some(false)
+    )(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/users/{user_id}")
+      replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling ActivitiesApi->removeUser")
+
+    ban match {
+      case Some(param) => queryParams += "ban" -> param.toString
+      case _ => queryParams
+    }
+    bypassRestrictions match {
+      case Some(param) => queryParams += "bypass_restrictions" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
   def setActivityOccurrenceResults(activityOccurrenceId: Long,
     activityOccurrenceResults: Option[ActivityOccurrenceResultsResource] = None
     )(implicit reader: ClientResponseReader[ActivityOccurrenceResults], writer: RequestWriter[ActivityOccurrenceResultsResource]): Future[ActivityOccurrenceResults] = {
@@ -771,6 +953,46 @@ class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
 
 
     val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(activityOccurrenceResults))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setActivityOccurrenceSettings(activityOccurrenceId: Long,
+    settings: Option[ActivityOccurrenceSettingsResource] = None
+    )(implicit reader: ClientResponseReader[ActivityOccurrenceResource], writer: RequestWriter[ActivityOccurrenceSettingsResource]): Future[ActivityOccurrenceResource] = {
+    // create path and map variables
+    val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/settings")
+      replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(settings))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def setUserStatus(activityOccurrenceId: Long,
+    userId: String,
+    status: Option[String] = None
+    )(implicit reader: ClientResponseReader[ActivityUserResource], writer: RequestWriter[String]): Future[ActivityUserResource] = {
+    // create path and map variables
+    val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/users/{user_id}/status")
+      replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling ActivitiesApi->setUserStatus")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(status))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }
@@ -794,9 +1016,9 @@ class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
     }
   }
 
-  def updateActivityOccurrence(activityOccurrenceId: Long,
-    activityOccurrenceStatus: Option[String] = None
-    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[String]): Future[Unit] = {
+  def updateActivityOccurrenceStatus(activityOccurrenceId: Long,
+    activityOccurrenceStatus: Option[ValueWrapperstring] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ValueWrapperstring]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/status")
       replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString))

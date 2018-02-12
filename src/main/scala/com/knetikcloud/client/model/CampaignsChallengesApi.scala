@@ -49,7 +49,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class CampaignsChallengesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -73,7 +73,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge
-   * Challenges do not run on their own.  They must be added to a campaign before events will spawn.
+   * Challenges do not run on their own.  They must be added to a campaign before events will spawn. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param challengeResource The challenge resource object (optional)
    * @return ChallengeResource
    */
@@ -87,7 +87,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge asynchronously
-   * Challenges do not run on their own.  They must be added to a campaign before events will spawn.
+   * Challenges do not run on their own.  They must be added to a campaign before events will spawn. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param challengeResource The challenge resource object (optional)
    * @return Future(ChallengeResource)
   */
@@ -98,7 +98,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge activity
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
    * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity. (optional, default to false)
@@ -114,7 +114,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge activity asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
    * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity. (optional, default to false)
@@ -127,7 +127,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge activity template
-   * Challenge Activity Templates define a type of challenge activity and the properties they have
+   * Challenge Activity Templates define a type of challenge activity and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
    * @return TemplateResource
    */
@@ -141,7 +141,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge activity template asynchronously
-   * Challenge Activity Templates define a type of challenge activity and the properties they have
+   * Challenge Activity Templates define a type of challenge activity and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -152,7 +152,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge template
-   * Challenge Templates define a type of challenge and the properties they have
+   * Challenge Templates define a type of challenge and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param challengeTemplateResource The challenge template resource object (optional)
    * @return TemplateResource
    */
@@ -166,7 +166,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Create a challenge template asynchronously
-   * Challenge Templates define a type of challenge and the properties they have
+   * Challenge Templates define a type of challenge and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param challengeTemplateResource The challenge template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -177,7 +177,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge id 
    * @return void
    */
@@ -191,7 +191,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge id 
    * @return Future(void)
   */
@@ -202,7 +202,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge activity
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @return void
@@ -217,7 +217,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge activity asynchronously
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @return Future(void)
@@ -229,7 +229,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge activity template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -244,7 +244,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge activity template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -256,7 +256,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge event
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge event id 
    * @return void
    */
@@ -270,7 +270,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge event asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge event id 
    * @return Future(void)
   */
@@ -281,7 +281,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -296,7 +296,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Delete a challenge template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -308,7 +308,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge id 
    * @return ChallengeResource
    */
@@ -322,7 +322,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge id 
    * @return Future(ChallengeResource)
   */
@@ -333,7 +333,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge activities
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param challengeId The challenge id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -350,7 +350,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge activities asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param challengeId The challenge id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -364,7 +364,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge activity
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @return ChallengeActivityResource
@@ -379,7 +379,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge activity asynchronously
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @return Future(ChallengeActivityResource)
@@ -391,7 +391,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge activity template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -405,7 +405,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge activity template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -416,7 +416,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge activity templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -432,7 +432,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge activity templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -445,7 +445,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a single challenge event details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge event id 
    * @return ChallengeEventResource
    */
@@ -459,7 +459,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a single challenge event details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The challenge event id 
    * @return Future(ChallengeEventResource)
   */
@@ -470,7 +470,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a list of challenge events
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the event end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterCampaigns check only for events from currently running campaigns (optional)
@@ -490,7 +490,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a list of challenge events asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the event end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterCampaigns check only for events from currently running campaigns (optional)
@@ -507,7 +507,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -521,7 +521,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get a single challenge template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -532,7 +532,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -548,7 +548,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List and search challenge templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CHALLENGES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -561,7 +561,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a list of challenges
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActiveCampaign Filter for challenges that are tied to active campaigns (optional)
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -580,7 +580,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a list of challenges asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActiveCampaign Filter for challenges that are tied to active campaigns (optional)
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the challenge end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
@@ -596,7 +596,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge
-   * If the challenge is a copy, changes will propagate to all the related challenges
+   * If the challenge is a copy, changes will propagate to all the related challenges. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge id 
    * @param challengeResource The challenge resource object (optional)
    * @return ChallengeResource
@@ -611,7 +611,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge asynchronously
-   * If the challenge is a copy, changes will propagate to all the related challenges
+   * If the challenge is a copy, changes will propagate to all the related challenges. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge id 
    * @param challengeResource The challenge resource object (optional)
    * @return Future(ChallengeResource)
@@ -623,7 +623,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge activity
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
@@ -640,7 +640,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge activity asynchronously
-   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
+   * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; CHALLENGES_ADMIN
    * @param id The challenge_activity id 
    * @param challengeId The challenge id 
    * @param challengeActivityResource The challenge activity resource object (optional)
@@ -654,7 +654,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update an challenge activity template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
    * @return TemplateResource
@@ -669,7 +669,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update an challenge activity template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param challengeActivityTemplateResource The challengeActivity template resource object (optional)
    * @return Future(TemplateResource)
@@ -681,7 +681,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param challengeTemplateResource The challenge template resource object (optional)
    * @return TemplateResource
@@ -696,7 +696,7 @@ class CampaignsChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Update a challenge template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param challengeTemplateResource The challenge template resource object (optional)
    * @return Future(TemplateResource)

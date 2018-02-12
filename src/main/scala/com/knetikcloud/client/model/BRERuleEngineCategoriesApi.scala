@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineCategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Create a BRE category template
-   * Templates define a type of BRE category and the properties they have
+   * Templates define a type of BRE category and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The category template to create (optional)
    * @return TemplateResource
    */
@@ -83,7 +83,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Create a BRE category template asynchronously
-   * Templates define a type of BRE category and the properties they have
+   * Templates define a type of BRE category and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The category template to create (optional)
    * @return Future(TemplateResource)
   */
@@ -94,7 +94,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Delete a BRE category template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -109,7 +109,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Delete a BRE category template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -121,7 +121,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * List categories
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_USER
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return PageResourceBreCategoryResource
@@ -136,7 +136,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * List categories asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_USER
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return Future(PageResourceBreCategoryResource)
@@ -148,7 +148,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Get a single category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_USER
    * @param name The category name 
    * @return BreCategoryResource
    */
@@ -162,7 +162,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Get a single category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_USER
    * @param name The category name 
    * @return Future(BreCategoryResource)
   */
@@ -173,7 +173,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Get a single BRE category template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -187,7 +187,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Get a single BRE category template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -198,7 +198,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * List and search BRE category templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -214,7 +214,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * List and search BRE category templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -227,7 +227,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Update a category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param name The category name 
    * @param category The updated BRE category information (optional)
    * @return BreCategoryResource
@@ -242,7 +242,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Update a category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_CATEGORIES_ADMIN
    * @param name The category name 
    * @param category The updated BRE category information (optional)
    * @return Future(BreCategoryResource)
@@ -254,7 +254,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Update a BRE category template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated category template definition (optional)
    * @return TemplateResource
@@ -269,7 +269,7 @@ class BRERuleEngineCategoriesApi(val defBasePath: String = "https://devsandbox.k
 
   /**
    * Update a BRE category template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated category template definition (optional)
    * @return Future(TemplateResource)

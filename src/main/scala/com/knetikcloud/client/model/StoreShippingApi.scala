@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreShippingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Create a shipping item
-   * A shipping item represents a shipping option and cost. SKUs have to be unique in the entire store.
+   * A shipping item represents a shipping option and cost. SKUs have to be unique in the entire store. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param shippingItem The shipping item object (optional)
    * @return ShippingItem
@@ -83,7 +83,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Create a shipping item asynchronously
-   * A shipping item represents a shipping option and cost. SKUs have to be unique in the entire store.
+   * A shipping item represents a shipping option and cost. SKUs have to be unique in the entire store. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param shippingItem The shipping item object (optional)
    * @return Future(ShippingItem)
@@ -120,7 +120,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Delete a shipping item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param id The id of the shipping item 
    * @return void
    */
@@ -134,7 +134,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Delete a shipping item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param id The id of the shipping item 
    * @return Future(void)
   */
@@ -145,7 +145,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Delete a shipping template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return void
@@ -160,7 +160,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Delete a shipping template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return Future(void)
@@ -172,7 +172,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Get a single shipping item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the shipping item 
    * @return ShippingItem
    */
@@ -186,7 +186,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Get a single shipping item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the shipping item 
    * @return Future(ShippingItem)
   */
@@ -197,7 +197,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Get a single shipping template
-   * Shipping Templates define a type of shipping and the properties they have.
+   * Shipping Templates define a type of shipping and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SHIPPING_ADMIN
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -211,7 +211,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Get a single shipping template asynchronously
-   * Shipping Templates define a type of shipping and the properties they have.
+   * Shipping Templates define a type of shipping and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SHIPPING_ADMIN
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -222,7 +222,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * List and search shipping templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SHIPPING_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -238,7 +238,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * List and search shipping templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SHIPPING_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -251,7 +251,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Update a shipping item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param id The id of the shipping item 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param shippingItem The shipping item object (optional)
@@ -267,7 +267,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Update a shipping item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHIPPING_ADMIN
    * @param id The id of the shipping item 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param shippingItem The shipping item object (optional)
@@ -280,7 +280,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Update a shipping template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param shippingTemplateResource The shipping template resource object (optional)
    * @return ItemTemplateResource
@@ -295,7 +295,7 @@ class StoreShippingApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Update a shipping template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param shippingTemplateResource The shipping template resource object (optional)
    * @return Future(ItemTemplateResource)

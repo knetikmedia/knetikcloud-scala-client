@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class ReportingSubscriptionsApi(val defBasePath: String = "https://devsandbox.kn
 
   /**
    * Get a list of available subscription reports in most recent first order
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return PageResourceBillingReport
@@ -81,7 +81,7 @@ class ReportingSubscriptionsApi(val defBasePath: String = "https://devsandbox.kn
 
   /**
    * Get a list of available subscription reports in most recent first order asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return Future(PageResourceBillingReport)

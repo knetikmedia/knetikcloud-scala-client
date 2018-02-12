@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersFriendshipsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Add a friend
-   * As a user, either creates or confirm a pending request. As an admin, call this endpoint twice while inverting the IDs to create a confirmed friendship.
+   * As a user, either creates or confirm a pending request. As an admin, call this endpoint twice while inverting the IDs to create a confirmed friendship. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param id The id of the user to befriend 
    * @return void
@@ -82,7 +82,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Add a friend asynchronously
-   * As a user, either creates or confirm a pending request. As an admin, call this endpoint twice while inverting the IDs to create a confirmed friendship.
+   * As a user, either creates or confirm a pending request. As an admin, call this endpoint twice while inverting the IDs to create a confirmed friendship. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param id The id of the user to befriend 
    * @return Future(void)
@@ -94,7 +94,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get friends list
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; 
    * @param filterUsername Filter for friends with the given username (optional)
    * @param filterUserId Filter for friends by user id (optional)
@@ -112,7 +112,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get friends list asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; 
    * @param filterUsername Filter for friends with the given username (optional)
    * @param filterUserId Filter for friends by user id (optional)
@@ -127,7 +127,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Returns the invite token
-   * This is a unique invite token that allows direct connection to the request user.  Exposing that token presents privacy issues if the token is leaked. Use friend request flow instead if confirmation is required
+   * This is a unique invite token that allows direct connection to the request user.  Exposing that token presents privacy issues if the token is leaked. Use friend request. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)flow instead if confirmation is required
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @return String
    */
@@ -141,7 +141,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Returns the invite token asynchronously
-   * This is a unique invite token that allows direct connection to the request user.  Exposing that token presents privacy issues if the token is leaked. Use friend request flow instead if confirmation is required
+   * This is a unique invite token that allows direct connection to the request user.  Exposing that token presents privacy issues if the token is leaked. Use friend request. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)flow instead if confirmation is required
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @return Future(String)
   */
@@ -152,7 +152,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get pending invites
-   * Invites that the specified user received
+   * Invites that the specified user received. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -168,7 +168,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get pending invites asynchronously
-   * Invites that the specified user received
+   * Invites that the specified user received. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -181,7 +181,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Redeem friendship token
-   * Immediately connects the requested user with the user mapped by the provided invite token
+   * Immediately connects the requested user with the user mapped by the provided invite token. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param token The invite token (optional)
    * @return void
@@ -196,7 +196,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Redeem friendship token asynchronously
-   * Immediately connects the requested user with the user mapped by the provided invite token
+   * Immediately connects the requested user with the user mapped by the provided invite token. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param token The invite token (optional)
    * @return Future(void)
@@ -208,7 +208,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Remove or decline a friend
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param id The id of the user to befriend 
    * @return void
@@ -223,7 +223,7 @@ class UsersFriendshipsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Remove or decline a friend asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FRIENDSHIPS_ADMIN or (FRIENDSHIPS_USER and owner)
    * @param userId The id of the user or &#39;me&#39; if logged in 
    * @param id The id of the user to befriend 
    * @return Future(void)

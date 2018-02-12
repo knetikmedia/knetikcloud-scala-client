@@ -5,7 +5,7 @@
   <artifactId>knetikcloud-scala-client</artifactId>
   <packaging>jar</packaging>
   <name>knetikcloud-scala-client</name>
-  <version>3.0.9</version>
+  <version>3.0.8</version>
   <prerequisites>
     <maven>2.2.0</maven>
   </prerequisites>

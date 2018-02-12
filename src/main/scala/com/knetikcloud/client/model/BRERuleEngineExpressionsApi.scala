@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineExpressionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Lookup a specific expression
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param _type Specifiy the type of expression as returned by the listing endpoint 
    * @return ExpressionResource
    */
@@ -81,7 +81,7 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Lookup a specific expression asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param _type Specifiy the type of expression as returned by the listing endpoint 
    * @return Future(ExpressionResource)
   */
@@ -91,8 +91,8 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
 
 
   /**
-   * Get a list of supported expressions to use in conditions or actions.
-   * Each resource contains a type and a definition that are read-only, all the other fields must be provided when using the expression in a rule.
+   * Get a list of supported expressions to use in conditions or actions
+   * Each resource contains a type and a definition that are read-only, all the other fields must be provided when using the expression in a rule. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param filterTypeGroup Filter for expressions by type group (optional)
    * @return List[ExpressionResource]
    */
@@ -105,8 +105,8 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
   }
 
   /**
-   * Get a list of supported expressions to use in conditions or actions. asynchronously
-   * Each resource contains a type and a definition that are read-only, all the other fields must be provided when using the expression in a rule.
+   * Get a list of supported expressions to use in conditions or actions asynchronously
+   * Each resource contains a type and a definition that are read-only, all the other fields must be provided when using the expression in a rule. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param filterTypeGroup Filter for expressions by type group (optional)
    * @return Future(List[ExpressionResource])
   */
@@ -117,7 +117,7 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Returns the textual representation of an expression
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param expression The expression resource to be converted (optional)
    * @return StringWrapper
    */
@@ -131,7 +131,7 @@ class BRERuleEngineExpressionsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Returns the textual representation of an expression asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EXPRESSIONS_USER
    * @param expression The expression resource to be converted (optional)
    * @return Future(StringWrapper)
   */

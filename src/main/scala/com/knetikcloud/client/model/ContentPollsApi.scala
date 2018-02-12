@@ -47,7 +47,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ContentPollsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -71,7 +71,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Add your vote to a poll
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN or POLLS_USER
    * @param id The poll id 
    * @param answerKey The answer key (optional)
    * @return PollResponseResource
@@ -86,7 +86,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Add your vote to a poll asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN or POLLS_USER
    * @param id The poll id 
    * @param answerKey The answer key (optional)
    * @return Future(PollResponseResource)
@@ -98,7 +98,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a new poll
-   * Polls are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.
+   * Polls are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param pollResource The poll object (optional)
    * @return PollResource
    */
@@ -112,7 +112,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a new poll asynchronously
-   * Polls are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.
+   * Polls are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param pollResource The poll object (optional)
    * @return Future(PollResource)
   */
@@ -123,7 +123,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a poll template
-   * Poll templates define a type of poll and the properties they have
+   * Poll templates define a type of poll and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param pollTemplateResource The poll template resource object (optional)
    * @return TemplateResource
    */
@@ -137,7 +137,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a poll template asynchronously
-   * Poll templates define a type of poll and the properties they have
+   * Poll templates define a type of poll and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param pollTemplateResource The poll template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -148,7 +148,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete an existing poll
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param id The poll id 
    * @return void
    */
@@ -162,7 +162,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete an existing poll asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param id The poll id 
    * @return Future(void)
   */
@@ -173,7 +173,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a poll template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -188,7 +188,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a poll template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -200,7 +200,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single poll
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The poll id 
    * @return PollResource
    */
@@ -214,7 +214,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single poll asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The poll id 
    * @return Future(PollResource)
   */
@@ -225,7 +225,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get poll answer
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN or POLLS_USER
    * @param id The poll id 
    * @return PollResponseResource
    */
@@ -239,7 +239,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get poll answer asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN or POLLS_USER
    * @param id The poll id 
    * @return Future(PollResponseResource)
   */
@@ -250,7 +250,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single poll template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or POLLS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -264,7 +264,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single poll template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or POLLS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -275,7 +275,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search poll templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or POLLS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -291,7 +291,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search poll templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or POLLS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -304,7 +304,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search polls
-   * Get a list of polls with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Get a list of polls with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterCategory Filter for polls from a specific category by id (optional)
    * @param filterTagset Filter for polls with specified tags (separated by comma) (optional)
    * @param filterText Filter for polls whose text contains a string (optional)
@@ -323,7 +323,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search polls asynchronously
-   * Get a list of polls with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed.
+   * Get a list of polls with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single poll&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterCategory Filter for polls from a specific category by id (optional)
    * @param filterTagset Filter for polls with specified tags (separated by comma) (optional)
    * @param filterText Filter for polls whose text contains a string (optional)
@@ -339,7 +339,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update an existing poll
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param id The poll id 
    * @param pollResource The poll object (optional)
    * @return PollResource
@@ -354,7 +354,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update an existing poll asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; POLLS_ADMIN
    * @param id The poll id 
    * @param pollResource The poll object (optional)
    * @return Future(PollResource)
@@ -366,7 +366,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a poll template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param pollTemplateResource The poll template resource object (optional)
    * @return TemplateResource
@@ -381,7 +381,7 @@ class ContentPollsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a poll template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param pollTemplateResource The poll template resource object (optional)
    * @return Future(TemplateResource)

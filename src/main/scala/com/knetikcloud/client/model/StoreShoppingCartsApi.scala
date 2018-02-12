@@ -51,7 +51,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreShoppingCartsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -75,7 +75,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Adds a custom discount to the cart
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN
    * @param id The id of the cart 
    * @param customDiscount The details of the discount to add (optional)
    * @return void
@@ -90,7 +90,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Adds a custom discount to the cart asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN
    * @param id The id of the cart 
    * @param customDiscount The details of the discount to add (optional)
    * @return Future(void)
@@ -102,7 +102,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Adds a discount coupon to the cart
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param skuRequest The request of the sku (optional)
    * @return void
@@ -117,7 +117,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Adds a discount coupon to the cart asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param skuRequest The request of the sku (optional)
    * @return Future(void)
@@ -129,7 +129,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add an item to the cart
-   * Currently, carts cannot contain virtual and real currency items at the same time. Furthermore, the API only support a single virtual item at the moment
+   * Currently, carts cannot contain virtual and real currency items at the same time. Furthermore, the API only support a single virtual item at the moment. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartItemRequest The cart item request object (optional)
    * @return void
@@ -144,7 +144,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add an item to the cart asynchronously
-   * Currently, carts cannot contain virtual and real currency items at the same time. Furthermore, the API only support a single virtual item at the moment
+   * Currently, carts cannot contain virtual and real currency items at the same time. Furthermore, the API only support a single virtual item at the moment. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartItemRequest The cart item request object (optional)
    * @return Future(void)
@@ -156,7 +156,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a cart
-   * You don&#39;t have to have a user to create a cart but the API requires authentication to checkout
+   * You don&#39;t have to have a user to create a cart but the API requires authentication to checkout. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param owner Set the owner of a cart. If not specified, defaults to the calling user&#39;s id. If specified and is not the calling user&#39;s id, SHOPPING_CARTS_ADMIN permission is required (optional)
    * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings. (optional)
    * @return String
@@ -171,7 +171,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a cart asynchronously
-   * You don&#39;t have to have a user to create a cart but the API requires authentication to checkout
+   * You don&#39;t have to have a user to create a cart but the API requires authentication to checkout. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param owner Set the owner of a cart. If not specified, defaults to the calling user&#39;s id. If specified and is not the calling user&#39;s id, SHOPPING_CARTS_ADMIN permission is required (optional)
    * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings. (optional)
    * @return Future(String)
@@ -183,7 +183,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns the cart with the given GUID
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return Cart
    */
@@ -197,7 +197,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns the cart with the given GUID asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return Future(Cart)
   */
@@ -208,7 +208,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of carts
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param filterOwnerId Filter by the id of the owner (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -225,7 +225,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of carts asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param filterOwnerId Filter by the id of the owner (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -239,7 +239,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns whether a cart requires shipping
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return CartShippableResponse
    */
@@ -253,7 +253,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns whether a cart requires shipping asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return Future(CartShippableResponse)
   */
@@ -264,7 +264,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get the list of available shipping countries per vendor
-   * Since a cart can have multiple vendors with different shipping options, the countries are broken down by vendors. Please see notes about the response object as the fields are variable.
+   * Since a cart can have multiple vendors with different shipping options, the countries are broken down by vendors. Please see notes about the response object as the fields are variable. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return SampleCountriesResponse
    */
@@ -278,7 +278,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get the list of available shipping countries per vendor asynchronously
-   * Since a cart can have multiple vendors with different shipping options, the countries are broken down by vendors. Please see notes about the response object as the fields are variable.
+   * Since a cart can have multiple vendors with different shipping options, the countries are broken down by vendors. Please see notes about the response object as the fields are variable. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @return Future(SampleCountriesResponse)
   */
@@ -289,7 +289,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Removes a discount coupon from the cart
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param code The SKU code of the coupon to remove 
    * @return void
@@ -304,7 +304,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Removes a discount coupon from the cart asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param code The SKU code of the coupon to remove 
    * @return Future(void)
@@ -316,7 +316,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Sets the currency to use for the cart
-   * May be disallowed by site settings.
+   * May be disallowed by site settings. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param currencyCode The code of the currency (optional)
    * @return void
@@ -331,7 +331,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Sets the currency to use for the cart asynchronously
-   * May be disallowed by site settings.
+   * May be disallowed by site settings. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param currencyCode The code of the currency (optional)
    * @return Future(void)
@@ -343,7 +343,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Sets the owner of a cart if none is set already
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param userId The id of the user (optional)
    * @return void
@@ -358,7 +358,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Sets the owner of a cart if none is set already asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param userId The id of the user (optional)
    * @return Future(void)
@@ -370,7 +370,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Changes the quantity of an item already in the cart
-   * A quantity of zero will remove the item from the cart altogether.
+   * A quantity of zero will remove the item from the cart altogether. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartItemRequest The cart item request object (optional)
    * @return void
@@ -385,7 +385,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Changes the quantity of an item already in the cart asynchronously
-   * A quantity of zero will remove the item from the cart altogether.
+   * A quantity of zero will remove the item from the cart altogether. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartItemRequest The cart item request object (optional)
    * @return Future(void)
@@ -397,7 +397,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Modifies or sets the order shipping address
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartShippingAddressRequest The cart shipping address request object (optional)
    * @return void
@@ -412,7 +412,7 @@ class StoreShoppingCartsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Modifies or sets the order shipping address asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SHOPPING_CARTS_ADMIN or owner
    * @param id The id of the cart 
    * @param cartShippingAddressRequest The cart shipping address request object (optional)
    * @return Future(void)

@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Create a new payment method for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being created 
    * @param paymentMethod Payment method being created (optional)
    * @return PaymentMethodResource
@@ -84,7 +84,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Create a new payment method for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being created 
    * @param paymentMethod Payment method being created (optional)
    * @return Future(PaymentMethodResource)
@@ -96,7 +96,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Delete an existing payment method for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being updated 
    * @param id ID of the payment method being deleted 
    * @return void
@@ -111,7 +111,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Delete an existing payment method for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being updated 
    * @param id ID of the payment method being deleted 
    * @return Future(void)
@@ -123,7 +123,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get a single payment method for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being retrieved 
    * @param id ID of the payment method being retrieved 
    * @return PaymentMethodResource
@@ -138,7 +138,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get a single payment method for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being retrieved 
    * @param id ID of the payment method being retrieved 
    * @return Future(PaymentMethodResource)
@@ -150,7 +150,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get a single payment method type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id ID of the payment method type being retrieved 
    * @return PaymentMethodTypeResource
    */
@@ -164,7 +164,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get a single payment method type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id ID of the payment method type being retrieved 
    * @return Future(PaymentMethodTypeResource)
   */
@@ -175,7 +175,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get all payment method types
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterName Filter for payment method types whose name matches a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -192,7 +192,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get all payment method types asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterName Filter for payment method types whose name matches a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -206,7 +206,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get all payment methods for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment methods are being retrieved 
    * @param filterName Filter for payment methods whose name starts with a given string (optional)
    * @param filterPaymentType Filter for payment methods with a specific payment type (optional)
@@ -227,7 +227,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Get all payment methods for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment methods are being retrieved 
    * @param filterName Filter for payment methods whose name starts with a given string (optional)
    * @param filterPaymentType Filter for payment methods with a specific payment type (optional)
@@ -245,7 +245,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Authorize payment of an invoice for later capture
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or PAYMENTS_USER
    * @param request Payment authorization request (optional)
    * @return PaymentAuthorizationResource
    */
@@ -259,7 +259,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Authorize payment of an invoice for later capture asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or PAYMENTS_USER
    * @param request Payment authorization request (optional)
    * @return Future(PaymentAuthorizationResource)
   */
@@ -270,7 +270,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Capture an existing invoice payment authorization
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN
    * @param id ID of the payment authorization to capture 
    * @return void
    */
@@ -284,7 +284,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Capture an existing invoice payment authorization asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN
    * @param id ID of the payment authorization to capture 
    * @return Future(void)
   */
@@ -295,7 +295,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Update an existing payment method for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being updated 
    * @param id ID of the payment method being updated 
    * @param paymentMethod The updated payment method data (optional)
@@ -311,7 +311,7 @@ class PaymentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com"
 
   /**
    * Update an existing payment method for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN or owner
    * @param userId ID of the user for whom the payment method is being updated 
    * @param id ID of the payment method being updated 
    * @param paymentMethod The updated payment method data (optional)

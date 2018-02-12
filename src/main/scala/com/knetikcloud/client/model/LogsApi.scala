@@ -47,7 +47,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class LogsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -71,7 +71,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add a user log entry
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; owner
    * @param logEntry The user log entry to be added (optional)
    * @return void
    */
@@ -85,7 +85,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add a user log entry asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; owner
    * @param logEntry The user log entry to be added (optional)
    * @return Future(void)
   */
@@ -96,7 +96,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get an existing BRE event log entry by id
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param id The BRE event log entry id 
    * @return BreEventLog
    */
@@ -110,7 +110,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get an existing BRE event log entry by id asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param id The BRE event log entry id 
    * @return Future(BreEventLog)
   */
@@ -121,17 +121,18 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a list of BRE event log entries
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEventName Filter event logs by event name (optional)
    * @param filterEventId Filter event logs by request id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
+   * @param filterRuleId Filter event logs by request id (optional)
    * @return PageResourceBreEventLog
    */
-  def getBREEventLogs(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Option[PageResourceBreEventLog] = {
-    val await = Try(Await.result(getBREEventLogsAsync(filterStartDate, filterEventName, filterEventId, size, page, order), Duration.Inf))
+  def getBREEventLogs(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/, filterRuleId: Option[String] = None): Option[PageResourceBreEventLog] = {
+    val await = Try(Await.result(getBREEventLogsAsync(filterStartDate, filterEventName, filterEventId, size, page, order, filterRuleId), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -140,23 +141,24 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a list of BRE event log entries asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the event log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEventName Filter event logs by event name (optional)
    * @param filterEventId Filter event logs by request id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
+   * @param filterRuleId Filter event logs by request id (optional)
    * @return Future(PageResourceBreEventLog)
   */
-  def getBREEventLogsAsync(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Future[PageResourceBreEventLog] = {
-      helper.getBREEventLogs(filterStartDate, filterEventName, filterEventId, size, page, order)
+  def getBREEventLogsAsync(filterStartDate: Option[String] = None, filterEventName: Option[String] = None, filterEventId: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/, filterRuleId: Option[String] = None): Future[PageResourceBreEventLog] = {
+      helper.getBREEventLogs(filterStartDate, filterEventName, filterEventId, size, page, order, filterRuleId)
   }
 
 
   /**
    * Get an existing forward log entry by id
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param id The forward log entry id 
    * @return ForwardLog
    */
@@ -170,7 +172,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get an existing forward log entry by id asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param id The forward log entry id 
    * @return Future(ForwardLog)
   */
@@ -181,17 +183,18 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a list of forward log entries
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the log end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterStatusCode Filter forward logs by http status code (optional)
+   * @param filterUrl Filter forward logs by URL starting with... (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
    * @return PageResourceForwardLog
    */
-  def getBREForwardLogs(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Option[PageResourceForwardLog] = {
-    val await = Try(Await.result(getBREForwardLogsAsync(filterStartDate, filterEndDate, filterStatusCode, size, page, order), Duration.Inf))
+  def getBREForwardLogs(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, filterUrl: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Option[PageResourceForwardLog] = {
+    val await = Try(Await.result(getBREForwardLogsAsync(filterStartDate, filterEndDate, filterStatusCode, filterUrl, size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -200,23 +203,24 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a list of forward log entries asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_ADMIN
    * @param filterStartDate A comma separated string without spaces.  First value is the operator to search on, second value is the log start date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterEndDate A comma separated string without spaces.  First value is the operator to search on, second value is the log end date, a unix timestamp in seconds.  Allowed operators: (GT, LT, EQ, GOE, LOE). (optional)
    * @param filterStatusCode Filter forward logs by http status code (optional)
+   * @param filterUrl Filter forward logs by URL starting with... (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:DESC)
    * @return Future(PageResourceForwardLog)
   */
-  def getBREForwardLogsAsync(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Future[PageResourceForwardLog] = {
-      helper.getBREForwardLogs(filterStartDate, filterEndDate, filterStatusCode, size, page, order)
+  def getBREForwardLogsAsync(filterStartDate: Option[String] = None, filterEndDate: Option[String] = None, filterStatusCode: Option[Integer] = None, filterUrl: Option[Integer] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:DESC*/): Future[PageResourceForwardLog] = {
+      helper.getBREForwardLogs(filterStartDate, filterEndDate, filterStatusCode, filterUrl, size, page, order)
   }
 
 
   /**
    * Returns a user log entry by id
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LOGS_ADMIN or owner
    * @param id The user log entry id 
    * @return UserActionLog
    */
@@ -230,7 +234,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a user log entry by id asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LOGS_ADMIN or owner
    * @param id The user log entry id 
    * @return Future(UserActionLog)
   */
@@ -241,7 +245,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a page of user logs entries
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LOGS_ADMIN or owner
    * @param filterUser Filter for actions taken by a specific user by id (optional)
    * @param filterActionName Filter for actions of a specific name (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -259,7 +263,7 @@ class LogsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Returns a page of user logs entries asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LOGS_ADMIN or owner
    * @param filterUser Filter for actions taken by a specific user by id (optional)
    * @param filterActionName Filter for actions of a specific name (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -315,7 +319,8 @@ class LogsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends
     filterEventId: Option[String] = None,
     size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
-    order: Option[String] = Some(id:DESC)
+    order: Option[String] = Some(id:DESC),
+    filterRuleId: Option[String] = None
     )(implicit reader: ClientResponseReader[PageResourceBreEventLog]): Future[PageResourceBreEventLog] = {
     // create path and map variables
     val path = (addFmt("/bre/logs/event-log"))
@@ -348,6 +353,10 @@ class LogsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends
       case Some(param) => queryParams += "order" -> param.toString
       case _ => queryParams
     }
+    filterRuleId match {
+      case Some(param) => queryParams += "filter_rule_id" -> param.toString
+      case _ => queryParams
+    }
 
     val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
     resFuture flatMap { resp =>
@@ -376,6 +385,7 @@ class LogsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends
   def getBREForwardLogs(filterStartDate: Option[String] = None,
     filterEndDate: Option[String] = None,
     filterStatusCode: Option[Integer] = None,
+    filterUrl: Option[Integer] = None,
     size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
     order: Option[String] = Some(id:DESC)
@@ -397,6 +407,10 @@ class LogsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends
     }
     filterStatusCode match {
       case Some(param) => queryParams += "filter_status_code" -> param.toString
+      case _ => queryParams
+    }
+    filterUrl match {
+      case Some(param) => queryParams += "filter_url" -> param.toString
       case _ => queryParams
     }
     size match {

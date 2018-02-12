@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreVendorsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a vendor
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param vendor The vendor (optional)
    * @return VendorResource
    */
@@ -83,7 +83,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a vendor asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param vendor The vendor (optional)
    * @return Future(VendorResource)
   */
@@ -94,7 +94,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a vendor template
-   * Vendor Templates define a type of vendor and the properties they have.
+   * Vendor Templates define a type of vendor and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param vendorTemplateResource The new vendor template (optional)
    * @return ItemTemplateResource
    */
@@ -108,7 +108,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a vendor template asynchronously
-   * Vendor Templates define a type of vendor and the properties they have.
+   * Vendor Templates define a type of vendor and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param vendorTemplateResource The new vendor template (optional)
    * @return Future(ItemTemplateResource)
   */
@@ -119,7 +119,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a vendor
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param id The id of the vendor 
    * @return void
    */
@@ -133,7 +133,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a vendor asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param id The id of the vendor 
    * @return Future(void)
   */
@@ -144,7 +144,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a vendor template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return void
@@ -159,7 +159,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a vendor template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return Future(void)
@@ -171,7 +171,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single vendor
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the vendor 
    * @return VendorResource
    */
@@ -185,7 +185,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single vendor asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the vendor 
    * @return Future(VendorResource)
   */
@@ -196,7 +196,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single vendor template
-   * Vendor Templates define a type of vendor and the properties they have.
+   * Vendor Templates define a type of vendor and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -210,7 +210,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single vendor template asynchronously
-   * Vendor Templates define a type of vendor and the properties they have.
+   * Vendor Templates define a type of vendor and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -221,13 +221,13 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search vendor templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return PageResourceItemTemplateResource
    */
-  def getVendorTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceItemTemplateResource] = {
+  def getVendorTemplates(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceItemTemplateResource] = {
     val await = Try(Await.result(getVendorTemplatesAsync(size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -237,20 +237,20 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search vendor templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return Future(PageResourceItemTemplateResource)
   */
-  def getVendorTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Future[PageResourceItemTemplateResource] = {
+  def getVendorTemplatesAsync(size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceItemTemplateResource] = {
       helper.getVendorTemplates(size, page, order)
   }
 
 
   /**
    * List and search vendors
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterName Filters vendors by name starting with the text provided in the filter (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -267,7 +267,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search vendors asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterName Filters vendors by name starting with the text provided in the filter (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -281,7 +281,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a vendor
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param id The id of the vendor 
    * @param vendor The vendor (optional)
    * @return VendorResource
@@ -296,7 +296,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a vendor asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VENDORS_ADMIN
    * @param id The id of the vendor 
    * @param vendor The vendor (optional)
    * @return Future(VendorResource)
@@ -308,7 +308,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a vendor template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param vendorTemplateResource The vendor template resource object (optional)
    * @return ItemTemplateResource
@@ -323,7 +323,7 @@ class StoreVendorsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a vendor template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param vendorTemplateResource The vendor template resource object (optional)
    * @return Future(ItemTemplateResource)
@@ -445,7 +445,7 @@ class StoreVendorsApiAsyncHelper(client: TransportClient, config: SwaggerConfig)
 
   def getVendorTemplates(size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
-    order: Option[String] = Some(1)
+    order: Option[String] = None
     )(implicit reader: ClientResponseReader[PageResourceItemTemplateResource]): Future[PageResourceItemTemplateResource] = {
     // create path and map variables
     val path = (addFmt("/vendors/templates"))

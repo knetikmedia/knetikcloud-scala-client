@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingOrdersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingOrdersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class ReportingOrdersApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve invoice counts aggregated by time ranges
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_ORDERS_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param granularity The time duration to aggregate by (optional, default to day)
    * @param filterPaymentStatus A payment status to filter results by, can be a comma separated list (optional)
@@ -87,7 +87,7 @@ class ReportingOrdersApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Retrieve invoice counts aggregated by time ranges asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_ORDERS_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param granularity The time duration to aggregate by (optional, default to day)
    * @param filterPaymentStatus A payment status to filter results by, can be a comma separated list (optional)

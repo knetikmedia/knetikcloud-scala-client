@@ -14,7 +14,10 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
+import com.knetikcloud.client.model.ChatMessageRequest
+import com.knetikcloud.client.model.ChatMessageResource
 import com.knetikcloud.client.model.NewPasswordRequest
+import com.knetikcloud.client.model.PageResourceChatMessageResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.PageResourceUserBaseResource
 import com.knetikcloud.client.model.PasswordResetRequest
@@ -48,7 +51,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -72,7 +75,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add a tag to a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @param tag tag 
    * @return void
@@ -87,7 +90,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Add a tag to a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @param tag tag 
    * @return Future(void)
@@ -99,7 +102,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a user template
-   * User Templates define a type of user and the properties they have
+   * User Templates define a type of user and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param userTemplateResource The user template resource object (optional)
    * @return TemplateResource
    */
@@ -113,7 +116,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a user template asynchronously
-   * User Templates define a type of user and the properties they have
+   * User Templates define a type of user and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param userTemplateResource The user template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -124,7 +127,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a user template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -139,7 +142,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete a user template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -150,8 +153,37 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
 
   /**
+   * Get a list of direct messages with this user
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
+   * @param recipientId The user id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return PageResourceChatMessageResource
+   */
+  def getDirectMessages1(recipientId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceChatMessageResource] = {
+    val await = Try(Await.result(getDirectMessages1Async(recipientId, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get a list of direct messages with this user asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
+   * @param recipientId The user id 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceChatMessageResource)
+  */
+  def getDirectMessages1Async(recipientId: Integer, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceChatMessageResource] = {
+      helper.getDirectMessages1(recipientId, size, page)
+  }
+
+
+  /**
    * Get a single user
-   * Additional private info is included as USERS_ADMIN
+   * Additional private info is included as USERS_ADMIN. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user or &#39;me&#39; 
    * @return UserResource
    */
@@ -165,7 +197,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single user asynchronously
-   * Additional private info is included as USERS_ADMIN
+   * Additional private info is included as USERS_ADMIN. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user or &#39;me&#39; 
    * @return Future(UserResource)
   */
@@ -176,7 +208,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List tags for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @return List[String]
    */
@@ -190,7 +222,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List tags for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @return Future(List[String])
   */
@@ -201,7 +233,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single user template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or USERS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -215,7 +247,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single user template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or USERS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -226,7 +258,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search user templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or USERS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -242,7 +274,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search user templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or USERS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -255,7 +287,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search users
-   * Additional private info is included as USERS_ADMIN
+   * Additional private info is included as USERS_ADMIN. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterDisplayname Filter for users whose display name starts with provided string. (optional)
    * @param filterEmail Filter for users whose email starts with provided string. Requires USERS_ADMIN permission (optional)
    * @param filterFirstname Filter for users whose first name starts with provided string. Requires USERS_ADMIN permission (optional)
@@ -283,7 +315,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search users asynchronously
-   * Additional private info is included as USERS_ADMIN
+   * Additional private info is included as USERS_ADMIN. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterDisplayname Filter for users whose display name starts with provided string. (optional)
    * @param filterEmail Filter for users whose email starts with provided string. Requires USERS_ADMIN permission (optional)
    * @param filterFirstname Filter for users whose first name starts with provided string. Requires USERS_ADMIN permission (optional)
@@ -308,7 +340,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Choose a new password after a reset
-   * Finish resetting a user&#39;s password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * Finish resetting a user&#39;s password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user 
    * @param newPasswordRequest The new password request object (optional)
    * @return void
@@ -323,7 +355,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Choose a new password after a reset asynchronously
-   * Finish resetting a user&#39;s password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * Finish resetting a user&#39;s password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user 
    * @param newPasswordRequest The new password request object (optional)
    * @return Future(void)
@@ -334,8 +366,35 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
 
   /**
+   * Send a user message
+   * 
+   * @param recipientId The user id 
+   * @param chatMessageRequest The chat message request (optional)
+   * @return ChatMessageResource
+   */
+  def postUserMessage(recipientId: Integer, chatMessageRequest: Option[ChatMessageRequest] = None): Option[ChatMessageResource] = {
+    val await = Try(Await.result(postUserMessageAsync(recipientId, chatMessageRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Send a user message asynchronously
+   * 
+   * @param recipientId The user id 
+   * @param chatMessageRequest The chat message request (optional)
+   * @return Future(ChatMessageResource)
+  */
+  def postUserMessageAsync(recipientId: Integer, chatMessageRequest: Option[ChatMessageRequest] = None): Future[ChatMessageResource] = {
+      helper.postUserMessage(recipientId, chatMessageRequest)
+  }
+
+
+  /**
    * Register a new user
-   * Password should be in plain text and will be encrypted on receipt. Use SSL for security
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param userResource The user resource object (optional)
    * @return UserResource
    */
@@ -349,7 +408,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Register a new user asynchronously
-   * Password should be in plain text and will be encrypted on receipt. Use SSL for security
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param userResource The user resource object (optional)
    * @return Future(UserResource)
   */
@@ -360,7 +419,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Remove a tag from a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @param tag The tag to remove 
    * @return void
@@ -375,7 +434,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Remove a tag from a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN
    * @param userId The id of the user 
    * @param tag The tag to remove 
    * @return Future(void)
@@ -387,7 +446,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Set a user&#39;s password
-   * Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or (USERS_USER and owner)
    * @param id The id of the user 
    * @param password The new plain text password (optional)
    * @return void
@@ -402,7 +461,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Set a user&#39;s password asynchronously
-   * Password should be in plain text and will be encrypted on receipt. Use SSL for security.
+   * Password should be in plain text and will be encrypted on receipt. Use SSL for security. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or (USERS_USER and owner)
    * @param id The id of the user 
    * @param password The new plain text password (optional)
    * @return Future(void)
@@ -414,7 +473,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Reset a user&#39;s password
-   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user 
    * @return void
    */
@@ -428,7 +487,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Reset a user&#39;s password asynchronously
-   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the user 
    * @return Future(void)
   */
@@ -439,7 +498,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Reset a user&#39;s password without user id
-   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param passwordReset An object containing one of three methods to look up a user (optional)
    * @return void
    */
@@ -453,7 +512,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Reset a user&#39;s password without user id asynchronously
-   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number
+   * A reset code will be generated and a &#39;forgot_password&#39; BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param passwordReset An object containing one of three methods to look up a user (optional)
    * @return Future(void)
   */
@@ -464,7 +523,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a user
-   * Password will not be edited on this endpoint, use password specific endpoints.
+   * Password will not be edited on this endpoint, use password specific endpoints. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param id The id of the user or &#39;me&#39; 
    * @param userResource The user resource object (optional)
    * @return void
@@ -479,7 +538,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a user asynchronously
-   * Password will not be edited on this endpoint, use password specific endpoints.
+   * Password will not be edited on this endpoint, use password specific endpoints. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param id The id of the user or &#39;me&#39; 
    * @param userResource The user resource object (optional)
    * @return Future(void)
@@ -491,7 +550,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a user template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param userTemplateResource The user template resource object (optional)
    * @return TemplateResource
@@ -506,7 +565,7 @@ class UsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update a user template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param userTemplateResource The user template resource object (optional)
    * @return Future(TemplateResource)
@@ -573,6 +632,33 @@ class UsersApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extend
     }
 
     val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getDirectMessages1(recipientId: Integer,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceChatMessageResource]): Future[PageResourceChatMessageResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/users/{recipient_id}/messages")
+      replaceAll ("\\{" + "recipient_id" + "\\}",recipientId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }
@@ -763,6 +849,24 @@ class UsersApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extend
 
 
     val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(newPasswordRequest))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def postUserMessage(recipientId: Integer,
+    chatMessageRequest: Option[ChatMessageRequest] = None
+    )(implicit reader: ClientResponseReader[ChatMessageResource], writer: RequestWriter[ChatMessageRequest]): Future[ChatMessageResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/{recipient_id}/messages")
+      replaceAll ("\\{" + "recipient_id" + "\\}",recipientId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(chatMessageRequest))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }

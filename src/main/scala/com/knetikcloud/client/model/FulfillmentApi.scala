@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class FulfillmentApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a fulfillment type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param _type The fulfillment type (optional)
    * @return FulfillmentType
    */
@@ -81,7 +81,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a fulfillment type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param _type The fulfillment type (optional)
    * @return Future(FulfillmentType)
   */
@@ -92,7 +92,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a fulfillment type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param id The id 
    * @return void
    */
@@ -106,7 +106,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a fulfillment type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param id The id 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single fulfillment type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id 
    * @return FulfillmentType
    */
@@ -131,7 +131,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single fulfillment type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id 
    * @return Future(FulfillmentType)
   */
@@ -142,7 +142,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search fulfillment types
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -158,7 +158,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search fulfillment types asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -171,7 +171,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a fulfillment type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param id The id 
    * @param fulfillmentType The fulfillment type (optional)
    * @return void
@@ -186,7 +186,7 @@ class FulfillmentApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a fulfillment type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
    * @param id The id 
    * @param fulfillmentType The fulfillment type (optional)
    * @return Future(void)

@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreSubscriptionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Creates a subscription item and associated plans
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param subscriptionResource The subscription to be created (optional)
    * @return SubscriptionResource
    */
@@ -83,7 +83,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Creates a subscription item and associated plans asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param subscriptionResource The subscription to be created (optional)
    * @return Future(SubscriptionResource)
   */
@@ -94,7 +94,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a subscription template
-   * Subscription Templates define a type of subscription and the properties they have.
+   * Subscription Templates define a type of subscription and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param subscriptionTemplateResource The new subscription template (optional)
    * @return SubscriptionTemplateResource
    */
@@ -108,7 +108,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a subscription template asynchronously
-   * Subscription Templates define a type of subscription and the properties they have.
+   * Subscription Templates define a type of subscription and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param subscriptionTemplateResource The new subscription template (optional)
    * @return Future(SubscriptionTemplateResource)
   */
@@ -119,7 +119,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a subscription plan
-   * Must not be locked or a migration target
+   * Must not be locked or a migration target. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param id The id of the subscription 
    * @param planId The id of the plan 
    * @return void
@@ -134,7 +134,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a subscription plan asynchronously
-   * Must not be locked or a migration target
+   * Must not be locked or a migration target. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param id The id of the subscription 
    * @param planId The id of the plan 
    * @return Future(void)
@@ -146,7 +146,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a subscription template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return void
@@ -161,7 +161,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a subscription template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return Future(void)
@@ -173,7 +173,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Retrieve a single subscription item and associated plans
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the subscription 
    * @return SubscriptionResource
    */
@@ -187,7 +187,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Retrieve a single subscription item and associated plans asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the subscription 
    * @return Future(SubscriptionResource)
   */
@@ -198,7 +198,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single subscription template
-   * Subscription Templates define a type of subscription and the properties they have.
+   * Subscription Templates define a type of subscription and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @return SubscriptionTemplateResource
    */
@@ -212,7 +212,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single subscription template asynchronously
-   * Subscription Templates define a type of subscription and the properties they have.
+   * Subscription Templates define a type of subscription and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @return Future(SubscriptionTemplateResource)
   */
@@ -223,7 +223,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search subscription templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SUBSCRIPTIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -239,7 +239,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search subscription templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or SUBSCRIPTIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -252,7 +252,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List available subscription items and associated plans
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -268,7 +268,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List available subscription items and associated plans asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -281,7 +281,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Processes subscriptions and charge dues
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @return void
    */
   def processSubscriptions() = {
@@ -294,7 +294,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Processes subscriptions and charge dues asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @return Future(void)
   */
   def processSubscriptionsAsync() = {
@@ -304,7 +304,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Updates a subscription item and associated plans
-   * Will not remove plans left out
+   * Will not remove plans left out. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param id The id of the subscription 
    * @param subscriptionResource The subscription resource object (optional)
    * @return void
@@ -319,7 +319,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Updates a subscription item and associated plans asynchronously
-   * Will not remove plans left out
+   * Will not remove plans left out. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SUBSCRIPTIONS_ADMIN
    * @param id The id of the subscription 
    * @param subscriptionResource The subscription resource object (optional)
    * @return Future(void)
@@ -331,7 +331,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a subscription template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param subscriptionTemplateResource The subscription template resource object (optional)
    * @return SubscriptionTemplateResource
@@ -346,7 +346,7 @@ class StoreSubscriptionsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a subscription template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param subscriptionTemplateResource The subscription template resource object (optional)
    * @return Future(SubscriptionTemplateResource)

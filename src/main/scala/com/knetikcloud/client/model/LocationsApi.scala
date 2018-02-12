@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class LocationsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a list of countries
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return List[CountryResource]
    */
   def getCountries(): Option[List[CountryResource]] = {
@@ -81,7 +81,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a list of countries asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(List[CountryResource])
   */
   def getCountriesAsync(): Future[List[CountryResource]] = {
@@ -91,7 +91,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get the iso3 code of your country
-   * Determined by geo ip location
+   * Determined by geo ip location. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return String
    */
   def getCountryByGeoLocation(): Option[String] = {
@@ -104,7 +104,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get the iso3 code of your country asynchronously
-   * Determined by geo ip location
+   * Determined by geo ip location. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(String)
   */
   def getCountryByGeoLocationAsync(): Future[String] = {
@@ -114,7 +114,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a list of a country&#39;s states
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @return List[StateResource]
    */
@@ -128,7 +128,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a list of a country&#39;s states asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @return Future(List[StateResource])
   */
@@ -139,7 +139,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get the currency information of your country
-   * Determined by geo ip location, currency to country mapping and a fallback setting
+   * Determined by geo ip location, currency to country mapping and a fallback setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return CurrencyResource
    */
   def getCurrencyByGeoLocation(): Option[CurrencyResource] = {
@@ -152,7 +152,7 @@ class LocationsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get the currency information of your country asynchronously
-   * Determined by geo ip location, currency to country mapping and a fallback setting
+   * Determined by geo ip location, currency to country mapping and a fallback setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(CurrencyResource)
   */
   def getCurrencyByGeoLocationAsync(): Future[CurrencyResource] = {

@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class SocialGoogleApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class SocialGoogleApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class SocialGoogleApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Link google account
-   * Links the current user account to a google account, using the acccess token from google. Can also be used to update the access token after it has expired.
+   * Links the current user account to a google account, using the acccess token from google. Can also be used to update the access token after it has expired. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; Non-google user token
    * @param googleToken The token from google (optional)
    * @return void
    */
@@ -80,7 +80,7 @@ class SocialGoogleApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Link google account asynchronously
-   * Links the current user account to a google account, using the acccess token from google. Can also be used to update the access token after it has expired.
+   * Links the current user account to a google account, using the acccess token from google. Can also be used to update the access token after it has expired. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; Non-google user token
    * @param googleToken The token from google (optional)
    * @return Future(void)
   */

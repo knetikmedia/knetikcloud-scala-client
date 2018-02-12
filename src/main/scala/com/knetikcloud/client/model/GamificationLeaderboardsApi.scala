@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class GamificationLeaderboardsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieves leaderboard details and paginated entries
-   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. Sorting is based on the fields of LeaderboardEntryResource rather than the returned LeaderboardResource.
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. Sorting is based on the fields of LeaderboardEntryResource rather than the returned LeaderboardResource. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param contextType The context type for the leaderboard 
    * @param contextId The context id for the leaderboard 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -85,7 +85,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieves leaderboard details and paginated entries asynchronously
-   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. Sorting is based on the fields of LeaderboardEntryResource rather than the returned LeaderboardResource.
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. Sorting is based on the fields of LeaderboardEntryResource rather than the returned LeaderboardResource. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param contextType The context type for the leaderboard 
    * @param contextId The context id for the leaderboard 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -100,7 +100,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieves a specific user entry with rank
-   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param contextType The context type for the leaderboard 
    * @param contextId The context id for the leaderboard 
    * @param id The id of a user 
@@ -116,7 +116,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Retrieves a specific user entry with rank asynchronously
-   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard
+   * The context type identifies the type of entity (i.e., &#39;activity&#39;) being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param contextType The context type for the leaderboard 
    * @param contextId The context id for the leaderboard 
    * @param id The id of a user 
@@ -129,7 +129,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a list of available leaderboard strategy names
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return List[String]
    */
   def getLeaderboardStrategies(): Option[List[String]] = {
@@ -142,7 +142,7 @@ class GamificationLeaderboardsApi(val defBasePath: String = "https://devsandbox.
 
   /**
    * Get a list of available leaderboard strategy names asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(List[String])
   */
   def getLeaderboardStrategiesAsync(): Future[List[String]] = {

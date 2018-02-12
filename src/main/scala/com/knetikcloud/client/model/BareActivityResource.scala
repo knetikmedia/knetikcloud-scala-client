@@ -29,7 +29,7 @@ case class BareActivityResource (
   /* Whether this activity is a template for other activities. Default: false */
   template: Option[Boolean],
   /* The type of the activity */
-  _type: String,
+  _type: Option[String],
   /* The unique key (for static reference in code) of the activity */
   uniqueKey: Option[String],
   /* The date/time this resource was last updated in seconds since unix epoch */

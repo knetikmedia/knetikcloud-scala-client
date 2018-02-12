@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UtilSecurityApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UtilSecurityApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class UtilSecurityApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns the authentication log for a user
-   * A log entry is recorded everytime a user requests a new token. Standard pagination available
+   * A log entry is recorded everytime a user requests a new token. Standard pagination available. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SECURITY_ADMIN
    * @param userId The user id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -84,7 +84,7 @@ class UtilSecurityApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns the authentication log for a user asynchronously
-   * A log entry is recorded everytime a user requests a new token. Standard pagination available
+   * A log entry is recorded everytime a user requests a new token. Standard pagination available. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; SECURITY_ADMIN
    * @param userId The user id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -98,7 +98,7 @@ class UtilSecurityApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns the authentication token details. Use /users endpoint for detailed user&#39;s info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SECURITY_ADMIN
    * @return TokenDetailsResource
    */
   def getUserTokenDetails(): Option[TokenDetailsResource] = {
@@ -111,7 +111,7 @@ class UtilSecurityApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns the authentication token details. Use /users endpoint for detailed user&#39;s info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; SECURITY_ADMIN
    * @return Future(TokenDetailsResource)
   */
   def getUserTokenDetailsAsync(): Future[TokenDetailsResource] = {

@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class TemplatesPropertiesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class TemplatesPropertiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get details for a template property type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param _type type 
    * @return PropertyFieldListResource
    */
@@ -80,7 +80,7 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Get details for a template property type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param _type type 
    * @return Future(PropertyFieldListResource)
   */
@@ -91,7 +91,7 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List template property types
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return List[PropertyFieldListResource]
    */
   def getTemplatePropertyTypes(): Option[List[PropertyFieldListResource]] = {
@@ -104,7 +104,7 @@ class TemplatesPropertiesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * List template property types asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(List[PropertyFieldListResource])
   */
   def getTemplatePropertyTypesAsync(): Future[List[PropertyFieldListResource]] = {

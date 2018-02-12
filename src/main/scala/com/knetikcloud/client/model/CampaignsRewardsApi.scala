@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class CampaignsRewardsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Create a reward set
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param rewardSetResource The reward set resource object (optional)
    * @return RewardSetResource
    */
@@ -81,7 +81,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Create a reward set asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param rewardSetResource The reward set resource object (optional)
    * @return Future(RewardSetResource)
   */
@@ -92,7 +92,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Delete a reward set
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param id The reward id 
    * @return void
    */
@@ -106,7 +106,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Delete a reward set asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param id The reward id 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get a single reward set
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The reward id 
    * @return RewardSetResource
    */
@@ -131,7 +131,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get a single reward set asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The reward id 
    * @return Future(RewardSetResource)
   */
@@ -142,7 +142,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * List and search reward sets
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -158,7 +158,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * List and search reward sets asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -171,7 +171,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Update a reward set
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param id The reward id 
    * @param rewardSetResource The reward set resource object (optional)
    * @return RewardSetResource
@@ -186,7 +186,7 @@ class CampaignsRewardsApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Update a reward set asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; REWARDS_ADMIN
    * @param id The reward id 
    * @param rewardSetResource The reward set resource object (optional)
    * @return Future(RewardSetResource)

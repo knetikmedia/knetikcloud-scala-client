@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class AuthClientsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a new client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientResource The client resource object (optional)
    * @return ClientResource
    */
@@ -82,7 +82,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a new client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientResource The client resource object (optional)
    * @return Future(ClientResource)
   */
@@ -93,7 +93,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @return void
    */
@@ -107,7 +107,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @return Future(void)
   */
@@ -118,7 +118,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @return ClientResource
    */
@@ -132,7 +132,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @return Future(ClientResource)
   */
@@ -143,7 +143,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List available client grant types
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @return List[GrantTypeResource]
    */
   def getClientGrantTypes(): Option[List[GrantTypeResource]] = {
@@ -156,7 +156,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List available client grant types asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @return Future(List[GrantTypeResource])
   */
   def getClientGrantTypesAsync(): Future[List[GrantTypeResource]] = {
@@ -166,7 +166,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search clients
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -182,7 +182,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search clients asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -195,7 +195,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Set grant types for a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param grantList A list of unique grant types (optional)
    * @return void
@@ -210,7 +210,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Set grant types for a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param grantList A list of unique grant types (optional)
    * @return Future(void)
@@ -222,7 +222,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Set redirect uris for a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param redirectList A list of unique redirect uris (optional)
    * @return void
@@ -237,7 +237,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Set redirect uris for a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param redirectList A list of unique redirect uris (optional)
    * @return Future(void)
@@ -249,7 +249,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param clientResource The client resource object (optional)
    * @return ClientResource
@@ -264,7 +264,7 @@ class AuthClientsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CLIENTS_ADMIN
    * @param clientKey The key of the client 
    * @param clientResource The client resource object (optional)
    * @return Future(ClientResource)

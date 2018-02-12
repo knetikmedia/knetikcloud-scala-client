@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class MediaModerationApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Add a flag
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param flagResource The flag resource object (optional)
    * @return FlagResource
    */
@@ -83,7 +83,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Add a flag asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param flagResource The flag resource object (optional)
    * @return Future(FlagResource)
   */
@@ -94,7 +94,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a flag
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN or owner
    * @param contextName The name of the context (optional)
    * @param contextId The id of the context (optional)
    * @param userId The id of the user (optional)
@@ -110,7 +110,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a flag asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN or owner
    * @param contextName The name of the context (optional)
    * @param contextId The id of the context (optional)
    * @param userId The id of the user (optional)
@@ -123,7 +123,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of flags
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN or owner
    * @param filterContext Filter by flag context (optional)
    * @param filterContextId Filter by flag context ID (optional)
    * @param filterUserId Filter by user ID (optional)
@@ -141,7 +141,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of flags asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN or owner
    * @param filterContext Filter by flag context (optional)
    * @param filterContextId Filter by flag context ID (optional)
    * @param filterUserId Filter by user ID (optional)
@@ -156,7 +156,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a flag report
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param id The flag report id 
    * @return FlagReportResource
    */
@@ -170,7 +170,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a flag report asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param id The flag report id 
    * @return Future(FlagReportResource)
   */
@@ -181,7 +181,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of flag reports
-   * Context can be either a free-form string or a pre-defined context name
+   * Context can be either a free-form string or a pre-defined context name. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param excludeResolved Ignore resolved context (optional, default to true)
    * @param filterContext Filter by moderation context (optional)
    * @param filterContextId Filter by moderation context ID (optional)
@@ -199,7 +199,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of flag reports asynchronously
-   * Context can be either a free-form string or a pre-defined context name
+   * Context can be either a free-form string or a pre-defined context name. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param excludeResolved Ignore resolved context (optional, default to true)
    * @param filterContext Filter by moderation context (optional)
    * @param filterContextId Filter by moderation context ID (optional)
@@ -214,7 +214,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a flag report
-   * Lets you set the resolution of a report. Resolution types is {banned,ignore} in case of &#39;banned&#39; you will need to pass the reason.
+   * Lets you set the resolution of a report. Resolution types is {banned,ignore} in case of &#39;banned&#39; you will need to pass the reason. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param id The flag report id 
    * @param flagReportResource The new flag report (optional)
    * @return void
@@ -229,7 +229,7 @@ class MediaModerationApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a flag report asynchronously
-   * Lets you set the resolution of a report. Resolution types is {banned,ignore} in case of &#39;banned&#39; you will need to pass the reason.
+   * Lets you set the resolution of a report. Resolution types is {banned,ignore} in case of &#39;banned&#39; you will need to pass the reason. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MODERATION_ADMIN
    * @param id The flag report id 
    * @param flagReportResource The new flag report (optional)
    * @return Future(void)

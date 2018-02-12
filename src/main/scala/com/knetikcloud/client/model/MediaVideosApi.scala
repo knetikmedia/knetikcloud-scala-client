@@ -55,7 +55,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class MediaVideosApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -79,7 +79,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a user to a video&#39;s whitelist
-   * Whitelisted users can view video regardless of privacy setting.
+   * Whitelisted users can view video regardless of privacy setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @param userId The user id (optional)
    * @return void
@@ -94,7 +94,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a user to a video&#39;s whitelist asynchronously
-   * Whitelisted users can view video regardless of privacy setting.
+   * Whitelisted users can view video regardless of privacy setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @param userId The user id (optional)
    * @return Future(void)
@@ -106,7 +106,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a new video in the system
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoResource The video object (optional)
    * @return VideoResource
    */
@@ -120,7 +120,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a new video in the system asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoResource The video object (optional)
    * @return Future(VideoResource)
   */
@@ -131,7 +131,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Add a new video comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id  
    * @param commentResource The comment object (optional)
    * @return CommentResource
@@ -146,7 +146,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Add a new video comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id  
    * @param commentResource The comment object (optional)
    * @return Future(CommentResource)
@@ -158,7 +158,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a contributor to a video
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param contributionResource The contribution object (optional)
    * @return void
@@ -173,7 +173,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a contributor to a video asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param contributionResource The contribution object (optional)
    * @return Future(void)
@@ -185,7 +185,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Add a new flag
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param reason The flag reason (optional)
    * @return FlagResource
@@ -200,7 +200,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Add a new flag asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param reason The flag reason (optional)
    * @return Future(FlagResource)
@@ -212,7 +212,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds one or more existing videos as related to this one
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param videoRelationshipResource The video relationship object  (optional)
    * @return VideoRelationshipResource
@@ -227,7 +227,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds one or more existing videos as related to this one asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param videoRelationshipResource The video relationship object  (optional)
    * @return Future(VideoRelationshipResource)
@@ -239,7 +239,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a video disposition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param dispositionResource The disposition object (optional)
    * @return DispositionResource
@@ -254,7 +254,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a video disposition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param dispositionResource The disposition object (optional)
    * @return Future(DispositionResource)
@@ -266,7 +266,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a video template
-   * Video Templates define a type of video and the properties they have
+   * Video Templates define a type of video and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param videoTemplateResource The video template resource object (optional)
    * @return TemplateResource
    */
@@ -280,7 +280,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a video template asynchronously
-   * Video Templates define a type of video and the properties they have
+   * Video Templates define a type of video and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param videoTemplateResource The video template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -291,7 +291,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Deletes a video from the system if no resources are attached to it
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @return void
    */
@@ -305,7 +305,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Deletes a video from the system if no resources are attached to it asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @return Future(void)
   */
@@ -316,7 +316,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The comment id 
    * @return void
@@ -331,7 +331,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The comment id 
    * @return Future(void)
@@ -343,7 +343,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video disposition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param dispositionId The disposition id 
    * @return void
    */
@@ -357,7 +357,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video disposition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param dispositionId The disposition id 
    * @return Future(void)
   */
@@ -368,7 +368,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a flag
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @return void
    */
@@ -382,7 +382,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a flag asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @return Future(void)
   */
@@ -393,7 +393,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video&#39;s relationship
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The relationship id 
    * @return void
@@ -408,7 +408,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video&#39;s relationship asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The relationship id 
    * @return Future(void)
@@ -420,7 +420,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -435,7 +435,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a video template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -447,7 +447,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get user videos
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param userId The user id 
    * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -464,7 +464,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get user videos asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param userId The user id 
    * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -478,7 +478,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Loads a specific video details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @return VideoResource
    */
@@ -492,7 +492,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Loads a specific video details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @return Future(VideoResource)
   */
@@ -503,7 +503,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of comments for a video
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -519,7 +519,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of comments for a video asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -532,7 +532,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of dispositions for a video
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -548,7 +548,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of dispositions for a video asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -561,7 +561,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of video relationships
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -577,7 +577,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Returns a page of video relationships asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param videoId The video id 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -590,7 +590,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single video template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or VIDEOS_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -604,7 +604,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single video template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or VIDEOS_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -615,7 +615,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search video templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or VIDEOS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -631,7 +631,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search video templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or VIDEOS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -644,7 +644,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Search videos using the documented filters
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
    * @param filterVideosByUploader Filter for videos by uploader id (optional)
    * @param filterCategory Filter for videos from a specific category by id (optional)
@@ -672,7 +672,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Search videos using the documented filters asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param excludeFlagged Skip videos that have been flagged by the current user (optional, default to true)
    * @param filterVideosByUploader Filter for videos by uploader id (optional)
    * @param filterCategory Filter for videos from a specific category by id (optional)
@@ -697,7 +697,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a user from a video&#39;s whitelist
-   * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting.
+   * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The user id 
    * @return void
@@ -712,7 +712,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a user from a video&#39;s whitelist asynchronously
-   * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting.
+   * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The user id 
    * @return Future(void)
@@ -724,7 +724,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a contributor from a video
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The contributor id 
    * @return void
@@ -739,7 +739,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a contributor from a video asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The contributor id 
    * @return Future(void)
@@ -751,7 +751,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Modifies a video&#39;s details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @param videoResource The video object (optional)
    * @return void
@@ -766,7 +766,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Modifies a video&#39;s details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param id The video id 
    * @param videoResource The video object (optional)
    * @return Future(void)
@@ -778,7 +778,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The comment id 
    * @param content The comment content (optional)
@@ -794,7 +794,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param id The comment id 
    * @param content The comment content (optional)
@@ -807,7 +807,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video&#39;s relationship details
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param relationshipId The relationship id 
    * @param details The video relationship details (optional)
@@ -823,7 +823,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video&#39;s relationship details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; VIDEOS_USER or VIDEOS_ADMIN
    * @param videoId The video id 
    * @param relationshipId The relationship id 
    * @param details The video relationship details (optional)
@@ -836,7 +836,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param videoTemplateResource The video template resource object (optional)
    * @return TemplateResource
@@ -851,7 +851,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a video template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param videoTemplateResource The video template resource object (optional)
    * @return Future(TemplateResource)
@@ -863,7 +863,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Increment a video&#39;s view count
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The video id 
    * @return void
    */
@@ -877,7 +877,7 @@ class MediaVideosApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Increment a video&#39;s view count asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The video id 
    * @return Future(void)
   */

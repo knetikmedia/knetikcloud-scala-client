@@ -14,14 +14,18 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
+import com.knetikcloud.client.model.ChatMessageRequest
+import com.knetikcloud.client.model.ChatMessageResource
 import com.knetikcloud.client.model.GroupMemberResource
 import com.knetikcloud.client.model.GroupResource
+import com.knetikcloud.client.model.PageResourceChatMessageResource
 import com.knetikcloud.client.model.PageResourceGroupMemberResource
 import com.knetikcloud.client.model.PageResourceGroupResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.StringWrapper
 import com.knetikcloud.client.model.TemplateResource
+import com.knetikcloud.client.model.ValueWrapperboolean
 import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -48,7 +52,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersGroupsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -72,7 +76,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a new member to the group
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or self if open
    * @param uniqueName The group unique name 
    * @param user The id and status for a user to add to the group 
    * @return GroupMemberResource
@@ -87,7 +91,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds a new member to the group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or self if open
    * @param uniqueName The group unique name 
    * @param user The id and status for a user to add to the group 
    * @return Future(GroupMemberResource)
@@ -99,7 +103,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds multiple members to the group
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param users The id and status for a list of users to add to the group 
    * @return List[GroupMemberResource]
@@ -114,7 +118,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Adds multiple members to the group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param users The id and status for a list of users to add to the group 
    * @return Future(List[GroupMemberResource])
@@ -126,7 +130,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a group
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param groupResource The new group (optional)
    * @return GroupResource
    */
@@ -140,7 +144,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param groupResource The new group (optional)
    * @return Future(GroupResource)
   */
@@ -151,7 +155,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create an group member template
-   * GroupMember Templates define a type of group member and the properties they have
+   * GroupMember Templates define a type of group member and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param groupMemberTemplateResource The group member template resource object (optional)
    * @return TemplateResource
    */
@@ -165,7 +169,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create an group member template asynchronously
-   * GroupMember Templates define a type of group member and the properties they have
+   * GroupMember Templates define a type of group member and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param groupMemberTemplateResource The group member template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -176,7 +180,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a group template
-   * Group Templates define a type of group and the properties they have
+   * Group Templates define a type of group and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param groupTemplateResource The group template resource object (optional)
    * @return TemplateResource
    */
@@ -190,7 +194,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Create a group template asynchronously
-   * Group Templates define a type of group and the properties they have
+   * Group Templates define a type of group and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param groupTemplateResource The group template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -201,7 +205,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a group from the system
-   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well.
+   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @return void
    */
@@ -215,7 +219,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a group from the system asynchronously
-   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well.
+   * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group&#39;s parent if they were not added to it directly as well. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @return Future(void)
   */
@@ -226,7 +230,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete an group member template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -241,7 +245,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete an group member template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -253,7 +257,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a group template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -268,7 +272,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Delete a group template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -279,8 +283,37 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
 
   /**
-   * Loads a specific group&#39;s details
+   * Enable or disable notification of group messages
    * 
+   * @param uniqueName The group unique name 
+   * @param userId The user id of the member or &#39;me&#39; 
+   * @param disabled disabled 
+   * @return void
+   */
+  def disableGroupNotification(uniqueName: String, userId: String, disabled: ValueWrapperboolean) = {
+    val await = Try(Await.result(disableGroupNotificationAsync(uniqueName, userId, disabled), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Enable or disable notification of group messages asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param userId The user id of the member or &#39;me&#39; 
+   * @param disabled disabled 
+   * @return Future(void)
+  */
+  def disableGroupNotificationAsync(uniqueName: String, userId: String, disabled: ValueWrapperboolean) = {
+      helper.disableGroupNotification(uniqueName, userId, disabled)
+  }
+
+
+  /**
+   * Loads a specific group&#39;s details
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @return GroupResource
    */
@@ -294,7 +327,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Loads a specific group&#39;s details asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @return Future(GroupResource)
   */
@@ -305,7 +338,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get group ancestors
-   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc). &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @return List[GroupResource]
    */
@@ -319,7 +352,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get group ancestors asynchronously
-   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+   * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc). &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @return Future(List[GroupResource])
   */
@@ -330,7 +363,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a user from a group
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @param userId The id of the user 
    * @return GroupMemberResource
@@ -345,7 +378,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a user from a group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @param userId The id of the user 
    * @return Future(GroupMemberResource)
@@ -357,7 +390,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single group member template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -371,7 +404,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single group member template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -382,7 +415,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search group member templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -398,7 +431,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search group member templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -411,7 +444,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Lists members of the group
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -428,7 +461,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Lists members of the group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param uniqueName The group unique name 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -441,8 +474,37 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
 
   /**
+   * Get a list of group messages
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
+   * @param uniqueName The group unique name 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return PageResourceChatMessageResource
+   */
+  def getGroupMessages(uniqueName: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Option[PageResourceChatMessageResource] = {
+    val await = Try(Await.result(getGroupMessagesAsync(uniqueName, size, page), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get a list of group messages asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
+   * @param uniqueName The group unique name 
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @return Future(PageResourceChatMessageResource)
+  */
+  def getGroupMessagesAsync(uniqueName: String, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/): Future[PageResourceChatMessageResource] = {
+      helper.getGroupMessages(uniqueName, size, page)
+  }
+
+
+  /**
    * Get a single group template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -456,7 +518,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get a single group template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -467,7 +529,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search group templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -483,7 +545,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search group templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or GROUP_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -496,7 +558,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List groups a user is in
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param userId The id of the user 
    * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent. (optional)
    * @return List[String]
@@ -511,7 +573,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List groups a user is in asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param userId The id of the user 
    * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent. (optional)
    * @return Future(List[String])
@@ -523,7 +585,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search groups
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for groups using a specific template, by id (optional)
    * @param filterMemberCount Filters groups by member count. Multiple values possible for range search. Format: filter_member_count&#x3D;OP,ts&amp;... where OP in (GT, LT, GOE, LOE, EQ). Ex: filter_member_count&#x3D;GT,14,LT,17 (optional)
    * @param filterName Filter for groups with names starting with the given string (optional)
@@ -545,7 +607,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * List and search groups asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for groups using a specific template, by id (optional)
    * @param filterMemberCount Filters groups by member count. Multiple values possible for range search. Format: filter_member_count&#x3D;OP,ts&amp;... where OP in (GT, LT, GOE, LOE, EQ). Ex: filter_member_count&#x3D;GT,14,LT,17 (optional)
    * @param filterName Filter for groups with names starting with the given string (optional)
@@ -563,8 +625,35 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
 
   /**
-   * Removes a user from a group
+   * Send a group message
    * 
+   * @param uniqueName The group unique name 
+   * @param chatMessageRequest The chat message request (optional)
+   * @return ChatMessageResource
+   */
+  def postGroupMessage(uniqueName: String, chatMessageRequest: Option[ChatMessageRequest] = None): Option[ChatMessageResource] = {
+    val await = Try(Await.result(postGroupMessageAsync(uniqueName, chatMessageRequest), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Send a group message asynchronously
+   * 
+   * @param uniqueName The group unique name 
+   * @param chatMessageRequest The chat message request (optional)
+   * @return Future(ChatMessageResource)
+  */
+  def postGroupMessageAsync(uniqueName: String, chatMessageRequest: Option[ChatMessageRequest] = None): Future[ChatMessageResource] = {
+      helper.postGroupMessage(uniqueName, chatMessageRequest)
+  }
+
+
+  /**
+   * Removes a user from a group
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or self if open
    * @param uniqueName The group unique name 
    * @param userId The id of the user to remove 
    * @return void
@@ -579,7 +668,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Removes a user from a group asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or self if open
    * @param uniqueName The group unique name 
    * @param userId The id of the user to remove 
    * @return Future(void)
@@ -591,7 +680,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a group
-   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
+   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or admin of the group
    * @param uniqueName The group unique name 
    * @param groupResource The updated group (optional)
    * @return void
@@ -606,7 +695,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a group asynchronously
-   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
+   * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN or admin of the group
    * @param uniqueName The group unique name 
    * @param groupResource The updated group (optional)
    * @return Future(void)
@@ -618,7 +707,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s order
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param order The new order for the membership 
@@ -634,7 +723,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s order asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param order The new order for the membership 
@@ -647,7 +736,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s membership properties
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param properties The new properties for the membership 
@@ -663,7 +752,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s membership properties asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param properties The new properties for the membership 
@@ -676,7 +765,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s status
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param status The new status for the user 
@@ -692,7 +781,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Change a user&#39;s status asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; GROUP_ADMIN
    * @param uniqueName The group unique name 
    * @param userId The user id of the member to modify 
    * @param status The new status for the user 
@@ -705,7 +794,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update an group member template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param groupMemberTemplateResource The group member template resource object (optional)
    * @return TemplateResource
@@ -720,7 +809,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update an group member template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param groupMemberTemplateResource The group member template resource object (optional)
    * @return Future(TemplateResource)
@@ -732,7 +821,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a group template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param groupTemplateResource The group template resource object (optional)
    * @return TemplateResource
@@ -747,7 +836,7 @@ class UsersGroupsApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Update a group template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param groupTemplateResource The group template resource object (optional)
    * @return Future(TemplateResource)
@@ -915,6 +1004,30 @@ class UsersGroupsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     }
   }
 
+  def disableGroupNotification(uniqueName: String,
+    userId: String,
+    disabled: ValueWrapperboolean)(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ValueWrapperboolean]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/members/{user_id}/messages/disabled")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString)
+      replaceAll ("\\{" + "user_id" + "\\}",userId.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->disableGroupNotification")
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersGroupsApi->disableGroupNotification")
+
+    if (disabled == null) throw new Exception("Missing required parameter 'disabled' when calling UsersGroupsApi->disableGroupNotification")
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(disabled))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
   def getGroup(uniqueName: String)(implicit reader: ClientResponseReader[GroupResource]): Future[GroupResource] = {
     // create path and map variables
     val path = (addFmt("/users/groups/{unique_name}")
@@ -1053,6 +1166,35 @@ class UsersGroupsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     }
   }
 
+  def getGroupMessages(uniqueName: String,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1)
+    )(implicit reader: ClientResponseReader[PageResourceChatMessageResource]): Future[PageResourceChatMessageResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/messages")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->getGroupMessages")
+
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
   def getGroupTemplate(id: String)(implicit reader: ClientResponseReader[TemplateResource]): Future[TemplateResource] = {
     // create path and map variables
     val path = (addFmt("/users/groups/templates/{id}")
@@ -1178,6 +1320,26 @@ class UsersGroupsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) 
     }
 
     val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def postGroupMessage(uniqueName: String,
+    chatMessageRequest: Option[ChatMessageRequest] = None
+    )(implicit reader: ClientResponseReader[ChatMessageResource], writer: RequestWriter[ChatMessageRequest]): Future[ChatMessageResource] = {
+    // create path and map variables
+    val path = (addFmt("/users/groups/{unique_name}/messages")
+      replaceAll ("\\{" + "unique_name" + "\\}",uniqueName.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (uniqueName == null) throw new Exception("Missing required parameter 'uniqueName' when calling UsersGroupsApi->postGroupMessage")
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(chatMessageRequest))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }

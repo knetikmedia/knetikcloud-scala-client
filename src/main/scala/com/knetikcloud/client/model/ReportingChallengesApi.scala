@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingChallengesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingChallengesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class ReportingChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge event leaderboard details
-   * Lists all leaderboard entries with additional user details
+   * Lists all leaderboard entries with additional user details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_CHALLENGES_ADMIN
    * @param filterEvent A sepecific challenge event id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
@@ -83,7 +83,7 @@ class ReportingChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge event leaderboard details asynchronously
-   * Lists all leaderboard entries with additional user details
+   * Lists all leaderboard entries with additional user details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_CHALLENGES_ADMIN
    * @param filterEvent A sepecific challenge event id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
@@ -97,7 +97,7 @@ class ReportingChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge event participant details
-   * Lists all user submitted scores sorted by value, including those that do not apear in the leaderboard due to value or aggregation
+   * Lists all user submitted scores sorted by value, including those that do not apear in the leaderboard due to value or aggregation. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_CHALLENGES_ADMIN
    * @param filterEvent A sepecific challenge event id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
@@ -114,7 +114,7 @@ class ReportingChallengesApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Retrieve a challenge event participant details asynchronously
-   * Lists all user submitted scores sorted by value, including those that do not apear in the leaderboard due to value or aggregation
+   * Lists all user submitted scores sorted by value, including those that do not apear in the leaderboard due to value or aggregation. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_CHALLENGES_ADMIN
    * @param filterEvent A sepecific challenge event id (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)

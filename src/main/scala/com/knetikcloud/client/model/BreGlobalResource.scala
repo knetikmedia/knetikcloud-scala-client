@@ -26,7 +26,7 @@ case class BreGlobalResource (
   scopes: Option[List[BreGlobalScopeDefinition]],
   /* Where this global came from. System globals cannot be removed or updated */
   systemGlobal: Option[Boolean],
-  /* The variable type the global stores. See the See Bre Variables enpoint for list */
+  /* The variable type the global stores. See the BRE variables endpoint for list */
   _type: String
 )
 

@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersAddressesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create a new address
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param savedAddressResource The new address (optional)
    * @return SavedAddressResource
@@ -82,7 +82,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create a new address asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param savedAddressResource The new address (optional)
    * @return Future(SavedAddressResource)
@@ -94,7 +94,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an address
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @return void
@@ -109,7 +109,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an address asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @return Future(void)
@@ -121,7 +121,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single address
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @return SavedAddressResource
@@ -136,7 +136,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single address asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @return Future(SavedAddressResource)
@@ -148,7 +148,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search addresses
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -165,7 +165,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search addresses asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -179,7 +179,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an address
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @param savedAddressResource The saved address resource object (optional)
@@ -195,7 +195,7 @@ class UsersAddressesApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an address asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USERS_ADMIN or owner
    * @param userId The id of the user 
    * @param id The id of the address 
    * @param savedAddressResource The saved address resource object (optional)

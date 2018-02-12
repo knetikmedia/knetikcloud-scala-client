@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ContentCommentsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Add a new comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param commentResource The comment to be added (optional)
    * @return CommentResource
    */
@@ -82,7 +82,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Add a new comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param commentResource The comment to be added (optional)
    * @return Future(CommentResource)
   */
@@ -93,7 +93,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param id The comment id 
    * @return void
    */
@@ -107,7 +107,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param id The comment id 
    * @return Future(void)
   */
@@ -118,7 +118,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Return a comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The comment id 
    * @return CommentResource
    */
@@ -132,7 +132,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Return a comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The comment id 
    * @return Future(CommentResource)
   */
@@ -143,7 +143,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of comments
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param context Get comments by context type 
    * @param contextId Get comments by context id 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -160,7 +160,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Returns a page of comments asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param context Get comments by context type 
    * @param contextId Get comments by context id 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -174,7 +174,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a comment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param id The comment id 
    * @param content The comment content (optional)
    * @return void
@@ -189,7 +189,7 @@ class ContentCommentsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a comment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COMMENTS_USER or COMMENTS_ADMIN
    * @param id The comment id 
    * @param content The comment content (optional)
    * @return Future(void)

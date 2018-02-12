@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ContentArticlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create a new article
-   * Articles are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.
+   * Articles are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.&lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions:&lt;/b&gt; ARTICLES_ADMIN
    * @param articleResource The new article (optional)
    * @return ArticleResource
    */
@@ -83,7 +83,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create a new article asynchronously
-   * Articles are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.
+   * Articles are blobs of text with titles, a category and assets. Formatting and display of the text is in the hands of the front end.&lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions:&lt;/b&gt; ARTICLES_ADMIN
    * @param articleResource The new article (optional)
    * @return Future(ArticleResource)
   */
@@ -94,7 +94,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create an article template
-   * Article Templates define a type of article and the properties they have
+   * Article Templates define a type of article and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param articleTemplateResource The article template resource object (optional)
    * @return TemplateResource
    */
@@ -108,7 +108,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create an article template asynchronously
-   * Article Templates define a type of article and the properties they have
+   * Article Templates define a type of article and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param articleTemplateResource The article template resource object (optional)
    * @return Future(TemplateResource)
   */
@@ -119,7 +119,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete an existing article
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
    * @param id The article id 
    * @return void
    */
@@ -133,7 +133,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete an existing article asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
    * @param id The article id 
    * @return Future(void)
   */
@@ -144,7 +144,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete an article template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -159,7 +159,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete an article template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -171,7 +171,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single article
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The article id 
    * @return ArticleResource
    */
@@ -185,7 +185,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single article asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The article id 
    * @return Future(ArticleResource)
   */
@@ -196,7 +196,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single article template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTICLES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -210,7 +210,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single article template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTICLES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -221,7 +221,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search article templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTICLES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -237,7 +237,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search article templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ARTICLES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -250,7 +250,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search articles
-   * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed.
+   * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActiveOnly Filter for articles that are active (true) or inactive (false) (optional)
    * @param filterCategory Filter for articles from a specific category by id (optional)
    * @param filterTagset Filter for articles with at least one of a specified set of tags (separated by comma) (optional)
@@ -272,7 +272,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search articles asynchronously
-   * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed.
+   * Get a list of articles with optional filtering. Assets will not be filled in on the resources returned. Use &#39;Get a single article&#39; to retrieve the full resource with assets for a given item as needed. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterActiveOnly Filter for articles that are active (true) or inactive (false) (optional)
    * @param filterCategory Filter for articles from a specific category by id (optional)
    * @param filterTagset Filter for articles with at least one of a specified set of tags (separated by comma) (optional)
@@ -291,7 +291,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update an existing article
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
    * @param id The article id 
    * @param articleResource The article object (optional)
    * @return ArticleResource
@@ -306,7 +306,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update an existing article asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
    * @param id The article id 
    * @param articleResource The article object (optional)
    * @return Future(ArticleResource)
@@ -318,7 +318,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update an article template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param articleTemplateResource The article template resource object (optional)
    * @return TemplateResource
@@ -333,7 +333,7 @@ class ContentArticlesApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update an article template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param articleTemplateResource The article template resource object (optional)
    * @return Future(TemplateResource)

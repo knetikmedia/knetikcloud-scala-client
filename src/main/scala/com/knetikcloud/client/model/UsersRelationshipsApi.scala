@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersRelationshipsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a user relationship
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param relationship The new relationship (optional)
    * @return UserRelationshipResource
    */
@@ -81,7 +81,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a user relationship asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param relationship The new relationship (optional)
    * @return Future(UserRelationshipResource)
   */
@@ -92,7 +92,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a user relationship
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @return void
    */
@@ -106,7 +106,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a user relationship asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a user relationship
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_USER or RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @return UserRelationshipResource
    */
@@ -131,7 +131,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a user relationship asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_USER or RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @return Future(UserRelationshipResource)
   */
@@ -142,7 +142,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of user relationships
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_USER or RELATIONSHIPS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
@@ -158,7 +158,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of user relationships asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_USER or RELATIONSHIPS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
@@ -171,7 +171,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a user relationship
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @param relationship The new relationship (optional)
    * @return UserRelationshipResource
@@ -186,7 +186,7 @@ class UsersRelationshipsApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a user relationship asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; RELATIONSHIPS_ADMIN
    * @param id The id of the relationship 
    * @param relationship The new relationship (optional)
    * @return Future(UserRelationshipResource)

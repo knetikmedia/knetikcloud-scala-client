@@ -20,6 +20,8 @@ case class ChallengeActivityResource (
   additionalProperties: Option[Map[String, Property]],
   /* The id of the challenge */
   challengeId: Option[Long],
+  /* Defines core settings about the activity that affect how it can be created/played by users. Values may be left null to inherit from parent activity. */
+  coreSettings: Option[CoreChallengeActivitySettings],
   /* The entitlement item needed to participate in the activity as part of this event. Null indicates free entry. When creating/updating only id is used. Item must be pre-existing */
   entitlement: Option[ActivityEntitlementResource],
   /* The unique ID for this resource */

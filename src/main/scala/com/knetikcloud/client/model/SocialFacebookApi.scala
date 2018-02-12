@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class SocialFacebookApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class SocialFacebookApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class SocialFacebookApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Link facebook account
-   * Links the current user account to a facebook account, using the acccess token from facebook. Can also be used to update the access token after it has expired.
+   * Links the current user account to a facebook account, using the acccess token from facebook. Can also be used to update the access token after it has expired. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; Non-facebook user token
    * @param facebookToken The token from facebook (optional)
    * @return void
    */
@@ -80,7 +80,7 @@ class SocialFacebookApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Link facebook account asynchronously
-   * Links the current user account to a facebook account, using the acccess token from facebook. Can also be used to update the access token after it has expired.
+   * Links the current user account to a facebook account, using the acccess token from facebook. Can also be used to update the access token after it has expired. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; Non-facebook user token
    * @param facebookToken The token from facebook (optional)
    * @return Future(void)
   */

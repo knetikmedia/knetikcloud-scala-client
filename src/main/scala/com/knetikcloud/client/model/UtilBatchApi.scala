@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UtilBatchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UtilBatchApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class UtilBatchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get batch result with token
-   * Tokens expire in 24 hours
+   * Tokens expire in 24 hours. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param token token 
    * @return List[BatchReturn]
    */
@@ -82,7 +82,7 @@ class UtilBatchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get batch result with token asynchronously
-   * Tokens expire in 24 hours
+   * Tokens expire in 24 hours. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param token token 
    * @return Future(List[BatchReturn])
   */
@@ -93,7 +93,7 @@ class UtilBatchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Request to run API call given the method, content type, path url, and body of request
-   * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service
+   * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param batch The batch object (optional)
    * @return List[BatchReturn]
    */
@@ -107,7 +107,7 @@ class UtilBatchApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Request to run API call given the method, content type, path url, and body of request asynchronously
-   * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service
+   * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param batch The batch object (optional)
    * @return Future(List[BatchReturn])
   */

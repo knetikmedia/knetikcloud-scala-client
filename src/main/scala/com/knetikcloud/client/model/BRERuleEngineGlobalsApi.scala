@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineGlobalsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Create a global definition
-   * Once created you can then use in a custom rule. Note that global definitions cannot be modified or deleted if in use.
+   * Once created you can then use in a custom rule. Note that global definitions cannot be modified or deleted if in use. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param breGlobalResource The BRE global resource object (optional)
    * @return BreGlobalResource
    */
@@ -81,7 +81,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Create a global definition asynchronously
-   * Once created you can then use in a custom rule. Note that global definitions cannot be modified or deleted if in use.
+   * Once created you can then use in a custom rule. Note that global definitions cannot be modified or deleted if in use. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param breGlobalResource The BRE global resource object (optional)
    * @return Future(BreGlobalResource)
   */
@@ -92,7 +92,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Delete a global
-   * May fail if there are existing rules against it. Cannot delete core globals
+   * May fail if there are existing rules against it. Cannot delete core globals. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param id The id of the global definition 
    * @return void
    */
@@ -106,7 +106,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Delete a global asynchronously
-   * May fail if there are existing rules against it. Cannot delete core globals
+   * May fail if there are existing rules against it. Cannot delete core globals. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param id The id of the global definition 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a single global definition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_USER
    * @param id The id of the global definition 
    * @return BreGlobalResource
    */
@@ -131,7 +131,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a single global definition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_USER
    * @param id The id of the global definition 
    * @return Future(BreGlobalResource)
   */
@@ -142,7 +142,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List global definitions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_USER
    * @param filterSystem Filter for globals that are system globals when true, or not when false. Leave off for both mixed (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -158,7 +158,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List global definitions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_USER
    * @param filterSystem Filter for globals that are system globals when true, or not when false. Leave off for both mixed (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -171,7 +171,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update a global definition
-   * May fail if new parameters mismatch requirements of existing rules. Cannot update core globals
+   * May fail if new parameters mismatch requirements of existing rules. Cannot update core globals. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param id The id of the global definition 
    * @param breGlobalResource The BRE global resource object (optional)
    * @return BreGlobalResource
@@ -186,7 +186,7 @@ class BRERuleEngineGlobalsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update a global definition asynchronously
-   * May fail if new parameters mismatch requirements of existing rules. Cannot update core globals
+   * May fail if new parameters mismatch requirements of existing rules. Cannot update core globals. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_GLOBALS_ADMIN
    * @param id The id of the global definition 
    * @param breGlobalResource The BRE global resource object (optional)
    * @return Future(BreGlobalResource)

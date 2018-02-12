@@ -14,6 +14,10 @@ package com.knetikcloud.client.model
 
 import java.text.SimpleDateFormat
 
+import com.knetikcloud.client.model.MessageResource
+import com.knetikcloud.client.model.MessageTemplateBulkRequest
+import com.knetikcloud.client.model.MessageTemplateResource
+import com.knetikcloud.client.model.PageResourceMessageTemplateResource
 import com.knetikcloud.client.model.RawEmailResource
 import com.knetikcloud.client.model.RawPushResource
 import com.knetikcloud.client.model.RawSMSResource
@@ -21,6 +25,7 @@ import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateEmailResource
 import com.knetikcloud.client.model.TemplatePushResource
 import com.knetikcloud.client.model.TemplateSMSResource
+import com.knetikcloud.client.model.WebsocketMessageResource
 import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -47,7 +52,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -70,8 +75,168 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
   val helper = new MessagingApiAsyncHelper(client, config)
 
   /**
+   * Compile a message template
+   * Processes a set of input data against the template and returnes the compiled result. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param request request (optional)
+   * @return Map[String, String]
+   */
+  def compileMessageTemplate(request: Option[MessageTemplateBulkRequest] = None): Option[Map[String, String]] = {
+    val await = Try(Await.result(compileMessageTemplateAsync(request), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Compile a message template asynchronously
+   * Processes a set of input data against the template and returnes the compiled result. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param request request (optional)
+   * @return Future(Map[String, String])
+  */
+  def compileMessageTemplateAsync(request: Option[MessageTemplateBulkRequest] = None): Future[Map[String, String]] = {
+      helper.compileMessageTemplate(request)
+  }
+
+
+  /**
+   * Create a message template
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param messageTemplate The new template email to be sent (optional)
+   * @return MessageTemplateResource
+   */
+  def createMessageTemplate(messageTemplate: Option[MessageTemplateResource] = None): Option[MessageTemplateResource] = {
+    val await = Try(Await.result(createMessageTemplateAsync(messageTemplate), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Create a message template asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param messageTemplate The new template email to be sent (optional)
+   * @return Future(MessageTemplateResource)
+  */
+  def createMessageTemplateAsync(messageTemplate: Option[MessageTemplateResource] = None): Future[MessageTemplateResource] = {
+      helper.createMessageTemplate(messageTemplate)
+  }
+
+
+  /**
+   * Delete an existing message template
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @return void
+   */
+  def deleteMessageTemplate(id: String) = {
+    val await = Try(Await.result(deleteMessageTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Delete an existing message template asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @return Future(void)
+  */
+  def deleteMessageTemplateAsync(id: String) = {
+      helper.deleteMessageTemplate(id)
+  }
+
+
+  /**
+   * Get a single message template
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @return MessageTemplateResource
+   */
+  def getMessageTemplate(id: String): Option[MessageTemplateResource] = {
+    val await = Try(Await.result(getMessageTemplateAsync(id), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Get a single message template asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @return Future(MessageTemplateResource)
+  */
+  def getMessageTemplateAsync(id: String): Future[MessageTemplateResource] = {
+      helper.getMessageTemplate(id)
+  }
+
+
+  /**
+   * List and search message templates
+   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param filterTagset Filter for message templates with at least one of a specified set of tags (separated by comma) (optional)
+   * @param filterTagIntersection Filter for message templates with all of a specified set of tags (separated by comma) (optional)
+   * @param filterTagExclusion Filter for message templates with none of a specified set of tags (separated by comma) (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return PageResourceMessageTemplateResource
+   */
+  def getMessageTemplates(filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Option[PageResourceMessageTemplateResource] = {
+    val await = Try(Await.result(getMessageTemplatesAsync(filterTagset, filterTagIntersection, filterTagExclusion, size, page, order), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * List and search message templates asynchronously
+   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param filterTagset Filter for message templates with at least one of a specified set of tags (separated by comma) (optional)
+   * @param filterTagIntersection Filter for message templates with all of a specified set of tags (separated by comma) (optional)
+   * @param filterTagExclusion Filter for message templates with none of a specified set of tags (separated by comma) (optional)
+   * @param size The number of objects returned per page (optional, default to 25)
+   * @param page The number of the page returned, starting with 1 (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
+   * @return Future(PageResourceMessageTemplateResource)
+  */
+  def getMessageTemplatesAsync(filterTagset: Option[String] = None, filterTagIntersection: Option[String] = None, filterTagExclusion: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = id:ASC*/): Future[PageResourceMessageTemplateResource] = {
+      helper.getMessageTemplates(filterTagset, filterTagIntersection, filterTagExclusion, size, page, order)
+  }
+
+
+  /**
+   * Send a message
+   * Sends a message with one or more formats to one or more users. Fill in any message formats desired (email, sms, websockets) and each user will recieve all valid formats. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param messageResource The message to be sent (optional)
+   * @return void
+   */
+  def sendMessage1(messageResource: Option[MessageResource] = None) = {
+    val await = Try(Await.result(sendMessage1Async(messageResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Send a message asynchronously
+   * Sends a message with one or more formats to one or more users. Fill in any message formats desired (email, sms, websockets) and each user will recieve all valid formats. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param messageResource The message to be sent (optional)
+   * @return Future(void)
+  */
+  def sendMessage1Async(messageResource: Option[MessageResource] = None) = {
+      helper.sendMessage1(messageResource)
+  }
+
+
+  /**
    * Send a raw email to one or more users
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawEmailResource The new raw email to be sent (optional)
    * @return void
    */
@@ -85,7 +250,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a raw email to one or more users asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawEmailResource The new raw email to be sent (optional)
    * @return Future(void)
   */
@@ -96,7 +261,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a raw push notification
-   * Sends a raw push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped.
+   * Sends a raw push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawPushResource The new raw push notification to be sent (optional)
    * @return void
    */
@@ -110,7 +275,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a raw push notification asynchronously
-   * Sends a raw push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped.
+   * Sends a raw push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawPushResource The new raw push notification to be sent (optional)
    * @return Future(void)
   */
@@ -121,7 +286,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a raw SMS
-   * Sends a raw SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * Sends a raw SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawSMSResource The new raw SMS to be sent (optional)
    * @return void
    */
@@ -135,7 +300,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a raw SMS asynchronously
-   * Sends a raw SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * Sends a raw SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param rawSMSResource The new raw SMS to be sent (optional)
    * @return Future(void)
   */
@@ -146,7 +311,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a templated email to one or more users
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param messageResource The new template email to be sent (optional)
    * @return void
    */
@@ -160,7 +325,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a templated email to one or more users asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param messageResource The new template email to be sent (optional)
    * @return Future(void)
   */
@@ -171,7 +336,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a templated push notification
-   * Sends a templated push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped.
+   * Sends a templated push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param templatePushResource The new templated push notification to be sent (optional)
    * @return void
    */
@@ -185,7 +350,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a templated push notification asynchronously
-   * Sends a templated push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped.
+   * Sends a templated push notification message to one or more users. User&#39;s without registered mobile device for the application will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param templatePushResource The new templated push notification to be sent (optional)
    * @return Future(void)
   */
@@ -196,7 +361,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a new templated SMS
-   * Sends a templated SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * Sends a templated SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param templateSMSResource The new template SMS to be sent (optional)
    * @return void
    */
@@ -210,7 +375,7 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Send a new templated SMS asynchronously
-   * Sends a templated SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped.
+   * Sends a templated SMS text message to one or more users. User&#39;s without registered mobile numbers will be skipped. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param templateSMSResource The new template SMS to be sent (optional)
    * @return Future(void)
   */
@@ -219,9 +384,190 @@ class MessagingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
   }
 
 
+  /**
+   * Send a websocket message
+   * Sends a websocket message to one or more users. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param websocketResource The new websocket message to be sent (optional)
+   * @return void
+   */
+  def sendWebsocket(websocketResource: Option[WebsocketMessageResource] = None) = {
+    val await = Try(Await.result(sendWebsocketAsync(websocketResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Send a websocket message asynchronously
+   * Sends a websocket message to one or more users. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
+   * @param websocketResource The new websocket message to be sent (optional)
+   * @return Future(void)
+  */
+  def sendWebsocketAsync(websocketResource: Option[WebsocketMessageResource] = None) = {
+      helper.sendWebsocket(websocketResource)
+  }
+
+
+  /**
+   * Update an existing message template
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @param messageTemplateResource The message template (optional)
+   * @return MessageTemplateResource
+   */
+  def updateMessageTemplate(id: String, messageTemplateResource: Option[MessageTemplateResource] = None): Option[MessageTemplateResource] = {
+    val await = Try(Await.result(updateMessageTemplateAsync(id, messageTemplateResource), Duration.Inf))
+    await match {
+      case Success(i) => Some(await.get)
+      case Failure(t) => None
+    }
+  }
+
+  /**
+   * Update an existing message template asynchronously
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * @param id The message_template id 
+   * @param messageTemplateResource The message template (optional)
+   * @return Future(MessageTemplateResource)
+  */
+  def updateMessageTemplateAsync(id: String, messageTemplateResource: Option[MessageTemplateResource] = None): Future[MessageTemplateResource] = {
+      helper.updateMessageTemplate(id, messageTemplateResource)
+  }
+
+
 }
 
 class MessagingApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends ApiClient(client, config) {
+
+  def compileMessageTemplate(request: Option[MessageTemplateBulkRequest] = None
+    )(implicit reader: ClientResponseReader[Map[String, String]], writer: RequestWriter[MessageTemplateBulkRequest]): Future[Map[String, String]] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates/compilations"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(request))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def createMessageTemplate(messageTemplate: Option[MessageTemplateResource] = None
+    )(implicit reader: ClientResponseReader[MessageTemplateResource], writer: RequestWriter[MessageTemplateResource]): Future[MessageTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(messageTemplate))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def deleteMessageTemplate(id: String)(implicit reader: ClientResponseReader[Unit]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MessagingApi->deleteMessageTemplate")
+
+
+    val resFuture = client.submit("DELETE", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getMessageTemplate(id: String)(implicit reader: ClientResponseReader[MessageTemplateResource]): Future[MessageTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MessagingApi->getMessageTemplate")
+
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def getMessageTemplates(filterTagset: Option[String] = None,
+    filterTagIntersection: Option[String] = None,
+    filterTagExclusion: Option[String] = None,
+    size: Option[Integer] = Some(25),
+    page: Option[Integer] = Some(1),
+    order: Option[String] = Some(id:ASC)
+    )(implicit reader: ClientResponseReader[PageResourceMessageTemplateResource]): Future[PageResourceMessageTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    filterTagset match {
+      case Some(param) => queryParams += "filter_tagset" -> param.toString
+      case _ => queryParams
+    }
+    filterTagIntersection match {
+      case Some(param) => queryParams += "filter_tag_intersection" -> param.toString
+      case _ => queryParams
+    }
+    filterTagExclusion match {
+      case Some(param) => queryParams += "filter_tag_exclusion" -> param.toString
+      case _ => queryParams
+    }
+    size match {
+      case Some(param) => queryParams += "size" -> param.toString
+      case _ => queryParams
+    }
+    page match {
+      case Some(param) => queryParams += "page" -> param.toString
+      case _ => queryParams
+    }
+    order match {
+      case Some(param) => queryParams += "order" -> param.toString
+      case _ => queryParams
+    }
+
+    val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendMessage1(messageResource: Option[MessageResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[MessageResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/message"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(messageResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
 
   def sendRawEmail(rawEmailResource: Option[RawEmailResource] = None
     )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[RawEmailResource]): Future[Unit] = {
@@ -314,6 +660,42 @@ class MessagingApiAsyncHelper(client: TransportClient, config: SwaggerConfig) ex
 
 
     val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(templateSMSResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def sendWebsocket(websocketResource: Option[WebsocketMessageResource] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[WebsocketMessageResource]): Future[Unit] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/websocket-message"))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+
+    val resFuture = client.submit("POST", path, queryParams.toMap, headerParams.toMap, writer.write(websocketResource))
+    resFuture flatMap { resp =>
+      process(reader.read(resp))
+    }
+  }
+
+  def updateMessageTemplate(id: String,
+    messageTemplateResource: Option[MessageTemplateResource] = None
+    )(implicit reader: ClientResponseReader[MessageTemplateResource], writer: RequestWriter[MessageTemplateResource]): Future[MessageTemplateResource] = {
+    // create path and map variables
+    val path = (addFmt("/messaging/templates/{id}")
+      replaceAll ("\\{" + "id" + "\\}",id.toString))
+
+    // query params
+    val queryParams = new mutable.HashMap[String, String]
+    val headerParams = new mutable.HashMap[String, String]
+
+    if (id == null) throw new Exception("Missing required parameter 'id' when calling MessagingApi->updateMessageTemplate")
+
+
+    val resFuture = client.submit("PUT", path, queryParams.toMap, headerParams.toMap, writer.write(messageTemplateResource))
     resFuture flatMap { resp =>
       process(reader.read(resp))
     }

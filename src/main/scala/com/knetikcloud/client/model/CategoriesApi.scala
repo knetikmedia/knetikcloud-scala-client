@@ -46,7 +46,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class CategoriesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -70,7 +70,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a new category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param category The category to create (optional)
    * @return CategoryResource
    */
@@ -84,7 +84,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a new category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param category The category to create (optional)
    * @return Future(CategoryResource)
   */
@@ -95,7 +95,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a category template
-   * Templates define a type of category and the properties they have
+   * Templates define a type of category and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The template to create (optional)
    * @return TemplateResource
    */
@@ -109,7 +109,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a category template asynchronously
-   * Templates define a type of category and the properties they have
+   * Templates define a type of category and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The template to create (optional)
    * @return Future(TemplateResource)
   */
@@ -120,7 +120,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete an existing category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param id The id of the category to be deleted 
    * @return void
    */
@@ -134,7 +134,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete an existing category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param id The id of the category to be deleted 
    * @return Future(void)
   */
@@ -145,7 +145,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a category template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -160,7 +160,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a category template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -172,7 +172,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search categories with optional filters
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterSearch Filter for categories whose names begin with provided string (optional)
    * @param filterActive Filter for categories that are specifically active or inactive (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -190,7 +190,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search categories with optional filters asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterSearch Filter for categories whose names begin with provided string (optional)
    * @param filterActive Filter for categories that are specifically active or inactive (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -205,7 +205,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the category to retrieve 
    * @return CategoryResource
    */
@@ -219,7 +219,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the category to retrieve 
    * @return Future(CategoryResource)
   */
@@ -230,7 +230,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single category template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CATEGORIES_ADMIN
    * @param id The id of the template 
    * @return TemplateResource
    */
@@ -244,7 +244,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single category template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CATEGORIES_ADMIN
    * @param id The id of the template 
    * @return Future(TemplateResource)
   */
@@ -255,7 +255,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search category templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CATEGORIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -271,7 +271,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search category templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or CATEGORIES_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -284,7 +284,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List all trivia tags in the system
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return PageResourcestring
@@ -299,7 +299,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List all trivia tags in the system asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @return Future(PageResourcestring)
@@ -311,7 +311,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update an existing category
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param id The id of the category 
    * @param category The category to update (optional)
    * @return CategoryResource
@@ -326,7 +326,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update an existing category asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CATEGORIES_ADMIN
    * @param id The id of the category 
    * @param category The category to update (optional)
    * @return Future(CategoryResource)
@@ -338,7 +338,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a category template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template information (optional)
    * @return TemplateResource
@@ -353,7 +353,7 @@ class CategoriesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a category template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template information (optional)
    * @return Future(TemplateResource)

@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UtilMaintenanceApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete maintenance info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @return void
    */
   def deleteMaintenance() = {
@@ -79,7 +79,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete maintenance info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @return Future(void)
   */
   def deleteMaintenanceAsync() = {
@@ -89,7 +89,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get current maintenance info
-   * Get current maintenance info. 404 if no maintenance.
+   * Get current maintenance info. 404 if no maintenance. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Maintenance
    */
   def getMaintenance(): Option[Maintenance] = {
@@ -102,7 +102,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get current maintenance info asynchronously
-   * Get current maintenance info. 404 if no maintenance.
+   * Get current maintenance info. 404 if no maintenance. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(Maintenance)
   */
   def getMaintenanceAsync(): Future[Maintenance] = {
@@ -112,7 +112,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Set current maintenance info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @param maintenance The maintenance object (optional)
    * @return void
    */
@@ -126,7 +126,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Set current maintenance info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @param maintenance The maintenance object (optional)
    * @return Future(void)
   */
@@ -137,7 +137,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update current maintenance info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @param maintenance The maintenance object (optional)
    * @return void
    */
@@ -151,7 +151,7 @@ class UtilMaintenanceApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update current maintenance info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MAINTENANCE_ADMIN
    * @param maintenance The maintenance object (optional)
    * @return Future(void)
   */

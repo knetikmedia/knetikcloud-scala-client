@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class DispositionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Add a new disposition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DISPOSITIONS_USER and user, or DISPOSITIONS_ADMIN
    * @param disposition The new disposition record (optional)
    * @return DispositionResource
    */
@@ -82,7 +82,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Add a new disposition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DISPOSITIONS_USER and user, or DISPOSITIONS_ADMIN
    * @param disposition The new disposition record (optional)
    * @return Future(DispositionResource)
   */
@@ -93,7 +93,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a disposition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DISPOSITIONS_USER and owner, or DISPOSITIONS_ADMIN
    * @param id The id of the disposition record 
    * @return void
    */
@@ -107,7 +107,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a disposition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; DISPOSITIONS_USER and owner, or DISPOSITIONS_ADMIN
    * @param id The id of the disposition record 
    * @return Future(void)
   */
@@ -118,7 +118,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a disposition
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the disposition record 
    * @return DispositionResource
    */
@@ -132,7 +132,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a disposition asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the disposition record 
    * @return Future(DispositionResource)
   */
@@ -143,7 +143,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a list of disposition counts
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterContext Filter for dispositions within a context type (games, articles, polls, etc). Optionally with a specific id like filter_context&#x3D;video:47 (optional)
    * @param filterOwner Filter for dispositions from a specific user by id or &#39;me&#39; (optional)
    * @return List[DispositionCount]
@@ -158,7 +158,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a list of disposition counts asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterContext Filter for dispositions within a context type (games, articles, polls, etc). Optionally with a specific id like filter_context&#x3D;video:47 (optional)
    * @param filterOwner Filter for dispositions from a specific user by id or &#39;me&#39; (optional)
    * @return Future(List[DispositionCount])
@@ -170,7 +170,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a page of dispositions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterContext Filter for dispositions within a context type (games, articles, polls, etc). Optionally with a specific id like filter_context&#x3D;video:47 (optional)
    * @param filterOwner Filter for dispositions from a specific user by id or &#39;me&#39; (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -188,7 +188,7 @@ class DispositionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Returns a page of dispositions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterContext Filter for dispositions within a context type (games, articles, polls, etc). Optionally with a specific id like filter_context&#x3D;video:47 (optional)
    * @param filterOwner Filter for dispositions from a specific user by id or &#39;me&#39; (optional)
    * @param size The number of objects returned per page (optional, default to 25)

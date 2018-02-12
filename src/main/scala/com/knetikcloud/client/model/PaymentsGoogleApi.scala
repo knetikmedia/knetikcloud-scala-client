@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsGoogleApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsGoogleApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class PaymentsGoogleApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Mark an invoice paid with Google
-   * Mark an invoice paid with Google. Verifies signature from Google and treats the developerPayload field inside the json payload as the id of the invoice to pay. Returns the transaction ID if successful.
+   * Mark an invoice paid with Google. Verifies signature from Google and treats the developerPayload field inside the json payload as the id of the invoice to pay. Returns the transaction ID if successful. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param request The request for paying an invoice through a Google in-app payment (optional)
    * @return Integer
    */
@@ -80,7 +80,7 @@ class PaymentsGoogleApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Mark an invoice paid with Google asynchronously
-   * Mark an invoice paid with Google. Verifies signature from Google and treats the developerPayload field inside the json payload as the id of the invoice to pay. Returns the transaction ID if successful.
+   * Mark an invoice paid with Google. Verifies signature from Google and treats the developerPayload field inside the json payload as the id of the invoice to pay. Returns the transaction ID if successful. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param request The request for paying an invoice through a Google in-app payment (optional)
    * @return Future(Integer)
   */

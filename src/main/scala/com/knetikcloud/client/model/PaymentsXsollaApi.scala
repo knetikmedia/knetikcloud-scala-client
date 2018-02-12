@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsXsollaApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsXsollaApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class PaymentsXsollaApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create a payment token that should be used to forward the user to Xsolla so they can complete payment
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; XSOLLA_ADMIN or owner
    * @param request The payment request to be sent to XSolla (optional)
    * @return String
    */
@@ -80,7 +80,7 @@ class PaymentsXsollaApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create a payment token that should be used to forward the user to Xsolla so they can complete payment asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; XSOLLA_ADMIN or owner
    * @param request The payment request to be sent to XSolla (optional)
    * @return Future(String)
   */

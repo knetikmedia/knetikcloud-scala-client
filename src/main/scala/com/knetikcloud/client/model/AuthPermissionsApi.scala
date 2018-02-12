@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class AuthPermissionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create a new permission
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permissionResource The permission resource object (optional)
    * @return PermissionResource
    */
@@ -81,7 +81,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Create a new permission asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permissionResource The permission resource object (optional)
    * @return Future(PermissionResource)
   */
@@ -92,7 +92,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a permission
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @param force If true, removes permission assigned to roles (optional)
    * @return void
@@ -107,7 +107,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Delete a permission asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @param force If true, removes permission assigned to roles (optional)
    * @return Future(void)
@@ -119,7 +119,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single permission
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @return PermissionResource
    */
@@ -133,7 +133,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Get a single permission asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @return Future(PermissionResource)
   */
@@ -144,7 +144,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search permissions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to permission:ASC)
@@ -160,7 +160,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * List and search permissions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to permission:ASC)
@@ -173,7 +173,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a permission
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @param permissionResource The permission resource object (optional)
    * @return PermissionResource
@@ -188,7 +188,7 @@ class AuthPermissionsApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Update a permission asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; PERMISSIONS_ADMIN
    * @param permission The permission value 
    * @param permissionResource The permission resource object (optional)
    * @return Future(PermissionResource)

@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsPayPalClassicApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a PayPal Classic billing agreement for the user
-   * Returns the token that should be used to forward the user to PayPal so they can accept the agreement.
+   * Returns the token that should be used to forward the user to PayPal so they can accept the agreement. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to create a PayPal billing agreement (optional)
    * @return String
    */
@@ -83,7 +83,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a PayPal Classic billing agreement for the user asynchronously
-   * Returns the token that should be used to forward the user to PayPal so they can accept the agreement.
+   * Returns the token that should be used to forward the user to PayPal so they can accept the agreement. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to create a PayPal billing agreement (optional)
    * @return Future(String)
   */
@@ -94,7 +94,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a payment token for PayPal express checkout
-   * Returns the token that should be used to forward the user to PayPal so they can complete the checkout.
+   * Returns the token that should be used to forward the user to PayPal so they can complete the checkout. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to create a PayPal payment token (optional)
    * @return String
    */
@@ -108,7 +108,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Create a payment token for PayPal express checkout asynchronously
-   * Returns the token that should be used to forward the user to PayPal so they can complete the checkout.
+   * Returns the token that should be used to forward the user to PayPal so they can complete the checkout. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to create a PayPal payment token (optional)
    * @return Future(String)
   */
@@ -119,7 +119,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Finalizes a billing agreement after the user has accepted through PayPal
-   * Returns the ID of the new payment method created for the user for the billing agreement.
+   * Returns the ID of the new payment method created for the user for the billing agreement. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to finalize a PayPal billing agreement (optional)
    * @return Integer
    */
@@ -133,7 +133,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Finalizes a billing agreement after the user has accepted through PayPal asynchronously
-   * Returns the ID of the new payment method created for the user for the billing agreement.
+   * Returns the ID of the new payment method created for the user for the billing agreement. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to finalize a PayPal billing agreement (optional)
    * @return Future(Integer)
   */
@@ -144,7 +144,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Finalizes a payment after the user has completed checkout with PayPal
-   * The invoice will be marked paid/failed by asynchronous IPN callback.
+   * The invoice will be marked paid/failed by asynchronous IPN callback. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to finalize the payment (optional)
    * @return void
    */
@@ -158,7 +158,7 @@ class PaymentsPayPalClassicApi(val defBasePath: String = "https://devsandbox.kne
 
   /**
    * Finalizes a payment after the user has completed checkout with PayPal asynchronously
-   * The invoice will be marked paid/failed by asynchronous IPN callback.
+   * The invoice will be marked paid/failed by asynchronous IPN callback. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYPAL_CLASSIC_ADMIN or owner
    * @param request The request to finalize the payment (optional)
    * @return Future(void)
   */

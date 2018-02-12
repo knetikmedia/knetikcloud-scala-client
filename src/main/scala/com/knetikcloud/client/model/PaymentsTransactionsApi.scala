@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsTransactionsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get the details for a single transaction
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRANSACTIONS_ADMIN or owner
    * @param id id 
    * @return TransactionResource
    */
@@ -83,7 +83,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get the details for a single transaction asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRANSACTIONS_ADMIN or owner
    * @param id id 
    * @return Future(TransactionResource)
   */
@@ -94,7 +94,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List and search transactions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRANSACTIONS_ADMIN or owner
    * @param filterInvoice Filter for transactions from a specific invoice (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -111,7 +111,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List and search transactions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRANSACTIONS_ADMIN or owner
    * @param filterInvoice Filter for transactions from a specific invoice (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -125,7 +125,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Refund a payment transaction, in full or in part
-   * Will not allow for refunding more than the full amount even with multiple partial refunds. Money is refunded to the payment method used to make the original payment. Payment method must support refunds.
+   * Will not allow for refunding more than the full amount even with multiple partial refunds. Money is refunded to the payment method used to make the original payment. Payment method must support refunds. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN
    * @param id The id of the transaction to refund 
    * @param request Request containing refund details (optional)
    * @return RefundResource
@@ -140,7 +140,7 @@ class PaymentsTransactionsApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Refund a payment transaction, in full or in part asynchronously
-   * Will not allow for refunding more than the full amount even with multiple partial refunds. Money is refunded to the payment method used to make the original payment. Payment method must support refunds.
+   * Will not allow for refunding more than the full amount even with multiple partial refunds. Money is refunded to the payment method used to make the original payment. Payment method must support refunds. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; PAYMENTS_ADMIN
    * @param id The id of the transaction to refund 
    * @param request Request containing refund details (optional)
    * @return Future(RefundResource)

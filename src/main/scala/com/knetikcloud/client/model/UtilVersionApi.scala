@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UtilVersionApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UtilVersionApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class UtilVersionApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get current version info
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Version
    */
   def getVersion(): Option[Version] = {
@@ -79,7 +79,7 @@ class UtilVersionApi(val defBasePath: String = "https://devsandbox.knetikcloud.c
 
   /**
    * Get current version info asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @return Future(Version)
   */
   def getVersionAsync(): Future[Version] = {

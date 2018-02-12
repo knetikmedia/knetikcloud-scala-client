@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ObjectsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create an object
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is to be part of 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param objectItem The object item object (optional)
@@ -85,7 +85,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create an object asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is to be part of 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param objectItem The object item object (optional)
@@ -98,7 +98,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create an object template
-   * Object templates define a type of entitlement and the properties they have
+   * Object templates define a type of entitlement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The entitlement template to be created (optional)
    * @return ItemTemplateResource
    */
@@ -112,7 +112,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create an object template asynchronously
-   * Object templates define a type of entitlement and the properties they have
+   * Object templates define a type of entitlement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The entitlement template to be created (optional)
    * @return Future(ItemTemplateResource)
   */
@@ -123,7 +123,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an object
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @return void
@@ -138,7 +138,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an object asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @return Future(void)
@@ -150,7 +150,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an entitlement template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -165,7 +165,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an entitlement template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -177,7 +177,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single object
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @return ObjectResource
@@ -192,7 +192,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single object asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @return Future(ObjectResource)
@@ -204,7 +204,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search objects
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param templateId The id of the template to get objects for 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -221,7 +221,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search objects asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param templateId The id of the template to get objects for 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -235,7 +235,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single entitlement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -249,7 +249,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single entitlement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -260,7 +260,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search entitlement templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -276,7 +276,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search entitlement templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -289,7 +289,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an object
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
@@ -306,7 +306,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an object asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param templateId The id of the template this object is part of 
    * @param objectId The id of the object 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
@@ -320,7 +320,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an entitlement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return ItemTemplateResource
@@ -335,7 +335,7 @@ class ObjectsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an entitlement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return Future(ItemTemplateResource)

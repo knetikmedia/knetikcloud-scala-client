@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreCouponsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a coupon item
-   * SKUs have to be unique in the entire store.
+   * SKUs have to be unique in the entire store. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param couponItem The coupon item object (optional)
    * @return CouponItem
@@ -83,7 +83,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a coupon item asynchronously
-   * SKUs have to be unique in the entire store.
+   * SKUs have to be unique in the entire store. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param couponItem The coupon item object (optional)
    * @return Future(CouponItem)
@@ -95,7 +95,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a coupon template
-   * Coupon Templates define a type of coupon and the properties they have.
+   * Coupon Templates define a type of coupon and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param couponTemplateResource The new coupon template (optional)
    * @return ItemTemplateResource
    */
@@ -109,7 +109,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a coupon template asynchronously
-   * Coupon Templates define a type of coupon and the properties they have.
+   * Coupon Templates define a type of coupon and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param couponTemplateResource The new coupon template (optional)
    * @return Future(ItemTemplateResource)
   */
@@ -120,7 +120,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a coupon item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @return void
    */
@@ -134,7 +134,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a coupon item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @return Future(void)
   */
@@ -145,7 +145,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a coupon template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return void
@@ -160,7 +160,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a coupon template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return Future(void)
@@ -172,7 +172,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single coupon item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @return CouponItem
    */
@@ -186,7 +186,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single coupon item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @return Future(CouponItem)
   */
@@ -197,7 +197,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a coupon by sku
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param sku A sku of the coupon 
    * @return CouponItem
    */
@@ -211,7 +211,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a coupon by sku asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param sku A sku of the coupon 
    * @return Future(CouponItem)
   */
@@ -222,7 +222,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single coupon template
-   * Coupon Templates define a type of coupon and the properties they have.
+   * Coupon Templates define a type of coupon and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or COUPONS_ADMIN
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -236,7 +236,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single coupon template asynchronously
-   * Coupon Templates define a type of coupon and the properties they have.
+   * Coupon Templates define a type of coupon and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or COUPONS_ADMIN
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -247,7 +247,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search coupon templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or COUPONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -263,7 +263,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search coupon templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or COUPONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -276,7 +276,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a coupon item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param couponItem The coupon item object (optional)
@@ -292,7 +292,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a coupon item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; COUPONS_ADMIN
    * @param id The id of the coupon 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param couponItem The coupon item object (optional)
@@ -305,7 +305,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a coupon template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param couponTemplateResource The coupon template resource object (optional)
    * @return ItemTemplateResource
@@ -320,7 +320,7 @@ class StoreCouponsApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a coupon template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param couponTemplateResource The coupon template resource object (optional)
    * @return Future(ItemTemplateResource)

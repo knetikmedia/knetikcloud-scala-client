@@ -51,7 +51,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class UsersInventoryApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -75,7 +75,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Adds an item to the user inventory
-   * The inventory is fulfilled asynchronously UNLESS the invoice is explicitely skipped. Depending on the use case, it might require the client to verify that the entitlement was added after the fact or configure a BRE rule to get a notification in real time
+   * The inventory is fulfilled asynchronously UNLESS the invoice is explicitely skipped. Depending on the use case, it might require the client to verify that the entitlement was added after the fact or configure a BRE rule to get a notification in real time. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param id The id of the user 
    * @param userInventoryAddRequest The user inventory add request object (optional)
    * @return InvoiceResource
@@ -90,7 +90,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Adds an item to the user inventory asynchronously
-   * The inventory is fulfilled asynchronously UNLESS the invoice is explicitely skipped. Depending on the use case, it might require the client to verify that the entitlement was added after the fact or configure a BRE rule to get a notification in real time
+   * The inventory is fulfilled asynchronously UNLESS the invoice is explicitely skipped. Depending on the use case, it might require the client to verify that the entitlement was added after the fact or configure a BRE rule to get a notification in real time. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param id The id of the user 
    * @param userInventoryAddRequest The user inventory add request object (optional)
    * @return Future(InvoiceResource)
@@ -102,7 +102,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Check for access to an item without consuming
-   * Useful for pre-check and accounts for all various buisness rules
+   * Useful for pre-check and accounts for all various buisness rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the user to check for or &#39;me&#39; for logged in user 
    * @param itemId The id of the item 
    * @param sku The specific sku of an entitlement list addition to check entitlement for. This is of very limited and specific use and should generally be left out (optional)
@@ -118,7 +118,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Check for access to an item without consuming asynchronously
-   * Useful for pre-check and accounts for all various buisness rules
+   * Useful for pre-check and accounts for all various buisness rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the user to check for or &#39;me&#39; for logged in user 
    * @param itemId The id of the item 
    * @param sku The specific sku of an entitlement list addition to check entitlement for. This is of very limited and specific use and should generally be left out (optional)
@@ -131,7 +131,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create an entitlement item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param entitlementItem The entitlement item object (optional)
    * @return EntitlementItem
@@ -146,7 +146,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create an entitlement item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param entitlementItem The entitlement item object (optional)
    * @return Future(EntitlementItem)
@@ -158,7 +158,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create an entitlement template
-   * Entitlement templates define a type of entitlement and the properties they have
+   * Entitlement templates define a type of entitlement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The entitlement template to be created (optional)
    * @return ItemTemplateResource
    */
@@ -172,7 +172,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Create an entitlement template asynchronously
-   * Entitlement templates define a type of entitlement and the properties they have
+   * Entitlement templates define a type of entitlement and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param template The entitlement template to be created (optional)
    * @return Future(ItemTemplateResource)
   */
@@ -183,7 +183,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an entitlement item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param entitlementId The id of the entitlement 
    * @return void
    */
@@ -197,7 +197,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an entitlement item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param entitlementId The id of the entitlement 
    * @return Future(void)
   */
@@ -208,7 +208,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an entitlement template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -223,7 +223,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Delete an entitlement template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -235,7 +235,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single entitlement item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param entitlementId The id of the entitlement 
    * @return EntitlementItem
    */
@@ -249,7 +249,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single entitlement item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param entitlementId The id of the entitlement 
    * @return Future(EntitlementItem)
   */
@@ -260,7 +260,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search entitlement items
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for entitlements using a specified template (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -277,7 +277,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search entitlement items asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterTemplate Filter for entitlements using a specified template (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -291,7 +291,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single entitlement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -305,7 +305,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get a single entitlement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -316,7 +316,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search entitlement templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -332,7 +332,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List and search entitlement templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or ACHIEVEMENTS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -345,7 +345,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List the user inventory entries for a given user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param id The id of the user 
    * @param inactive If true, accepts inactive user inventories (optional, default to false)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -367,7 +367,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List the user inventory entries for a given user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param id The id of the user 
    * @param inactive If true, accepts inactive user inventories (optional, default to false)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -386,12 +386,12 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get an inventory entry
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the inventory owner or &#39;me&#39; for the logged in user 
    * @param id The id of the user inventory 
    * @return UserInventoryResource
    */
-  def getUserInventory(userId: Integer, id: Integer): Option[UserInventoryResource] = {
+  def getUserInventory(userId: String, id: Integer): Option[UserInventoryResource] = {
     val await = Try(Await.result(getUserInventoryAsync(userId, id), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -401,19 +401,19 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get an inventory entry asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the inventory owner or &#39;me&#39; for the logged in user 
    * @param id The id of the user inventory 
    * @return Future(UserInventoryResource)
   */
-  def getUserInventoryAsync(userId: Integer, id: Integer): Future[UserInventoryResource] = {
+  def getUserInventoryAsync(userId: String, id: Integer): Future[UserInventoryResource] = {
       helper.getUserInventory(userId, id)
   }
 
 
   /**
    * List the log entries for this inventory entry
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the inventory owner or &#39;me&#39; for the logged in user 
    * @param id The id of the user inventory 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -430,7 +430,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List the log entries for this inventory entry asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the inventory owner or &#39;me&#39; for the logged in user 
    * @param id The id of the user inventory 
    * @param size The number of objects returned per page (optional, default to 25)
@@ -444,7 +444,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List the user inventory entries for all users
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param inactive If true, accepts inactive user inventories (optional, default to false)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -465,7 +465,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * List the user inventory entries for all users asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param inactive If true, accepts inactive user inventories (optional, default to false)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -483,7 +483,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Grant an entitlement
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user to grant the entitlement to 
    * @param grantRequest grantRequest 
    * @return void
@@ -498,7 +498,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Grant an entitlement asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user to grant the entitlement to 
    * @param grantRequest grantRequest 
    * @return Future(void)
@@ -510,7 +510,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an entitlement item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param entitlementId The id of the entitlement 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param entitlementItem The entitlement item object (optional)
@@ -526,7 +526,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an entitlement item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param entitlementId The id of the entitlement 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param entitlementItem The entitlement item object (optional)
@@ -539,7 +539,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an entitlement template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return ItemTemplateResource
@@ -554,7 +554,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Update an entitlement template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param template The updated template (optional)
    * @return Future(ItemTemplateResource)
@@ -566,7 +566,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the behavior data for an inventory entry
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user 
    * @param id The id of the user inventory 
    * @param data The data map (optional)
@@ -582,7 +582,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the behavior data for an inventory entry asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user 
    * @param id The id of the user inventory 
    * @param data The data map (optional)
@@ -595,7 +595,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the expiration date
-   * Will change the current grace period for a subscription but not the bill date (possibly even ending before having the chance to re-bill)
+   * Will change the current grace period for a subscription but not the bill date (possibly even ending before having the chance to re-bill). &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId user_id 
    * @param id The id of the user inventory 
    * @param timestamp The new expiration date as a unix timestamp in seconds. May be null (no body). (optional)
@@ -611,7 +611,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the expiration date asynchronously
-   * Will change the current grace period for a subscription but not the bill date (possibly even ending before having the chance to re-bill)
+   * Will change the current grace period for a subscription but not the bill date (possibly even ending before having the chance to re-bill). &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId user_id 
    * @param id The id of the user inventory 
    * @param timestamp The new expiration date as a unix timestamp in seconds. May be null (no body). (optional)
@@ -624,7 +624,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the status for an inventory entry
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user 
    * @param id The id of the user inventory 
    * @param inventoryStatus The inventory status object (optional)
@@ -640,7 +640,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Set the status for an inventory entry asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN
    * @param userId The id of the user 
    * @param id The id of the user inventory 
    * @param inventoryStatus The inventory status object (optional)
@@ -653,7 +653,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Use an item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the user to check for or &#39;me&#39; for logged in user 
    * @param itemId The id of the item 
    * @param sku The specific sku of an entitlement_list addition to check entitlement for. This is of very limited and specific use and should generally be left out (optional)
@@ -670,7 +670,7 @@ class UsersInventoryApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Use an item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; INVENTORY_ADMIN or owner
    * @param userId The id of the user to check for or &#39;me&#39; for logged in user 
    * @param itemId The id of the item 
    * @param sku The specific sku of an entitlement_list addition to check entitlement for. This is of very limited and specific use and should generally be left out (optional)
@@ -963,7 +963,7 @@ class UsersInventoryApiAsyncHelper(client: TransportClient, config: SwaggerConfi
     }
   }
 
-  def getUserInventory(userId: Integer,
+  def getUserInventory(userId: String,
     id: Integer)(implicit reader: ClientResponseReader[UserInventoryResource]): Future[UserInventoryResource] = {
     // create path and map variables
     val path = (addFmt("/users/{user_id}/inventory/{id}")
@@ -973,6 +973,8 @@ class UsersInventoryApiAsyncHelper(client: TransportClient, config: SwaggerConfi
     // query params
     val queryParams = new mutable.HashMap[String, String]
     val headerParams = new mutable.HashMap[String, String]
+
+    if (userId == null) throw new Exception("Missing required parameter 'userId' when calling UsersInventoryApi->getUserInventory")
 
 
     val resFuture = client.submit("GET", path, queryParams.toMap, headerParams.toMap, "")

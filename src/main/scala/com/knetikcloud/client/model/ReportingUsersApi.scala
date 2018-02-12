@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingUsersApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingUsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class ReportingUsersApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get user registration info
-   * Get user registration counts grouped by time range
+   * Get user registration counts grouped by time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_USER_ADMIN
    * @param granularity The time duration to aggregate by (optional, default to day)
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -84,7 +84,7 @@ class ReportingUsersApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Get user registration info asynchronously
-   * Get user registration counts grouped by time range
+   * Get user registration counts grouped by time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_USER_ADMIN
    * @param granularity The time duration to aggregate by (optional, default to day)
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)

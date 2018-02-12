@@ -47,7 +47,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class GamificationLevelingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -71,7 +71,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Create a level schema
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param level The level schema definition (optional)
    * @return LevelingResource
    */
@@ -85,7 +85,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Create a level schema asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param level The level schema definition (optional)
    * @return Future(LevelingResource)
   */
@@ -96,7 +96,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Delete a level
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @return void
    */
@@ -110,7 +110,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Delete a level asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @return Future(void)
   */
@@ -121,7 +121,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Retrieve a level
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @return LevelingResource
    */
@@ -135,7 +135,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Retrieve a level asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @return Future(LevelingResource)
   */
@@ -146,7 +146,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get the list of triggers that can be used to trigger a leveling progress update
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @return List[BreTriggerResource]
    */
   def getLevelTriggers(): Option[List[BreTriggerResource]] = {
@@ -159,7 +159,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get the list of triggers that can be used to trigger a leveling progress update asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @return Future(List[BreTriggerResource])
   */
   def getLevelTriggersAsync(): Future[List[BreTriggerResource]] = {
@@ -169,7 +169,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List and search levels
-   * Get a list of levels schemas with optional filtering
+   * Get a list of levels schemas with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param filterName Filter for level schemas whose name contains a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -186,7 +186,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * List and search levels asynchronously
-   * Get a list of levels schemas with optional filtering
+   * Get a list of levels schemas with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param filterName Filter for level schemas whose name contains a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -200,7 +200,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a user&#39;s progress for a given level schema
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param name The level schema name 
    * @return UserLevelingResource
@@ -215,7 +215,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a user&#39;s progress for a given level schema asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param name The level schema name 
    * @return Future(UserLevelingResource)
@@ -227,7 +227,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a user&#39;s progress for all level schemas
-   * Filtering and sorting is based on the LevelingResource object, not the UserLevelingResource that is returned here.
+   * Filtering and sorting is based on the LevelingResource object, not the UserLevelingResource that is returned here. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param filterName Filter for level schemas whose name contains a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -245,7 +245,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Get a user&#39;s progress for all level schemas asynchronously
-   * Filtering and sorting is based on the LevelingResource object, not the UserLevelingResource that is returned here.
+   * Filtering and sorting is based on the LevelingResource object, not the UserLevelingResource that is returned here. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param filterName Filter for level schemas whose name contains a given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -260,7 +260,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update or create a leveling progress record for a user
-   * If no progress record yet exists for the user, it will be created. Otherwise the provided value will be added to it. May be negative. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise the provided value will be added to it. May be negative. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param userId The id of the user 
    * @param name The level schema name 
    * @param progress The amount of progress to add (optional)
@@ -276,7 +276,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update or create a leveling progress record for a user asynchronously
-   * If no progress record yet exists for the user, it will be created. Otherwise the provided value will be added to it. May be negative. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise the provided value will be added to it. May be negative. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param userId The id of the user 
    * @param name The level schema name 
    * @param progress The amount of progress to add (optional)
@@ -289,7 +289,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Set leveling progress for a user
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated to the provided value. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated to the provided value. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param userId The id of the user 
    * @param name The level schema name 
    * @param progress The new progress amount (optional)
@@ -305,7 +305,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Set leveling progress for a user asynchronously
-   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated to the provided value. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;.
+   * If no progress record yet exists for the user, it will be created. Otherwise it will be updated to the provided value. If progress meets or exceeds the level&#39;s max_value it will be marked as earned and a BRE event will be triggered for the &lt;code&gt;BreAchievementEarnedTrigger&lt;/code&gt;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param userId The id of the user 
    * @param name The level schema name 
    * @param progress The new progress amount (optional)
@@ -318,7 +318,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update a level
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @param newLevel The level schema definition (optional)
    * @return LevelingResource
@@ -333,7 +333,7 @@ class GamificationLevelingApi(val defBasePath: String = "https://devsandbox.knet
 
   /**
    * Update a level asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; LEVELING_ADMIN
    * @param name The level schema name 
    * @param newLevel The level schema definition (optional)
    * @return Future(LevelingResource)

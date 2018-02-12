@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ConfigsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a new config
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOPICS_ADMIN
    * @param config The config object (optional)
    * @return Config
    */
@@ -81,7 +81,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a new config asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOPICS_ADMIN
    * @param config The config object (optional)
    * @return Future(Config)
   */
@@ -92,7 +92,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing config
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param name The config name 
    * @return void
    */
@@ -106,7 +106,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing config asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param name The config name 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single config
-   * Only configs that are public readable will be shown without admin access
+   * Only configs that are public readable will be shown without admin access. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param name The config name 
    * @return Config
    */
@@ -131,7 +131,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single config asynchronously
-   * Only configs that are public readable will be shown without admin access
+   * Only configs that are public readable will be shown without admin access. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param name The config name 
    * @return Future(Config)
   */
@@ -142,14 +142,14 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search configs
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterSearch Filter for configs whose name contains the given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return PageResourceConfig
    */
-  def getConfigs(filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Option[PageResourceConfig] = {
+  def getConfigs(filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Option[PageResourceConfig] = {
     val await = Try(Await.result(getConfigsAsync(filterSearch, size, page, order), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -159,21 +159,21 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search configs asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterSearch Filter for configs whose name contains the given string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
-   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to 1)
+   * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
    * @return Future(PageResourceConfig)
   */
-  def getConfigsAsync(filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] /* = 1*/): Future[PageResourceConfig] = {
+  def getConfigsAsync(filterSearch: Option[String] = None, size: Option[Integer] /* = 25*/, page: Option[Integer] /* = 1*/, order: Option[String] = None): Future[PageResourceConfig] = {
       helper.getConfigs(filterSearch, size, page, order)
   }
 
 
   /**
    * Update an existing config
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param name The config name 
    * @param config The config object (optional)
    * @return void
@@ -188,7 +188,7 @@ class ConfigsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Update an existing config asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param name The config name 
    * @param config The config object (optional)
    * @return Future(void)
@@ -257,7 +257,7 @@ class ConfigsApiAsyncHelper(client: TransportClient, config: SwaggerConfig) exte
   def getConfigs(filterSearch: Option[String] = None,
     size: Option[Integer] = Some(25),
     page: Option[Integer] = Some(1),
-    order: Option[String] = Some(1)
+    order: Option[String] = None
     )(implicit reader: ClientResponseReader[PageResourceConfig]): Future[PageResourceConfig] = {
     // create path and map variables
     val path = (addFmt("/configs"))

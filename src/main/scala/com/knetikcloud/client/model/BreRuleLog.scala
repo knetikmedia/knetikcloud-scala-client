@@ -14,6 +14,8 @@ package com.knetikcloud.client.model
 
 
 case class BreRuleLog (
+  /* The actions of the BRE rule */
+  actions: Option[List[BreActionLog]],
   /* Whether the rule ran */
   ran: Option[Boolean],
   /* The reason for the rule */

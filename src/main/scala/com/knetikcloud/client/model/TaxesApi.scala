@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class TaxesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a country tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param taxResource The tax object (optional)
    * @return CountryTaxResource
    */
@@ -83,7 +83,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a country tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param taxResource The tax object (optional)
    * @return Future(CountryTaxResource)
   */
@@ -94,7 +94,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a state tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param taxResource The tax object (optional)
    * @return StateTaxResource
@@ -109,7 +109,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create a state tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param taxResource The tax object (optional)
    * @return Future(StateTaxResource)
@@ -121,7 +121,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @return void
    */
@@ -135,7 +135,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @return Future(void)
   */
@@ -146,7 +146,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing state tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @return void
@@ -161,7 +161,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Delete an existing state tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @return Future(void)
@@ -173,7 +173,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @return CountryTaxResource
    */
@@ -187,7 +187,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @return Future(CountryTaxResource)
   */
@@ -198,7 +198,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
@@ -214,7 +214,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes asynchronously
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to name:ASC)
@@ -227,7 +227,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single state tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @return StateTaxResource
@@ -242,7 +242,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Get a single state tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @return Future(StateTaxResource)
@@ -254,7 +254,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes across all countries
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
@@ -270,7 +270,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes across all countries asynchronously
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional)
@@ -283,7 +283,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes within a country
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
@@ -300,7 +300,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * List and search taxes within a country asynchronously
-   * Get a list of taxes
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param countryCodeIso3 The iso3 code of the country 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned (optional, default to 1)
@@ -314,7 +314,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create or update a tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param taxResource The tax object (optional)
    * @return CountryTaxResource
@@ -329,7 +329,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create or update a tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param taxResource The tax object (optional)
    * @return Future(CountryTaxResource)
@@ -341,7 +341,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create or update a state tax
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @param taxResource The tax object (optional)
@@ -357,7 +357,7 @@ class TaxesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
 
   /**
    * Create or update a state tax asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TAX_ADMIN
    * @param countryCodeIso3 The iso3 code of the country 
    * @param stateCode The code of the state 
    * @param taxResource The tax object (optional)

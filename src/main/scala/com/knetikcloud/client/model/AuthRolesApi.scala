@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class AuthRolesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a new role
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param roleResource The role resource object (optional)
    * @return RoleResource
    */
@@ -83,7 +83,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Create a new role asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param roleResource The role resource object (optional)
    * @return Future(RoleResource)
   */
@@ -94,7 +94,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a role
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param force If true, removes role from users/clients (optional)
    * @return void
@@ -109,7 +109,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Delete a role asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param force If true, removes role from users/clients (optional)
    * @return Future(void)
@@ -121,7 +121,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get roles for a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param clientKey The client key 
    * @return List[RoleResource]
    */
@@ -135,7 +135,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get roles for a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param clientKey The client key 
    * @return Future(List[RoleResource])
   */
@@ -146,7 +146,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a single role
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @return RoleResource
    */
@@ -160,7 +160,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get a single role asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @return Future(RoleResource)
   */
@@ -171,7 +171,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search roles
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param filterName Filter for roles that have a name starting with specified string (optional)
    * @param filterRole Filter for roles that have a role starting with specified string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -189,7 +189,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * List and search roles asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param filterName Filter for roles that have a name starting with specified string (optional)
    * @param filterRole Filter for roles that have a role starting with specified string (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -204,7 +204,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get roles for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param userId The user&#39;s id 
    * @return List[RoleResource]
    */
@@ -218,7 +218,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Get roles for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param userId The user&#39;s id 
    * @return Future(List[RoleResource])
   */
@@ -229,7 +229,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set roles for a client
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param clientKey The client key 
    * @param rolesList The list of unique roles (optional)
    * @return ClientResource
@@ -244,7 +244,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set roles for a client asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param clientKey The client key 
    * @param rolesList The list of unique roles (optional)
    * @return Future(ClientResource)
@@ -256,7 +256,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set permissions for a role
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param permissionsList The list of unique permissions (optional)
    * @return RoleResource
@@ -271,7 +271,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set permissions for a role asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param permissionsList The list of unique permissions (optional)
    * @return Future(RoleResource)
@@ -283,7 +283,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set roles for a user
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param userId The user&#39;s id 
    * @param rolesList The list of unique roles (optional)
    * @return UserResource
@@ -298,7 +298,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Set roles for a user asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param userId The user&#39;s id 
    * @param rolesList The list of unique roles (optional)
    * @return Future(UserResource)
@@ -310,7 +310,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update a role
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param roleResource The role resource object (optional)
    * @return RoleResource
@@ -325,7 +325,7 @@ class AuthRolesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com
 
   /**
    * Update a role asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ROLES_ADMIN
    * @param role The role value 
    * @param roleResource The role resource object (optional)
    * @return Future(RoleResource)

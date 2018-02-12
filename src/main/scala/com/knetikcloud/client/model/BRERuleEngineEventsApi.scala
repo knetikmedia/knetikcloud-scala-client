@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineEventsApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineEventsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class BRERuleEngineEventsApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Fire a new event, based on an existing trigger
-   * Parameters within the event must match names and types from the trigger. Actual rule execution is asynchornous.  Returns request id, which will be used as the event id
+   * Parameters within the event must match names and types from the trigger. Actual rule execution is asynchornous.  Returns request id, which will be used as the event id. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_USER
    * @param breEvent The BRE event object (optional)
    * @return String
    */
@@ -80,7 +80,7 @@ class BRERuleEngineEventsApi(val defBasePath: String = "https://devsandbox.kneti
 
   /**
    * Fire a new event, based on an existing trigger asynchronously
-   * Parameters within the event must match names and types from the trigger. Actual rule execution is asynchornous.  Returns request id, which will be used as the event id
+   * Parameters within the event must match names and types from the trigger. Actual rule execution is asynchornous.  Returns request id, which will be used as the event id. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_EVENTS_USER
    * @param breEvent The BRE event object (optional)
    * @return Future(String)
   */

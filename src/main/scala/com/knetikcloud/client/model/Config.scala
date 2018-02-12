@@ -14,7 +14,7 @@ package com.knetikcloud.client.model
 
 
 case class Config (
-  /* The description of the config.  Max 140 characters */
+  /* The description of the config.  Max 255 characters */
   description: Option[String],
   /* The name of the config */
   name: String,

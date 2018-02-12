@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a currency
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param currency The currency object (optional)
    * @return CurrencyResource
    */
@@ -81,7 +81,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Create a currency asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param currency The currency object (optional)
    * @return Future(CurrencyResource)
   */
@@ -92,7 +92,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a currency
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param code The currency code 
    * @return void
    */
@@ -106,7 +106,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Delete a currency asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param code The currency code 
    * @return Future(void)
   */
@@ -117,7 +117,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search currencies
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false) (optional)
    * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config (optional)
    * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;) (optional)
@@ -136,7 +136,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * List and search currencies asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false) (optional)
    * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config (optional)
    * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;) (optional)
@@ -152,7 +152,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single currency
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param code The currency code 
    * @return CurrencyResource
    */
@@ -166,7 +166,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Get a single currency asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param code The currency code 
    * @return Future(CurrencyResource)
   */
@@ -177,7 +177,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a currency
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param code The currency code 
    * @param currency The currency object (optional)
    * @return void
@@ -192,7 +192,7 @@ class CurrenciesApi(val defBasePath: String = "https://devsandbox.knetikcloud.co
 
   /**
    * Update a currency asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CURRENCIES_ADMIN
    * @param code The currency code 
    * @param currency The currency object (optional)
    * @return Future(void)

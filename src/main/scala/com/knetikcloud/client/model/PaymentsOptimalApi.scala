@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsOptimalApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsOptimalApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class PaymentsOptimalApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Initiate silent post with Optimal
-   * Will return the url for a hosted payment endpoint to post to. See Optimal documentation for details.
+   * Will return the url for a hosted payment endpoint to post to. See Optimal documentation for details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; OPTIMAL_ADMIN or owner
    * @param request The payment request to initiate (optional)
    * @return String
    */
@@ -80,7 +80,7 @@ class PaymentsOptimalApi(val defBasePath: String = "https://devsandbox.knetikclo
 
   /**
    * Initiate silent post with Optimal asynchronously
-   * Will return the url for a hosted payment endpoint to post to. See Optimal documentation for details.
+   * Will return the url for a hosted payment endpoint to post to. See Optimal documentation for details. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; OPTIMAL_ADMIN or owner
    * @param request The payment request to initiate (optional)
    * @return Future(String)
   */

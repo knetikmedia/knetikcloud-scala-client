@@ -16,7 +16,7 @@ package com.knetikcloud.client.model
 case class GroupResource (
   /* A map of additional properties, keyed on the property name.  Must match the names and types defined in the template for this item type */
   additionalProperties: Option[Map[String, Property]],
-  /* A description of the group. Max 250 characters */
+  /* A description of the group */
   description: Option[String],
   /* The number of users in the group */
   memberCount: Option[Integer],

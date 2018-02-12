@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class BRERuleEngineRulesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -69,7 +69,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a rule
-   * Rules define which actions to run when a given event verifies the specified condition. Full list of predicates and other type of expressions can be found at GET /bre/expressions/
+   * Rules define which actions to run when a given event verifies the specified condition. Full list of predicates and other type of expressions can be found at GET /bre/expressions/. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param breRule The BRE rule object (optional)
    * @return BreRule
    */
@@ -83,7 +83,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a rule asynchronously
-   * Rules define which actions to run when a given event verifies the specified condition. Full list of predicates and other type of expressions can be found at GET /bre/expressions/
+   * Rules define which actions to run when a given event verifies the specified condition. Full list of predicates and other type of expressions can be found at GET /bre/expressions/. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param breRule The BRE rule object (optional)
    * @return Future(BreRule)
   */
@@ -94,7 +94,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a rule
-   * May fail if there are existing rules against it. Cannot delete core rules
+   * May fail if there are existing rules against it. Cannot delete core rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @return void
    */
@@ -108,7 +108,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a rule asynchronously
-   * May fail if there are existing rules against it. Cannot delete core rules
+   * May fail if there are existing rules against it. Cannot delete core rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @return Future(void)
   */
@@ -119,7 +119,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns a string representation of the provided expression
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param expression The expression (optional)
    * @return String
    */
@@ -133,7 +133,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Returns a string representation of the provided expression asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param expression The expression (optional)
    * @return Future(String)
   */
@@ -144,7 +144,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single rule
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @return BreRule
    */
@@ -158,7 +158,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single rule asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @return Future(BreRule)
   */
@@ -169,7 +169,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List rules
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param filterName Filter for rules containing the given name (optional)
    * @param filterEnabled Filter for rules by active status, null for both (optional, default to null)
    * @param filterSystem Filter for rules that are system rules when true, or not when false. Leave off for both mixed (optional)
@@ -190,7 +190,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List rules asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param filterName Filter for rules containing the given name (optional)
    * @param filterEnabled Filter for rules by active status, null for both (optional, default to null)
    * @param filterSystem Filter for rules that are system rules when true, or not when false. Leave off for both mixed (optional)
@@ -208,7 +208,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Enable or disable a rule
-   * This is helpful for turning off systems rules which cannot be deleted or modified otherwise
+   * This is helpful for turning off systems rules which cannot be deleted or modified otherwise. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @param enabled The boolean value (optional)
    * @return void
@@ -223,7 +223,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Enable or disable a rule asynchronously
-   * This is helpful for turning off systems rules which cannot be deleted or modified otherwise
+   * This is helpful for turning off systems rules which cannot be deleted or modified otherwise. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @param enabled The boolean value (optional)
    * @return Future(void)
@@ -235,7 +235,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a rule
-   * Cannot update system rules
+   * Cannot update system rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @param breRule The BRE rule object (optional)
    * @return BreRule
@@ -250,7 +250,7 @@ class BRERuleEngineRulesApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a rule asynchronously
-   * Cannot update system rules
+   * Cannot update system rules. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BRE_RULE_ENGINE_RULES_ADMIN
    * @param id The id of the rule 
    * @param breRule The BRE rule object (optional)
    * @return Future(BreRule)

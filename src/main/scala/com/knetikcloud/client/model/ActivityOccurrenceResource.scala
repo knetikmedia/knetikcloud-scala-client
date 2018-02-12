@@ -16,14 +16,20 @@ package com.knetikcloud.client.model
 case class ActivityOccurrenceResource (
   /* The id of the activity */
   activityId: Long,
+  /* The ids of banned users that cannot join the occurrence. See occurrence-user delete endpoint */
+  bans: Option[List[Integer]],
   /* The id of the challenge activity (as part of the event, required if eventId set) */
   challengeActivityId: Option[Long],
+  /* Defines core settings about the activity occurrence that affect how it behaves in the system. Validated against core settings in activity/challenge-activity. */
+  coreSettings: Option[CoreActivityOccurrenceSettings],
   /* The date this occurrence was created, unix timestamp in seconds */
   createdDate: Option[Long],
   /* The entitlement item required to enter the occurrence. Required if not part of an event. Must come from the set of entitlement items listed in the activity */
   entitlement: Option[ActivityEntitlementResource],
   /* The id of the event */
   eventId: Option[Long],
+  /* The host of the occurrence, if not a participant (will be left out of users array). Must be the caller that creates the occurrence unless admin. Requires activity/challenge to allow host_option of 'non_player' if not admin as well */
+  host: Option[SimpleUserResource],
   /* The id of the activity occurrence */
   id: Option[Long],
   /* Indicate if the rewards have been given out already */

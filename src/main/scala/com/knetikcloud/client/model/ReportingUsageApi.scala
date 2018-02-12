@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingUsageApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by day
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -86,7 +86,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by day asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -103,7 +103,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by hour
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -123,7 +123,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by hour asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -140,7 +140,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by minute
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -160,7 +160,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by minute asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -177,7 +177,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by month
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -197,7 +197,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by month asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoint. Removes the url and method from the result object (optional, default to false)
@@ -214,7 +214,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by year
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoints. Removes the url and method from the result object (optional, default to false)
@@ -234,7 +234,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns aggregated endpoint usage information by year asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @param combineEndpoints Whether to combine counts from different endpoints. Removes the url and method from the result object (optional, default to false)
@@ -251,7 +251,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns list of endpoints called (method and url)
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @return List[String]
@@ -266,7 +266,7 @@ class ReportingUsageApi(val defBasePath: String = "https://devsandbox.knetikclou
 
   /**
    * Returns list of endpoints called (method and url) asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; USAGE_ADMIN
    * @param startDate The beginning of the range being requested, unix timestamp in seconds 
    * @param endDate The ending of the range being requested, unix timestamp in seconds 
    * @return Future(List[String])

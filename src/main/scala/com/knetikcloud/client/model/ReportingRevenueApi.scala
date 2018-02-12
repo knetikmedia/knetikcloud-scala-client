@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class ReportingRevenueApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get item revenue info
-   * Get basic info about revenue from sales of items and bundles (not subscriptions, shipping, etc), summed up within a time range
+   * Get basic info about revenue from sales of items and bundles (not subscriptions, shipping, etc), summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -84,7 +84,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get item revenue info asynchronously
-   * Get basic info about revenue from sales of items and bundles (not subscriptions, shipping, etc), summed up within a time range
+   * Get basic info about revenue from sales of items and bundles (not subscriptions, shipping, etc), summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -97,7 +97,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get refund revenue info
-   * Get basic info about revenue loss from refunds (for all item types), summed up within a time range.
+   * Get basic info about revenue loss from refunds (for all item types), summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get refund data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -113,7 +113,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get refund revenue info asynchronously
-   * Get basic info about revenue loss from refunds (for all item types), summed up within a time range.
+   * Get basic info about revenue loss from refunds (for all item types), summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get refund data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -126,7 +126,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get revenue info by country
-   * Get basic info about revenue from sales of all types, summed up within a time range and split out by country. Sorted for largest revenue at the top
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by country. Sorted for largest revenue at the top. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -144,7 +144,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get revenue info by country asynchronously
-   * Get basic info about revenue from sales of all types, summed up within a time range and split out by country. Sorted for largest revenue at the top
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by country. Sorted for largest revenue at the top. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -159,7 +159,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get revenue info by item
-   * Get basic info about revenue from sales of all types, summed up within a time range and split out by specific item. Sorted for largest revenue at the top
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by specific item. Sorted for largest revenue at the top. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -177,7 +177,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get revenue info by item asynchronously
-   * Get basic info about revenue from sales of all types, summed up within a time range and split out by specific item. Sorted for largest revenue at the top
+   * Get basic info about revenue from sales of all types, summed up within a time range and split out by specific item. Sorted for largest revenue at the top. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -192,7 +192,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get subscription revenue info
-   * Get basic info about revenue from sales of new subscriptions as well as recurring payemnts, summed up within a time range
+   * Get basic info about revenue from sales of new subscriptions as well as recurring payemnts, summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)
@@ -208,7 +208,7 @@ class ReportingRevenueApi(val defBasePath: String = "https://devsandbox.knetikcl
 
   /**
    * Get subscription revenue info asynchronously
-   * Get basic info about revenue from sales of new subscriptions as well as recurring payemnts, summed up within a time range
+   * Get basic info about revenue from sales of new subscriptions as well as recurring payemnts, summed up within a time range. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; REPORTING_REVENUE_ADMIN
    * @param currencyCode The code for a currency to get sales data for 
    * @param startDate The start of the time range to aggregate, unix timestamp in seconds. Default is beginning of time (optional)
    * @param endDate The end of the time range to aggregate, unix timestamp in seconds. Default is end of time (optional)

@@ -42,7 +42,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class PaymentsAppleApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class PaymentsAppleApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -66,7 +66,7 @@ class PaymentsAppleApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Pay invoice with Apple receipt
-   * Mark an invoice paid using Apple payment receipt. A receipt will only be accepted once and the details of the transaction must match the invoice, including the product_id matching the sku text of the item in the invoice. Returns the transaction ID if successful.
+   * Mark an invoice paid using Apple payment receipt. A receipt will only be accepted once and the details of the transaction must match the invoice, including the product_id matching the sku text of the item in the invoice. Returns the transaction ID if successful. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param request The request for paying an invoice through an Apple receipt (optional)
    * @return String
    */
@@ -80,7 +80,7 @@ class PaymentsAppleApi(val defBasePath: String = "https://devsandbox.knetikcloud
 
   /**
    * Pay invoice with Apple receipt asynchronously
-   * Mark an invoice paid using Apple payment receipt. A receipt will only be accepted once and the details of the transaction must match the invoice, including the product_id matching the sku text of the item in the invoice. Returns the transaction ID if successful.
+   * Mark an invoice paid using Apple payment receipt. A receipt will only be accepted once and the details of the transaction must match the invoice, including the product_id matching the sku text of the item in the invoice. Returns the transaction ID if successful. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param request The request for paying an invoice through an Apple receipt (optional)
    * @return Future(String)
   */

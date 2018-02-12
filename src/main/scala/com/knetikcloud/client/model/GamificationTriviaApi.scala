@@ -50,7 +50,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class GamificationTriviaApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -74,7 +74,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add an answer to a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param answer The new answer (optional)
    * @return AnswerResource
@@ -89,7 +89,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add an answer to a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param answer The new answer (optional)
    * @return Future(AnswerResource)
@@ -101,7 +101,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add a tag to a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param tag The new tag (optional)
    * @return void
@@ -116,7 +116,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add a tag to a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param tag The new tag (optional)
    * @return Future(void)
@@ -128,7 +128,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add a tag to a batch of questions
-   * All questions that dont&#39;t have the tag and match filters will have it added. The returned number is the number of questions updated.
+   * All questions that dont&#39;t have the tag and match filters will have it added. The returned number is the number of questions updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param tag The tag to add (optional)
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
@@ -150,7 +150,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Add a tag to a batch of questions asynchronously
-   * All questions that dont&#39;t have the tag and match filters will have it added. The returned number is the number of questions updated.
+   * All questions that dont&#39;t have the tag and match filters will have it added. The returned number is the number of questions updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param tag The tag to add (optional)
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
@@ -169,7 +169,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create an import job
-   * Set up a job to import a set of trivia questions from a cvs file at a remote url. the file will be validated asynchronously but will not be processed until started manually with the process endpoint.
+   * Set up a job to import a set of trivia questions from a cvs file at a remote url. the file will be validated asynchronously but will not be processed until started manually with the process endpoint. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param request The new import job (optional)
    * @return ImportJobResource
    */
@@ -183,7 +183,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create an import job asynchronously
-   * Set up a job to import a set of trivia questions from a cvs file at a remote url. the file will be validated asynchronously but will not be processed until started manually with the process endpoint.
+   * Set up a job to import a set of trivia questions from a cvs file at a remote url. the file will be validated asynchronously but will not be processed until started manually with the process endpoint. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param request The new import job (optional)
    * @return Future(ImportJobResource)
   */
@@ -194,7 +194,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param question The new question (optional)
    * @return QuestionResource
    */
@@ -208,7 +208,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param question The new question (optional)
    * @return Future(QuestionResource)
   */
@@ -219,7 +219,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a question template
-   * Question templates define a type of question and the properties they have
+   * Question templates define a type of question and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionTemplateResource The question template resource object (optional)
    * @return QuestionTemplateResource
    */
@@ -233,7 +233,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Create a question template asynchronously
-   * Question templates define a type of question and the properties they have
+   * Question templates define a type of question and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionTemplateResource The question template resource object (optional)
    * @return Future(QuestionTemplateResource)
   */
@@ -244,7 +244,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete an import job
-   * Also deletes all questions that were imported by it
+   * Also deletes all questions that were imported by it. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @return void
    */
@@ -258,7 +258,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete an import job asynchronously
-   * Also deletes all questions that were imported by it
+   * Also deletes all questions that were imported by it. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @return Future(void)
   */
@@ -269,7 +269,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return void
    */
@@ -283,7 +283,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return Future(void)
   */
@@ -294,7 +294,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove an answer from a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @return void
@@ -309,7 +309,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove an answer from a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @return Future(void)
@@ -321,7 +321,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a question template
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return void
@@ -336,7 +336,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Delete a question template asynchronously
-   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects
+   * If cascade &#x3D; &#39;detach&#39;, it will force delete the template even if it&#39;s attached to other objects. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param cascade The value needed to delete used templates (optional)
    * @return Future(void)
@@ -348,7 +348,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get an import job
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @return ImportJobResource
    */
@@ -362,7 +362,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get an import job asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @return Future(ImportJobResource)
   */
@@ -373,7 +373,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of import job
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterVendor Filter for jobs by vendor id (optional)
    * @param filterCategory Filter for jobs by category id (optional)
    * @param filterName Filter for jobs which name *STARTS* with the given string (optional)
@@ -393,7 +393,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a list of import job asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterVendor Filter for jobs by vendor id (optional)
    * @param filterCategory Filter for jobs by category id (optional)
    * @param filterName Filter for jobs which name *STARTS* with the given string (optional)
@@ -410,7 +410,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return QuestionResource
    */
@@ -424,7 +424,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return Future(QuestionResource)
   */
@@ -435,7 +435,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get an answer for a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @return AnswerResource
@@ -450,7 +450,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get an answer for a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @return Future(AnswerResource)
@@ -462,7 +462,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List the answers available for a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @return List[AnswerResource]
    */
@@ -476,7 +476,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List the answers available for a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @return Future(List[AnswerResource])
   */
@@ -487,7 +487,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List question deltas in ascending order of updated date
-   * The &#39;since&#39; parameter is important to avoid getting a full list of all questions. Implementors should make sure they pass the updated date of the last resource loaded, not the date of the last request, in order to avoid gaps
+   * The &#39;since&#39; parameter is important to avoid getting a full list of all questions. Implementors should make sure they pass the updated date of the last resource loaded, not the date of the last request, in order to avoid gaps. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param since Timestamp in seconds (optional)
    * @return List[DeltaResource]
    */
@@ -501,7 +501,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List question deltas in ascending order of updated date asynchronously
-   * The &#39;since&#39; parameter is important to avoid getting a full list of all questions. Implementors should make sure they pass the updated date of the last resource loaded, not the date of the last request, in order to avoid gaps
+   * The &#39;since&#39; parameter is important to avoid getting a full list of all questions. Implementors should make sure they pass the updated date of the last resource loaded, not the date of the last request, in order to avoid gaps. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param since Timestamp in seconds (optional)
    * @return Future(List[DeltaResource])
   */
@@ -512,7 +512,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List the tags for a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return List[String]
    */
@@ -526,7 +526,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List the tags for a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @return Future(List[String])
   */
@@ -537,7 +537,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single question template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or TRIVIA_ADMIN
    * @param id The id of the template 
    * @return QuestionTemplateResource
    */
@@ -551,7 +551,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Get a single question template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or TRIVIA_ADMIN
    * @param id The id of the template 
    * @return Future(QuestionTemplateResource)
   */
@@ -562,7 +562,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search question templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or TRIVIA_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -578,7 +578,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search question templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN or TRIVIA_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -591,7 +591,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search questions
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -615,7 +615,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search questions asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -636,7 +636,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Count questions based on filters
-   * This is also provided by the list endpoint so you don&#39;t need to call this for pagination purposes
+   * This is also provided by the list endpoint so you don&#39;t need to call this for pagination purposes. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
    * @param filterCategory Filter for questions with specified category, by id (optional)
@@ -656,7 +656,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Count questions based on filters asynchronously
-   * This is also provided by the list endpoint so you don&#39;t need to call this for pagination purposes
+   * This is also provided by the list endpoint so you don&#39;t need to call this for pagination purposes. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
    * @param filterCategory Filter for questions with specified category, by id (optional)
@@ -673,7 +673,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Start processing an import job
-   * Will process the CSV file and add new questions asynchronously. The status of the job must be &#39;VALID&#39;.
+   * Will process the CSV file and add new questions asynchronously. The status of the job must be &#39;VALID&#39;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @param publishNow Whether the new questions should be published live immediately 
    * @return ImportJobResource
@@ -688,7 +688,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Start processing an import job asynchronously
-   * Will process the CSV file and add new questions asynchronously. The status of the job must be &#39;VALID&#39;.
+   * Will process the CSV file and add new questions asynchronously. The status of the job must be &#39;VALID&#39;. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @param publishNow Whether the new questions should be published live immediately 
    * @return Future(ImportJobResource)
@@ -700,7 +700,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove a tag from a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param tag The tag to remove 
    * @return void
@@ -715,7 +715,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove a tag from a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param tag The tag to remove 
    * @return Future(void)
@@ -727,7 +727,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove a tag from a batch of questions
-   * ll questions that have the tag and match filters will have it removed. The returned number is the number of questions updated.
+   * ll questions that have the tag and match filters will have it removed. The returned number is the number of questions updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param tag The tag to remove 
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
@@ -749,7 +749,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Remove a tag from a batch of questions asynchronously
-   * ll questions that have the tag and match filters will have it removed. The returned number is the number of questions updated.
+   * ll questions that have the tag and match filters will have it removed. The returned number is the number of questions updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param tag The tag to remove 
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
@@ -768,7 +768,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search tags by the beginning of the string
-   * For performance reasons, search &amp; category filters are mutually exclusive. If category is specified, search filter will be ignored in order to do fast matches for typeahead.
+   * For performance reasons, search &amp; category filters are mutually exclusive. If category is specified, search filter will be ignored in order to do fast matches for typeahead. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterSearch Filter for tags starting with the given text (optional)
    * @param filterCategory Filter for tags on questions from a specific category (optional)
    * @param filterImportId Filter for tags on questions from a specific import job (optional)
@@ -784,7 +784,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * List and search tags by the beginning of the string asynchronously
-   * For performance reasons, search &amp; category filters are mutually exclusive. If category is specified, search filter will be ignored in order to do fast matches for typeahead.
+   * For performance reasons, search &amp; category filters are mutually exclusive. If category is specified, search filter will be ignored in order to do fast matches for typeahead. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param filterSearch Filter for tags starting with the given text (optional)
    * @param filterCategory Filter for tags on questions from a specific category (optional)
    * @param filterImportId Filter for tags on questions from a specific import job (optional)
@@ -797,7 +797,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update an import job
-   * Changes should be made before process is started for there to be any effect.
+   * Changes should be made before process is started for there to be any effect. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @param request The updated job (optional)
    * @return ImportJobResource
@@ -812,7 +812,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update an import job asynchronously
-   * Changes should be made before process is started for there to be any effect.
+   * Changes should be made before process is started for there to be any effect. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the job 
    * @param request The updated job (optional)
    * @return Future(ImportJobResource)
@@ -824,7 +824,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param question The updated question (optional)
    * @return QuestionResource
@@ -839,7 +839,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param id The id of the question 
    * @param question The updated question (optional)
    * @return Future(QuestionResource)
@@ -851,7 +851,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update an answer for a question
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @param answer The updated answer (optional)
@@ -867,7 +867,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update an answer for a question asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param questionId The id of the question 
    * @param id The id of the answer 
    * @param answer The updated answer (optional)
@@ -880,7 +880,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a question template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param questionTemplateResource The question template resource object (optional)
    * @return QuestionTemplateResource
@@ -895,7 +895,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Update a question template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TEMPLATE_ADMIN
    * @param id The id of the template 
    * @param questionTemplateResource The question template resource object (optional)
    * @return Future(QuestionTemplateResource)
@@ -907,7 +907,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Bulk update questions
-   * Will update all questions that match filters used (or all questions in system if no filters used). Body should match a question resource with only those properties you wish to set. Null values will be ignored. Returned number is how many were updated.
+   * Will update all questions that match filters used (or all questions in system if no filters used). Body should match a question resource with only those properties you wish to set. Null values will be ignored. Returned number is how many were updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param question New values for a set of question fields (optional)
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)
@@ -928,7 +928,7 @@ class GamificationTriviaApi(val defBasePath: String = "https://devsandbox.knetik
 
   /**
    * Bulk update questions asynchronously
-   * Will update all questions that match filters used (or all questions in system if no filters used). Body should match a question resource with only those properties you wish to set. Null values will be ignored. Returned number is how many were updated.
+   * Will update all questions that match filters used (or all questions in system if no filters used). Body should match a question resource with only those properties you wish to set. Null values will be ignored. Returned number is how many were updated. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; TRIVIA_ADMIN
    * @param question New values for a set of question fields (optional)
    * @param filterSearch Filter for documents whose question, answers or tags contains provided string (optional)
    * @param filterIdset Filter for documents whose id is in the comma separated list provided (optional)

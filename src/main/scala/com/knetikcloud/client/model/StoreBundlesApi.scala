@@ -44,7 +44,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.com",
+class StoreBundlesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -68,7 +68,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a bundle item
-   * The SKU for the bundle itself must be unique and there can only be one SKU.  Extra notes for price_override:  The price of all the items (multiplied by the quantity) must equal the price of the bundle.  With individual prices set, items will be processed individually and can be refunded as such.  However, if all prices are set to null, the price of the bundle will be used and will be treated as one item.
+   * The SKU for the bundle itself must be unique and there can only be one SKU.  Extra notes for price_override:  The price of all the items (multiplied by the quantity) must equal the price of the bundle.  With individual prices set, items will be processed individually and can be refunded as such.  However, if all prices are set to null, the price of the bundle will be used and will be treated as one item. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param bundleItem The bundle item object (optional)
    * @return BundleItem
@@ -83,7 +83,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a bundle item asynchronously
-   * The SKU for the bundle itself must be unique and there can only be one SKU.  Extra notes for price_override:  The price of all the items (multiplied by the quantity) must equal the price of the bundle.  With individual prices set, items will be processed individually and can be refunded as such.  However, if all prices are set to null, the price of the bundle will be used and will be treated as one item.
+   * The SKU for the bundle itself must be unique and there can only be one SKU.  Extra notes for price_override:  The price of all the items (multiplied by the quantity) must equal the price of the bundle.  With individual prices set, items will be processed individually and can be refunded as such.  However, if all prices are set to null, the price of the bundle will be used and will be treated as one item. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param bundleItem The bundle item object (optional)
    * @return Future(BundleItem)
@@ -95,7 +95,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a bundle template
-   * Bundle Templates define a type of bundle and the properties they have.
+   * Bundle Templates define a type of bundle and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param bundleTemplateResource The new bundle template (optional)
    * @return ItemTemplateResource
    */
@@ -109,7 +109,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Create a bundle template asynchronously
-   * Bundle Templates define a type of bundle and the properties they have.
+   * Bundle Templates define a type of bundle and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param bundleTemplateResource The new bundle template (optional)
    * @return Future(ItemTemplateResource)
   */
@@ -120,7 +120,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a bundle item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the bundle 
    * @return void
    */
@@ -134,7 +134,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a bundle item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the bundle 
    * @return Future(void)
   */
@@ -145,7 +145,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a bundle template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return void
@@ -160,7 +160,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Delete a bundle template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the template 
    * @param cascade force deleting the template if it&#39;s attached to other objects, cascade &#x3D; detach (optional)
    * @return Future(void)
@@ -172,7 +172,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single bundle item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the bundle 
    * @return BundleItem
    */
@@ -186,7 +186,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single bundle item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the bundle 
    * @return Future(BundleItem)
   */
@@ -197,7 +197,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single bundle template
-   * Bundle Templates define a type of bundle and the properties they have.
+   * Bundle Templates define a type of bundle and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the template 
    * @return ItemTemplateResource
    */
@@ -211,7 +211,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Get a single bundle template asynchronously
-   * Bundle Templates define a type of bundle and the properties they have.
+   * Bundle Templates define a type of bundle and the properties they have. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param id The id of the template 
    * @return Future(ItemTemplateResource)
   */
@@ -222,7 +222,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search bundle templates
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -238,7 +238,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * List and search bundle templates asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ANY
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -251,7 +251,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a bundle item
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the bundle 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param bundleItem The bundle item object (optional)
@@ -267,7 +267,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a bundle item asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the bundle 
    * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values. (optional, default to false)
    * @param bundleItem The bundle item object (optional)
@@ -280,7 +280,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a bundle template
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the template 
    * @param bundleTemplateResource The bundle template resource object (optional)
    * @return ItemTemplateResource
@@ -295,7 +295,7 @@ class StoreBundlesApi(val defBasePath: String = "https://devsandbox.knetikcloud.
 
   /**
    * Update a bundle template asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; BUNDLES_ADMIN
    * @param id The id of the template 
    * @param bundleTemplateResource The bundle template resource object (optional)
    * @return Future(ItemTemplateResource)
