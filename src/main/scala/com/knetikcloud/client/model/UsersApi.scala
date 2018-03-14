@@ -51,7 +51,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class UsersApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class UsersApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -642,7 +642,7 @@ class UsersApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extend
     page: Option[Integer] = Some(1)
     )(implicit reader: ClientResponseReader[PageResourceChatMessageResource]): Future[PageResourceChatMessageResource] = {
     // create path and map variables
-    val path = (addFmt("/users/users/{recipient_id}/messages")
+    val path = (addFmt("/users/{recipient_id}/messages")
       replaceAll ("\\{" + "recipient_id" + "\\}",recipientId.toString))
 
     // query params

@@ -17,18 +17,24 @@ case class ForwardLog (
   /* The end date of the forward log entry */
   endDate: Option[Long],
   errorMsg: Option[String],
+  eventId: Option[String],
+  headers: Option[String],
   /* The http status code the forward log entry */
   httpStatusCode: Option[Integer],
   /* The id of the forward log entry */
   id: Option[String],
+  method: Option[String],
   /* The payload of the forward log entry */
   payload: Option[Any],
   /* The response string of the forward log entry */
   response: Option[String],
   /* The retry count of the forward log entry */
   retryCount: Option[Integer],
+  retryable: Option[Boolean],
+  ruleId: Option[String],
   /* The start date of the forward log entry */
   startDate: Option[Long],
+  success: Option[Boolean],
   /* The endpoint url of the forward log entry */
   url: Option[String]
 )

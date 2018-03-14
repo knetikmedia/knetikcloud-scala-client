@@ -20,8 +20,10 @@ import com.knetikcloud.client.model.ActivityOccurrenceResource
 import com.knetikcloud.client.model.ActivityOccurrenceResults
 import com.knetikcloud.client.model.ActivityOccurrenceResultsResource
 import com.knetikcloud.client.model.ActivityOccurrenceSettingsResource
+import com.knetikcloud.client.model.ActivityOccurrenceStatusWrapper
 import com.knetikcloud.client.model.ActivityResource
 import com.knetikcloud.client.model.ActivityUserResource
+import com.knetikcloud.client.model.ActivityUserStatusWrapper
 import com.knetikcloud.client.model.CreateActivityOccurrenceRequest
 import com.knetikcloud.client.model.IntWrapper
 import com.knetikcloud.client.model.PageResourceActivityOccurrenceResource
@@ -29,7 +31,6 @@ import com.knetikcloud.client.model.PageResourceBareActivityResource
 import com.knetikcloud.client.model.PageResourceTemplateResource
 import com.knetikcloud.client.model.Result
 import com.knetikcloud.client.model.TemplateResource
-import com.knetikcloud.client.model.ValueWrapperstring
 import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -56,7 +57,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class ActivitiesApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -300,7 +301,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Load a single activity occurrence details
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @return ActivityOccurrenceResource
    */
@@ -314,7 +315,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Load a single activity occurrence details asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @return Future(ActivityOccurrenceResource)
   */
@@ -379,7 +380,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * List activity occurrences
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param filterActivity Filter for occurrences of the given activity ID (optional)
    * @param filterStatus Filter for occurrences in the given status (optional)
    * @param filterEvent Filter for occurrences played during the given event (optional)
@@ -399,7 +400,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * List activity occurrences asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param filterActivity Filter for occurrences of the given activity ID (optional)
    * @param filterStatus Filter for occurrences in the given status (optional)
    * @param filterEvent Filter for occurrences played during the given event (optional)
@@ -447,7 +448,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Sets the status of an activity occurrence to FINISHED and logs metrics
-   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting.
+   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceResults The activity occurrence object (optional)
    * @return ActivityOccurrenceResults
@@ -462,7 +463,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Sets the status of an activity occurrence to FINISHED and logs metrics asynchronously
-   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting.
+   * In addition to user permissions requirements there is security based on the core_settings.results_trust setting. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceResults The activity occurrence object (optional)
    * @return Future(ActivityOccurrenceResults)
@@ -474,7 +475,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Sets the settings of an activity occurrence
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER and host or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param settings The new settings (optional)
    * @return ActivityOccurrenceResource
@@ -489,7 +490,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Sets the settings of an activity occurrence asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER and host or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param settings The new settings (optional)
    * @return Future(ActivityOccurrenceResource)
@@ -507,7 +508,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param status The new status (optional)
    * @return ActivityUserResource
    */
-  def setUserStatus(activityOccurrenceId: Long, userId: String, status: Option[String] = None): Option[ActivityUserResource] = {
+  def setUserStatus(activityOccurrenceId: Long, userId: String, status: Option[ActivityUserStatusWrapper] = None): Option[ActivityUserResource] = {
     val await = Try(Await.result(setUserStatusAsync(activityOccurrenceId, userId, status), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -523,7 +524,7 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param status The new status (optional)
    * @return Future(ActivityUserResource)
   */
-  def setUserStatusAsync(activityOccurrenceId: Long, userId: String, status: Option[String] = None): Future[ActivityUserResource] = {
+  def setUserStatusAsync(activityOccurrenceId: Long, userId: String, status: Option[ActivityUserStatusWrapper] = None): Future[ActivityUserResource] = {
       helper.setUserStatus(activityOccurrenceId, userId, status)
   }
 
@@ -557,12 +558,12 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Update the status of an activity occurrence
-   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true
+   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER and host or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceStatus The activity occurrence status object (optional)
    * @return void
    */
-  def updateActivityOccurrenceStatus(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ValueWrapperstring] = None) = {
+  def updateActivityOccurrenceStatus(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ActivityOccurrenceStatusWrapper] = None) = {
     val await = Try(Await.result(updateActivityOccurrenceStatusAsync(activityOccurrenceId, activityOccurrenceStatus), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -572,12 +573,12 @@ class ActivitiesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Update the status of an activity occurrence asynchronously
-   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true
+   * If setting to &#39;FINISHED&#39; reward will be run based on current metrics that have been recorded already. Alternatively, see results endpoint to finish and record all metrics at once. Can be called by non-host participants if non_host_status_control is true. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ACTIVITIES_USER and host or ACTIVITIES_ADMIN
    * @param activityOccurrenceId The id of the activity occurrence 
    * @param activityOccurrenceStatus The activity occurrence status object (optional)
    * @return Future(void)
   */
-  def updateActivityOccurrenceStatusAsync(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ValueWrapperstring] = None) = {
+  def updateActivityOccurrenceStatusAsync(activityOccurrenceId: Long, activityOccurrenceStatus: Option[ActivityOccurrenceStatusWrapper] = None) = {
       helper.updateActivityOccurrenceStatus(activityOccurrenceId, activityOccurrenceStatus)
   }
 
@@ -978,8 +979,8 @@ class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
 
   def setUserStatus(activityOccurrenceId: Long,
     userId: String,
-    status: Option[String] = None
-    )(implicit reader: ClientResponseReader[ActivityUserResource], writer: RequestWriter[String]): Future[ActivityUserResource] = {
+    status: Option[ActivityUserStatusWrapper] = None
+    )(implicit reader: ClientResponseReader[ActivityUserResource], writer: RequestWriter[ActivityUserStatusWrapper]): Future[ActivityUserResource] = {
     // create path and map variables
     val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/users/{user_id}/status")
       replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString)
@@ -1017,8 +1018,8 @@ class ActivitiesApiAsyncHelper(client: TransportClient, config: SwaggerConfig) e
   }
 
   def updateActivityOccurrenceStatus(activityOccurrenceId: Long,
-    activityOccurrenceStatus: Option[ValueWrapperstring] = None
-    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ValueWrapperstring]): Future[Unit] = {
+    activityOccurrenceStatus: Option[ActivityOccurrenceStatusWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ActivityOccurrenceStatusWrapper]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/activity-occurrences/{activity_occurrence_id}/status")
       replaceAll ("\\{" + "activity_occurrence_id" + "\\}",activityOccurrenceId.toString))

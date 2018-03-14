@@ -45,7 +45,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ChatApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class ChatApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -378,8 +378,8 @@ class ChatApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param chatMessageResource The chat message resource (optional)
    * @return ChatMessageResource
    */
-  def sendMessage(chatMessageResource: Option[ChatMessageResource] = None): Option[ChatMessageResource] = {
-    val await = Try(Await.result(sendMessageAsync(chatMessageResource), Duration.Inf))
+  def sendChatMessage(chatMessageResource: Option[ChatMessageResource] = None): Option[ChatMessageResource] = {
+    val await = Try(Await.result(sendChatMessageAsync(chatMessageResource), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -392,8 +392,8 @@ class ChatApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param chatMessageResource The chat message resource (optional)
    * @return Future(ChatMessageResource)
   */
-  def sendMessageAsync(chatMessageResource: Option[ChatMessageResource] = None): Future[ChatMessageResource] = {
-      helper.sendMessage(chatMessageResource)
+  def sendChatMessageAsync(chatMessageResource: Option[ChatMessageResource] = None): Future[ChatMessageResource] = {
+      helper.sendChatMessage(chatMessageResource)
   }
 
 
@@ -665,7 +665,7 @@ class ChatApiAsyncHelper(client: TransportClient, config: SwaggerConfig) extends
     }
   }
 
-  def sendMessage(chatMessageResource: Option[ChatMessageResource] = None
+  def sendChatMessage(chatMessageResource: Option[ChatMessageResource] = None
     )(implicit reader: ClientResponseReader[ChatMessageResource], writer: RequestWriter[ChatMessageResource]): Future[ChatMessageResource] = {
     // create path and map variables
     val path = (addFmt("/chat/messages"))

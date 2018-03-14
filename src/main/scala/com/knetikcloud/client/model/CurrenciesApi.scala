@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class CurrenciesApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class CurrenciesApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {

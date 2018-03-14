@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class FulfillmentApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class FulfillmentApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -172,7 +172,7 @@ class FulfillmentApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   /**
    * Update a fulfillment type
    * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
-   * @param id The id 
+   * @param id The fulfillment id 
    * @param fulfillmentType The fulfillment type (optional)
    * @return void
    */
@@ -187,7 +187,7 @@ class FulfillmentApi(val defBasePath: String = "https://sandbox.knetikcloud.com"
   /**
    * Update a fulfillment type asynchronously
    * &lt;b&gt;Permissions Needed:&lt;/b&gt; FULFILLMENT_ADMIN
-   * @param id The id 
+   * @param id The fulfillment id 
    * @param fulfillmentType The fulfillment type (optional)
    * @return Future(void)
   */

@@ -21,8 +21,8 @@ import com.knetikcloud.client.model.PageResourceNotificationTypeResource
 import com.knetikcloud.client.model.PageResourceNotificationUserTypeResource
 import com.knetikcloud.client.model.PageResourceUserNotificationResource
 import com.knetikcloud.client.model.Result
+import com.knetikcloud.client.model.UserNotificationStatusWrapper
 import com.knetikcloud.client.model.ValueWrapperboolean
-import com.knetikcloud.client.model.ValueWrapperstring
 import io.swagger.client.{ApiInvoker, ApiException}
 
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -49,7 +49,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class NotificationsApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -73,7 +73,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Create a notification type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param notificationType notificationType (optional)
    * @return NotificationTypeResource
    */
@@ -87,7 +87,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Create a notification type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param notificationType notificationType (optional)
    * @return Future(NotificationTypeResource)
   */
@@ -98,7 +98,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Delete a notification type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @return void
    */
@@ -112,7 +112,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Delete a notification type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @return Future(void)
   */
@@ -123,7 +123,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Get a single notification type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @return NotificationTypeResource
    */
@@ -137,7 +137,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Get a single notification type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @return Future(NotificationTypeResource)
   */
@@ -148,7 +148,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * List and search notification types
-   * Get a list of notification type with optional filtering
+   * Get a list of notification type with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -164,7 +164,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * List and search notification types asynchronously
-   * Get a list of notification type with optional filtering
+   * Get a list of notification type with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
    * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC] (optional, default to id:ASC)
@@ -177,7 +177,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * View a user&#39;s notification settings for a type
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param typeId The id of the topic 
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @return NotificationUserTypeResource
@@ -192,7 +192,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * View a user&#39;s notification settings for a type asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param typeId The id of the topic 
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @return Future(NotificationUserTypeResource)
@@ -204,7 +204,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * View a user&#39;s notification settings
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -221,7 +221,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * View a user&#39;s notification settings asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @param size The number of objects returned per page (optional, default to 25)
    * @param page The number of the page returned, starting with 1 (optional, default to 1)
@@ -235,7 +235,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Get notifications
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param id The id of the user or &#39;me&#39; 
    * @param filterStatus filter for notifications with a given status (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -253,7 +253,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Get notifications asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param id The id of the user or &#39;me&#39; 
    * @param filterStatus filter for notifications with a given status (optional)
    * @param size The number of objects returned per page (optional, default to 25)
@@ -268,7 +268,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Send a notification
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param notification notification (optional)
    * @return NotificationResource
    */
@@ -282,7 +282,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Send a notification asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param notification notification (optional)
    * @return Future(NotificationResource)
   */
@@ -293,13 +293,13 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Set notification status
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param notificationId The id of the notification 
    * @param notification status (optional)
    * @return void
    */
-  def setUserNotificationStatus(userId: String, notificationId: String, notification: Option[ValueWrapperstring] = None) = {
+  def setUserNotificationStatus(userId: String, notificationId: String, notification: Option[UserNotificationStatusWrapper] = None) = {
     val await = Try(Await.result(setUserNotificationStatusAsync(userId, notificationId, notification), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
@@ -309,20 +309,20 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Set notification status asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param userId The id of the user or &#39;me&#39; 
    * @param notificationId The id of the notification 
    * @param notification status (optional)
    * @return Future(void)
   */
-  def setUserNotificationStatusAsync(userId: String, notificationId: String, notification: Option[ValueWrapperstring] = None) = {
+  def setUserNotificationStatusAsync(userId: String, notificationId: String, notification: Option[UserNotificationStatusWrapper] = None) = {
       helper.setUserNotificationStatus(userId, notificationId, notification)
   }
 
 
   /**
    * Enable or disable direct notifications for a user
-   * Allows enabling or disabling messages for a given notification type when sent direct to the user. Notifications can still be retrieved by endpoint. For notifications broadcased to a topic, see the topic service to disable messages for the user there.
+   * Allows enabling or disabling messages for a given notification type when sent direct to the user. Notifications can still be retrieved by endpoint. For notifications broadcased to a topic, see the topic service to disable messages for the user there. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param typeId The id of the topic 
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @param silenced silenced 
@@ -338,7 +338,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Enable or disable direct notifications for a user asynchronously
-   * Allows enabling or disabling messages for a given notification type when sent direct to the user. Notifications can still be retrieved by endpoint. For notifications broadcased to a topic, see the topic service to disable messages for the user there.
+   * Allows enabling or disabling messages for a given notification type when sent direct to the user. Notifications can still be retrieved by endpoint. For notifications broadcased to a topic, see the topic service to disable messages for the user there. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN or self
    * @param typeId The id of the topic 
    * @param userId The id of the subscriber or &#39;me&#39; 
    * @param silenced silenced 
@@ -351,7 +351,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Update a notificationType
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @param notificationType notificationType (optional)
    * @return NotificationTypeResource
@@ -366,7 +366,7 @@ class NotificationsApi(val defBasePath: String = "https://sandbox.knetikcloud.co
 
   /**
    * Update a notificationType asynchronously
-   * 
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; NOTIFICATIONS_ADMIN
    * @param id id 
    * @param notificationType notificationType (optional)
    * @return Future(NotificationTypeResource)
@@ -575,8 +575,8 @@ class NotificationsApiAsyncHelper(client: TransportClient, config: SwaggerConfig
 
   def setUserNotificationStatus(userId: String,
     notificationId: String,
-    notification: Option[ValueWrapperstring] = None
-    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[ValueWrapperstring]): Future[Unit] = {
+    notification: Option[UserNotificationStatusWrapper] = None
+    )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[UserNotificationStatusWrapper]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/users/{user_id}/notifications/{notification_id}/status")
       replaceAll ("\\{" + "user_id" + "\\}",userId.toString)

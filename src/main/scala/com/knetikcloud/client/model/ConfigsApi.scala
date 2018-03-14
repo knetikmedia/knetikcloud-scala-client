@@ -43,7 +43,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class ConfigsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class ConfigsApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -67,7 +67,7 @@ class ConfigsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Create a new config
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOPICS_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param config The config object (optional)
    * @return Config
    */
@@ -81,7 +81,7 @@ class ConfigsApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Create a new config asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; TOPICS_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; CONFIGS_ADMIN
    * @param config The config object (optional)
    * @return Future(Config)
   */

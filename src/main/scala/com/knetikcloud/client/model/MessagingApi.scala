@@ -52,7 +52,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
+class MessagingApi(val defBasePath: String = "https://jsapi-integration.us-east-1.elasticbeanstalk.com",
                         defApiInvoker: ApiInvoker = ApiInvoker) {
 
   implicit val formats = new org.json4s.DefaultFormats {
@@ -126,7 +126,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Delete an existing message template
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @return void
    */
@@ -140,7 +140,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Delete an existing message template asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @return Future(void)
   */
@@ -151,7 +151,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Get a single message template
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @return MessageTemplateResource
    */
@@ -165,7 +165,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Get a single message template asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @return Future(MessageTemplateResource)
   */
@@ -176,7 +176,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * List and search message templates
-   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param filterTagset Filter for message templates with at least one of a specified set of tags (separated by comma) (optional)
    * @param filterTagIntersection Filter for message templates with all of a specified set of tags (separated by comma) (optional)
    * @param filterTagExclusion Filter for message templates with none of a specified set of tags (separated by comma) (optional)
@@ -195,7 +195,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * List and search message templates asynchronously
-   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * Get a list of message templates with optional filtering. &lt;br&gt;&lt;br&gt;&lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param filterTagset Filter for message templates with at least one of a specified set of tags (separated by comma) (optional)
    * @param filterTagIntersection Filter for message templates with all of a specified set of tags (separated by comma) (optional)
    * @param filterTagExclusion Filter for message templates with none of a specified set of tags (separated by comma) (optional)
@@ -215,8 +215,8 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param messageResource The message to be sent (optional)
    * @return void
    */
-  def sendMessage1(messageResource: Option[MessageResource] = None) = {
-    val await = Try(Await.result(sendMessage1Async(messageResource), Duration.Inf))
+  def sendMessage(messageResource: Option[MessageResource] = None) = {
+    val await = Try(Await.result(sendMessageAsync(messageResource), Duration.Inf))
     await match {
       case Success(i) => Some(await.get)
       case Failure(t) => None
@@ -229,8 +229,8 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
    * @param messageResource The message to be sent (optional)
    * @return Future(void)
   */
-  def sendMessage1Async(messageResource: Option[MessageResource] = None) = {
-      helper.sendMessage1(messageResource)
+  def sendMessageAsync(messageResource: Option[MessageResource] = None) = {
+      helper.sendMessage(messageResource)
   }
 
 
@@ -411,7 +411,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Update an existing message template
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @param messageTemplateResource The message template (optional)
    * @return MessageTemplateResource
@@ -426,7 +426,7 @@ class MessagingApi(val defBasePath: String = "https://sandbox.knetikcloud.com",
 
   /**
    * Update an existing message template asynchronously
-   * &lt;b&gt;Permissions Needed:&lt;/b&gt; ARTICLES_ADMIN
+   * &lt;b&gt;Permissions Needed:&lt;/b&gt; MESSAGING_ADMIN
    * @param id The message_template id 
    * @param messageTemplateResource The message template (optional)
    * @return Future(MessageTemplateResource)
@@ -553,7 +553,7 @@ class MessagingApiAsyncHelper(client: TransportClient, config: SwaggerConfig) ex
     }
   }
 
-  def sendMessage1(messageResource: Option[MessageResource] = None
+  def sendMessage(messageResource: Option[MessageResource] = None
     )(implicit reader: ClientResponseReader[Unit], writer: RequestWriter[MessageResource]): Future[Unit] = {
     // create path and map variables
     val path = (addFmt("/messaging/message"))

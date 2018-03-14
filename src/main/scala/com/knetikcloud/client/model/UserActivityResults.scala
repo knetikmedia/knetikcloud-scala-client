@@ -22,7 +22,7 @@ case class UserActivityResults (
   rank: Option[Long],
   /* The raw score in this leaderboard. Null means non-compete or disqualification */
   score: Option[Long],
-  /* Any tags for the metric. Each unique tag will translate into a unique leaderboard. Maximum 5 tags and 50 characters each */
+  /* Any tags for the metric. Each unique tag will translate into a unique leaderboard. Maximum 10 tags and 50 characters each */
   tags: Option[List[String]],
   /* The number of users tied at this rank, including this user. 1 means no tie */
   ties: Option[Integer],
